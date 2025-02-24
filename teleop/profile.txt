@@ -1,0 +1,424 @@
+2025-02-21 18:55:47.529606:Main loop started
+2025-02-21 18:55:47.541077:get arm finished
+2025-02-21 18:55:47.541191:get hand finished
+2025-02-21 18:55:47.856300:ik teleop finished
+2025-02-21 18:55:48.071808:ik finished
+2025-02-21 18:55:48.080725:Main loop started
+2025-02-21 18:55:48.085700:get arm finished
+2025-02-21 18:55:48.086071:get hand finished
+2025-02-21 18:55:48.303275:ik teleop finished
+2025-02-21 18:55:48.498713:ik finished
+2025-02-21 18:55:48.503145:Main loop started
+2025-02-21 18:55:48.504966:get arm finished
+2025-02-21 18:55:48.505075:get hand finished
+2025-02-21 18:55:48.748058:ik teleop finished
+2025-02-21 18:55:48.914965:ik finished
+2025-02-21 18:55:48.919854:Main loop started
+2025-02-21 18:55:48.920787:get arm finished
+2025-02-21 18:55:48.920869:get hand finished
+2025-02-21 18:55:49.113959:ik teleop finished
+2025-02-21 18:55:49.276376:ik finished
+2025-02-21 18:55:49.277929:Main loop started
+2025-02-21 18:55:49.282256:get arm finished
+2025-02-21 18:55:49.282348:get hand finished
+2025-02-21 18:55:49.430332:ik teleop finished
+2025-02-21 18:55:49.566046:ik finished
+2025-02-21 18:55:49.569826:Main loop started
+2025-02-21 18:55:49.573414:get arm finished
+2025-02-21 18:55:49.573489:get hand finished
+2025-02-21 18:55:49.723376:ik teleop finished
+2025-02-21 18:55:49.810181:ik finished
+2025-02-21 18:55:49.810696:Main loop started
+2025-02-21 18:55:49.815864:get arm finished
+2025-02-21 18:55:49.816077:get hand finished
+2025-02-21 18:55:49.893312:ik teleop finished
+2025-02-21 18:55:49.995612:ik finished
+2025-02-21 18:55:50.000467:Main loop started
+2025-02-21 18:55:50.001061:get arm finished
+2025-02-21 18:55:50.001236:get hand finished
+2025-02-21 18:55:50.102115:ik teleop finished
+2025-02-21 18:55:50.258856:ik finished
+2025-02-21 18:55:50.263868:Main loop started
+2025-02-21 18:55:50.265215:get arm finished
+2025-02-21 18:55:50.265311:get hand finished
+2025-02-21 18:55:50.317153:ik teleop finished
+2025-02-21 18:55:50.506605:ik finished
+2025-02-21 18:55:50.515691:Main loop started
+2025-02-21 18:55:50.517227:get arm finished
+2025-02-21 18:55:50.521868:get hand finished
+2025-02-21 18:55:50.588856:ik teleop finished
+2025-02-21 18:55:50.711386:ik finished
+2025-02-21 18:55:50.712155:Main loop started
+2025-02-21 18:55:50.716401:get arm finished
+2025-02-21 18:55:50.718586:get hand finished
+2025-02-21 18:55:50.776575:ik teleop finished
+2025-02-21 18:55:50.905513:ik finished
+2025-02-21 18:55:50.913377:Main loop started
+2025-02-21 18:55:50.914646:get arm finished
+2025-02-21 18:55:50.914740:get hand finished
+2025-02-21 18:55:51.019413:ik teleop finished
+2025-02-21 18:55:51.250034:ik finished
+2025-02-21 18:55:51.255432:Main loop started
+2025-02-21 18:55:51.257188:get arm finished
+2025-02-21 18:55:51.261882:get hand finished
+2025-02-21 18:55:51.400604:ik teleop finished
+2025-02-21 18:55:51.564862:ik finished
+2025-02-21 18:55:51.571003:Main loop started
+2025-02-21 18:55:51.571585:get arm finished
+2025-02-21 18:55:51.571655:get hand finished
+2025-02-21 18:55:51.662754:ik teleop finished
+2025-02-21 18:55:51.860087:ik finished
+2025-02-21 18:55:51.870306:Main loop started
+2025-02-21 18:55:51.871767:get arm finished
+2025-02-21 18:55:51.874716:get hand finished
+2025-02-21 18:55:51.956986:ik teleop finished
+2025-02-21 18:55:52.130937:ik finished
+2025-02-21 18:55:52.137380:Main loop started
+2025-02-21 18:55:52.143874:get arm finished
+2025-02-21 18:55:52.143981:get hand finished
+2025-02-21 18:55:52.288344:ik teleop finished
+2025-02-21 18:55:52.459990:ik finished
+2025-02-21 18:55:52.468937:Main loop started
+2025-02-21 18:55:52.469523:get arm finished
+2025-02-21 18:55:52.472897:get hand finished
+2025-02-21 18:55:52.503167:ik teleop finished
+2025-02-21 18:55:52.702133:ik finished
+2025-02-21 18:55:52.711878:Main loop started
+2025-02-21 18:55:52.717205:get arm finished
+2025-02-21 18:55:52.717421:get hand finished
+2025-02-21 18:55:52.808118:ik teleop finished
+2025-02-21 18:55:52.994968:ik finished
+2025-02-21 18:55:53.000406:Main loop started
+2025-02-21 18:55:53.001960:get arm finished
+2025-02-21 18:55:53.002031:get hand finished
+2025-02-21 18:55:53.103373:ik teleop finished
+2025-02-21 18:55:53.267965:ik finished
+2025-02-21 18:55:53.271944:Main loop started
+2025-02-21 18:55:53.272428:get arm finished
+2025-02-21 18:55:53.272535:get hand finished
+2025-02-21 18:55:53.360485:ik teleop finished
+2025-02-21 18:55:53.540778:ik finished
+2025-02-21 18:55:53.548972:Main loop started
+2025-02-21 18:55:53.549585:get arm finished
+2025-02-21 18:55:53.552885:get hand finished
+2025-02-21 18:55:53.687860:ik teleop finished
+2025-02-21 18:55:53.810059:ik finished
+2025-02-21 18:55:53.816337:Main loop started
+2025-02-21 18:55:53.816669:get arm finished
+2025-02-21 18:55:53.816736:get hand finished
+2025-02-21 18:55:53.912847:ik teleop finished
+2025-02-21 18:55:54.070033:ik finished
+2025-02-21 18:55:54.078874:Main loop started
+2025-02-21 18:55:54.079350:get arm finished
+2025-02-21 18:55:54.079437:get hand finished
+2025-02-21 18:55:54.194675:ik teleop finished
+2025-02-21 18:55:54.381134:ik finished
+2025-02-21 18:55:54.386647:Main loop started
+2025-02-21 18:55:54.390389:get arm finished
+2025-02-21 18:55:54.391370:get hand finished
+2025-02-21 18:55:54.548815:ik teleop finished
+2025-02-21 18:55:54.696906:ik finished
+2025-02-21 18:55:54.703375:Main loop started
+2025-02-21 18:55:54.707697:get arm finished
+2025-02-21 18:55:54.707796:get hand finished
+2025-02-21 18:55:54.833493:ik teleop finished
+2025-02-21 18:55:55.018376:ik finished
+2025-02-21 18:55:55.025240:Main loop started
+2025-02-21 18:55:55.025570:get arm finished
+2025-02-21 18:55:55.025639:get hand finished
+2025-02-21 18:55:55.206735:ik teleop finished
+2025-02-21 18:55:55.401885:ik finished
+2025-02-21 18:55:55.408607:Main loop started
+2025-02-21 18:55:55.415069:get arm finished
+2025-02-21 18:55:55.416403:get hand finished
+2025-02-21 18:55:55.527251:ik teleop finished
+2025-02-21 18:55:55.648112:ik finished
+2025-02-21 18:55:55.651945:Main loop started
+2025-02-21 18:55:55.655253:get arm finished
+2025-02-21 18:55:55.655542:get hand finished
+2025-02-21 18:55:55.759112:ik teleop finished
+2025-02-21 18:55:55.881970:ik finished
+2025-02-21 18:55:55.889606:Main loop started
+2025-02-21 18:55:55.891219:get arm finished
+2025-02-21 18:55:55.891296:get hand finished
+2025-02-21 18:57:10.365573:Main loop started
+2025-02-21 18:57:10.378080:get arm finished
+2025-02-21 18:57:10.378236:get hand finished
+2025-02-21 18:57:10.635851:ik teleop finished
+2025-02-21 18:57:10.864063:ik finished
+2025-02-21 18:57:10.865609:Main loop started
+2025-02-21 18:57:10.869255:get arm finished
+2025-02-21 18:57:10.869335:get hand finished
+2025-02-21 18:57:11.193289:ik teleop finished
+2025-02-21 18:57:11.384349:ik finished
+2025-02-21 18:57:11.395509:Main loop started
+2025-02-21 18:57:11.400725:get arm finished
+2025-02-21 18:57:11.405837:get hand finished
+2025-02-21 18:57:11.673217:ik teleop finished
+2025-02-21 18:57:11.783549:ik finished
+2025-02-21 18:57:11.787814:Main loop started
+2025-02-21 18:57:11.793169:get arm finished
+2025-02-21 18:57:11.793266:get hand finished
+2025-02-21 18:57:11.856381:ik teleop finished
+2025-02-21 18:57:11.963376:ik finished
+2025-02-21 18:57:11.969064:Main loop started
+2025-02-21 18:57:11.969484:get arm finished
+2025-02-21 18:57:11.969547:get hand finished
+2025-02-21 18:57:12.082620:ik teleop finished
+2025-02-21 18:57:12.279387:ik finished
+2025-02-21 18:57:12.283370:Main loop started
+2025-02-21 18:57:12.284992:get arm finished
+2025-02-21 18:57:12.288396:get hand finished
+2025-02-21 18:57:12.422978:ik teleop finished
+2025-02-21 18:57:12.646635:ik finished
+2025-02-21 18:57:12.651259:Main loop started
+2025-02-21 18:57:12.655062:get arm finished
+2025-02-21 18:57:12.655239:get hand finished
+2025-02-21 18:57:12.824359:ik teleop finished
+2025-02-21 18:57:13.041589:ik finished
+2025-02-21 18:57:13.046695:Main loop started
+2025-02-21 18:57:13.053447:get arm finished
+2025-02-21 18:57:13.053640:get hand finished
+2025-02-21 18:57:13.171981:ik teleop finished
+2025-02-21 18:57:13.343286:ik finished
+2025-02-21 18:57:13.347162:Main loop started
+2025-02-21 18:57:13.348261:get arm finished
+2025-02-21 18:57:13.350741:get hand finished
+2025-02-21 18:57:13.490805:ik teleop finished
+2025-02-21 18:57:13.669909:ik finished
+2025-02-21 18:57:13.672643:Main loop started
+2025-02-21 18:57:13.674106:get arm finished
+2025-02-21 18:57:13.674216:get hand finished
+2025-02-21 18:57:13.907965:ik teleop finished
+2025-02-21 18:57:14.128524:ik finished
+2025-02-21 18:57:14.133686:Main loop started
+2025-02-21 18:57:14.135402:get arm finished
+2025-02-21 18:57:14.135564:get hand finished
+2025-02-21 18:57:14.238545:ik teleop finished
+2025-02-21 18:57:14.398892:ik finished
+2025-02-21 18:57:14.400640:Main loop started
+2025-02-21 18:57:14.404362:get arm finished
+2025-02-21 18:57:14.404613:get hand finished
+2025-02-21 18:57:14.602929:ik teleop finished
+2025-02-21 18:57:14.778881:ik finished
+2025-02-21 18:57:14.788924:Main loop started
+2025-02-21 18:57:14.792619:get arm finished
+2025-02-21 18:57:14.797225:get hand finished
+2025-02-21 18:57:14.937359:ik teleop finished
+2025-02-21 18:57:15.162559:ik finished
+2025-02-21 18:57:15.168010:Main loop started
+2025-02-21 18:57:15.168421:get arm finished
+2025-02-21 18:57:15.168699:get hand finished
+2025-02-21 18:57:15.348294:ik teleop finished
+2025-02-21 18:57:15.603697:ik finished
+2025-02-21 18:57:15.609966:Main loop started
+2025-02-21 18:57:15.610345:get arm finished
+2025-02-21 18:57:15.610420:get hand finished
+2025-02-21 18:57:15.808787:ik teleop finished
+2025-02-21 18:57:16.052472:ik finished
+2025-02-21 18:57:16.054755:Main loop started
+2025-02-21 18:57:16.059716:get arm finished
+2025-02-21 18:57:16.060480:get hand finished
+2025-02-21 18:57:16.226291:ik teleop finished
+2025-02-21 18:57:16.396442:ik finished
+2025-02-21 18:57:16.400599:Main loop started
+2025-02-21 18:57:16.401760:get arm finished
+2025-02-21 18:57:16.401823:get hand finished
+2025-02-21 18:57:16.662560:ik teleop finished
+2025-02-21 18:57:16.852925:ik finished
+2025-02-21 18:57:16.865145:Main loop started
+2025-02-21 18:57:16.870064:get arm finished
+2025-02-21 18:57:16.870245:get hand finished
+2025-02-21 18:57:17.136335:ik teleop finished
+2025-02-21 18:57:17.308861:ik finished
+2025-02-21 18:57:17.312809:Main loop started
+2025-02-21 18:57:17.316408:get arm finished
+2025-02-21 18:57:17.317373:get hand finished
+2025-02-21 18:57:17.407449:ik teleop finished
+2025-02-21 18:57:17.570274:ik finished
+2025-02-21 18:57:17.575438:Main loop started
+2025-02-21 18:57:17.577241:get arm finished
+2025-02-21 18:57:17.577309:get hand finished
+2025-02-21 18:57:17.747405:ik teleop finished
+2025-02-21 18:57:17.975639:ik finished
+2025-02-21 18:57:17.980757:Main loop started
+2025-02-21 18:57:17.981464:get arm finished
+2025-02-21 18:57:17.981544:get hand finished
+2025-02-21 18:57:18.081589:ik teleop finished
+2025-02-21 18:57:18.315713:ik finished
+2025-02-21 18:57:18.321876:Main loop started
+2025-02-21 18:57:18.325563:get arm finished
+2025-02-21 18:57:18.330355:get hand finished
+2025-02-21 18:57:18.545798:ik teleop finished
+2025-02-21 18:57:18.803368:ik finished
+2025-02-21 18:57:18.808644:Main loop started
+2025-02-21 18:57:18.808907:get arm finished
+2025-02-21 18:57:18.808956:get hand finished
+2025-02-21 18:57:18.872429:ik teleop finished
+2025-02-21 18:57:19.044569:ik finished
+2025-02-21 18:57:19.057791:Main loop started
+2025-02-21 18:57:19.062880:get arm finished
+2025-02-21 18:57:19.064114:get hand finished
+2025-02-21 18:57:19.355490:ik teleop finished
+2025-02-21 19:04:38.328324:Main loop started
+2025-02-21 19:04:38.348518:get arm finished
+2025-02-21 19:04:38.348781:get hand finished
+2025-02-21 19:04:38.661937:ik teleop finished
+2025-02-21 19:04:38.913334:ik finished
+2025-02-21 19:04:38.919833:Main loop started
+2025-02-21 19:04:38.925503:get arm finished
+2025-02-21 19:04:38.925586:get hand finished
+2025-02-21 19:04:39.159707:ik teleop finished
+2025-02-21 19:04:39.378240:ik finished
+2025-02-21 19:04:39.387677:Main loop started
+2025-02-21 19:04:39.393529:get arm finished
+2025-02-21 19:04:39.393971:get hand finished
+2025-02-21 19:04:39.653365:ik teleop finished
+2025-02-21 19:04:39.855579:ik finished
+2025-02-21 19:04:39.856052:Main loop started
+2025-02-21 19:04:39.860737:get arm finished
+2025-02-21 19:04:39.860972:get hand finished
+2025-02-21 19:04:40.106508:ik teleop finished
+2025-02-21 19:04:40.316796:ik finished
+2025-02-21 19:04:40.320980:Main loop started
+2025-02-21 19:04:40.326383:get arm finished
+2025-02-21 19:04:40.326489:get hand finished
+2025-02-21 19:04:40.500567:ik teleop finished
+2025-02-21 19:04:40.691240:ik finished
+2025-02-21 19:04:40.691760:Main loop started
+2025-02-21 19:04:40.691986:get arm finished
+2025-02-21 19:04:40.695542:get hand finished
+2025-02-21 19:04:40.804453:ik teleop finished
+2025-02-21 19:04:40.983564:ik finished
+2025-02-21 19:04:40.989884:Main loop started
+2025-02-21 19:04:40.990583:get arm finished
+2025-02-21 19:04:40.991627:get hand finished
+2025-02-21 19:04:41.117742:ik teleop finished
+2025-02-21 19:04:41.300297:ik finished
+2025-02-21 19:04:41.300777:Main loop started
+2025-02-21 19:04:41.303714:get arm finished
+2025-02-21 19:04:41.303850:get hand finished
+2025-02-21 19:04:41.351890:ik teleop finished
+2025-02-21 19:04:41.508327:ik finished
+2025-02-21 19:04:41.508980:Main loop started
+2025-02-21 19:04:41.512235:get arm finished
+2025-02-21 19:04:41.512367:get hand finished
+2025-02-21 19:04:41.560976:ik teleop finished
+2025-02-21 19:04:41.715006:ik finished
+2025-02-21 19:04:41.719954:Main loop started
+2025-02-21 19:04:41.722880:get arm finished
+2025-02-21 19:04:41.722946:get hand finished
+2025-02-21 19:04:41.758391:ik teleop finished
+2025-02-21 19:04:41.889818:ik finished
+2025-02-21 19:04:41.895565:Main loop started
+2025-02-21 19:04:41.899110:get arm finished
+2025-02-21 19:04:41.900037:get hand finished
+2025-02-21 19:04:41.955881:ik teleop finished
+2025-02-21 19:04:42.078881:ik finished
+2025-02-21 19:04:42.085461:Main loop started
+2025-02-21 19:04:42.086620:get arm finished
+2025-02-21 19:04:42.089899:get hand finished
+2025-02-21 19:04:42.220757:ik teleop finished
+2025-02-21 19:04:42.371741:ik finished
+2025-02-21 19:04:42.377248:Main loop started
+2025-02-21 19:04:42.381698:get arm finished
+2025-02-21 19:04:42.381901:get hand finished
+2025-02-21 19:04:42.533197:ik teleop finished
+2025-02-21 19:04:42.722190:ik finished
+2025-02-21 19:04:42.727061:Main loop started
+2025-02-21 19:04:42.731336:get arm finished
+2025-02-21 19:04:42.731579:get hand finished
+2025-02-21 19:04:42.798350:ik teleop finished
+2025-02-21 19:04:43.012332:ik finished
+2025-02-21 19:04:43.020116:Main loop started
+2025-02-21 19:04:43.025269:get arm finished
+2025-02-21 19:04:43.026048:get hand finished
+2025-02-21 19:04:43.104799:ik teleop finished
+2025-02-21 19:04:43.312903:ik finished
+2025-02-21 19:04:43.324512:Main loop started
+2025-02-21 19:04:43.324810:get arm finished
+2025-02-21 19:04:43.324881:get hand finished
+2025-02-21 19:04:43.437783:ik teleop finished
+2025-02-21 19:04:43.610877:ik finished
+2025-02-21 19:04:43.622414:Main loop started
+2025-02-21 19:04:43.627669:get arm finished
+2025-02-21 19:04:43.627876:get hand finished
+2025-02-21 19:04:43.734071:ik teleop finished
+2025-02-21 19:04:43.924294:ik finished
+2025-02-21 19:04:43.931968:Main loop started
+2025-02-21 19:04:43.933430:get arm finished
+2025-02-21 19:04:43.933507:get hand finished
+2025-02-21 19:04:44.054949:ik teleop finished
+2025-02-21 19:04:44.202704:ik finished
+2025-02-21 19:04:44.208778:Main loop started
+2025-02-21 19:04:44.213827:get arm finished
+2025-02-21 19:04:44.213937:get hand finished
+2025-02-21 19:04:44.326504:ik teleop finished
+2025-02-21 19:04:44.474950:ik finished
+2025-02-21 19:04:44.481114:Main loop started
+2025-02-21 19:04:44.481440:get arm finished
+2025-02-21 19:04:44.481535:get hand finished
+2025-02-21 19:04:44.592637:ik teleop finished
+2025-02-21 19:04:44.759603:ik finished
+2025-02-21 19:04:44.765051:Main loop started
+2025-02-21 19:04:44.765389:get arm finished
+2025-02-21 19:04:44.765462:get hand finished
+2025-02-21 19:04:44.879731:ik teleop finished
+2025-02-21 19:04:45.049700:ik finished
+2025-02-21 19:04:45.053678:Main loop started
+2025-02-21 19:04:45.053973:get arm finished
+2025-02-21 19:04:45.054017:get hand finished
+2025-02-21 19:04:45.182294:ik teleop finished
+2025-02-21 19:04:45.321170:ik finished
+2025-02-21 19:04:45.325560:Main loop started
+2025-02-21 19:04:45.326753:get arm finished
+2025-02-21 19:04:45.326831:get hand finished
+2025-02-21 19:04:45.424133:ik teleop finished
+2025-02-21 19:05:33.832782:Main loop started
+2025-02-21 19:05:33.844953:get arm finished
+2025-02-21 19:05:33.845094:get hand finished
+2025-02-21 19:05:34.126235:ik teleop finished
+2025-02-21 19:05:34.379515:ik finished
+2025-02-21 19:05:34.394412:Main loop started
+2025-02-21 19:05:34.400514:get arm finished
+2025-02-21 19:05:34.405979:get hand finished
+2025-02-21 19:05:34.658260:ik teleop finished
+2025-02-21 19:05:34.872451:ik finished
+2025-02-21 19:05:34.877193:Main loop started
+2025-02-21 19:05:34.882085:get arm finished
+2025-02-21 19:05:34.882465:get hand finished
+2025-02-21 19:05:35.129038:ik teleop finished
+2025-02-21 19:05:35.314816:ik finished
+2025-02-21 19:05:35.318861:Main loop started
+2025-02-21 19:05:35.319169:get arm finished
+2025-02-21 19:05:35.319234:get hand finished
+2025-02-21 19:05:35.518424:ik teleop finished
+2025-02-21 19:06:50.173495:Main loop started
+2025-02-21 19:06:50.186721:get arm finished
+2025-02-21 19:06:50.192512:get hand finished
+2025-02-21 19:06:50.652898:ik teleop finished
+2025-02-21 19:06:50.831693:ik finished
+2025-02-21 19:06:50.837457:Main loop started
+2025-02-21 19:06:50.842634:get arm finished
+2025-02-21 19:06:50.844083:get hand finished
+2025-02-21 19:06:51.102936:ik teleop finished
+2025-02-21 19:06:51.296727:ik finished
+2025-02-21 19:06:51.301205:Main loop started
+2025-02-21 19:06:51.305518:get arm finished
+2025-02-21 19:06:51.307495:get hand finished
+2025-02-21 19:06:51.687225:ik teleop finished
+2025-02-21 19:06:51.856996:ik finished
+2025-02-21 19:06:51.861847:Main loop started
+2025-02-21 19:06:51.871069:get arm finished
+2025-02-21 19:06:51.871263:get hand finished
+2025-02-21 19:06:52.072600:ik teleop finished
+2025-02-21 19:06:52.235648:ik finished
+2025-02-21 19:06:52.237390:Main loop started
+2025-02-21 19:06:52.242060:get arm finished
+2025-02-21 19:06:52.242172:get hand finished
+2025-02-21 19:06:52.523398:ik teleop finished
+2025-02-21 19:06:52.682008:ik finished
+2025-02-21 19:06:52.685021:Main loop started
+2025-02-21 19:06:52.689536:get arm finished
+2025-02-21 19:06:52.689658:get hand finished
+2025-02-21 19:06:52.859481:ik teleop finished

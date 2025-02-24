@@ -1,0 +1,9 @@
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=751015, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+
+
+   0:00:01 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Entities discovered: 0
+┏━━━━━━┳━━━━━━━━━━━━━┳━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Host ┃ Application ┃ Pid ┃ Participants ┃ Topics ┃
+┡━━━━━━╇━━━━━━━━━━━━━╇━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━┩
+└──────┴─────────────┴─────┴──────────────┴────────┘
++++ exited with 0 +++
