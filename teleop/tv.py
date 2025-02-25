@@ -28,6 +28,8 @@ from robot_control.robot_hand import H1HandController
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
+FREQ = 30
+DELAY = 1/FREQ
 
 class VuerTeleop:
     def __init__(self, config_file_path):
@@ -89,37 +91,72 @@ class VuerTeleop:
 
 class DataWriter:
     def __init__(self, dirname):
-        self.lock = threading.Lock()
+        # self.lock = threading.Lock()
         self.data = []
-        self.filepath = os.path.join(dirname, "data_log.json")
+        self.filepath = os.path.join(dirname, "ik_data.json")
 
-    def write_data(self, timestamp, image_filename, arm_state, hand_state, imu_state):
-        with self.lock:
-            entry = {
-                "timestamp": timestamp.isoformat(),
-                "arm_state": arm_state.tolist(),
-                "hand_state": hand_state.tolist(),
-                "imu_state_omega": imu_state.omega.tolist(),
-                "imu_state_rpy": imu_state.rpy.tolist(),
-                "image_path": image_filename,
-            }
-            self.data.append(entry)
+    def write_data(self, armtime, iktime, sol_q, tau_ff, head_rmat, left_pose, right_pose):
+        # with self.lock:
+        entry = {
+            "armtime": armtime,
+            "iktime": iktime,
+            "sol_q": sol_q.tolist(),
+            "tau_ff": tau_ff.tolist(),
+            "head_rmat": head_rmat.tolist(),
+            "left_pose": left_pose.tolist(),
+            "right_pose": right_pose.tolist(),
+        }
+        self.data.append(entry)
 
-            with open(self.filepath, "w") as file:
-                json.dump(self.data, file, indent=4)
+        with open(self.filepath, "w") as file:
+            json.dump(self.data, file, indent=4)
 
 
-def rs_receiver(dirname, frame_queue, stop_event):
+# def motor_logger(dirname, stop_event, start_time, h1arm, h1hand):
+#     log_filename = os.path.join(dirname, "motor_data.txt")
+#     motor_count = 0
+#     motor_data_list = []
+
+#     try:
+#         while not stop_event.is_set():
+#             current_time = time.time() - start_time
+#             if current_time >= DELAY * motor_count:
+#                 armstate, armv = h1arm.GetMotorState()
+#                 handstate = h1hand.get_hand_state()
+#                 image_path = os.path.join(dirname, f"images/frame_{motor_count:06d}.jpg")
+#                 motor_data = {
+#                     "time": current_time,
+#                     "arm_state": armstate.tolist(),
+#                     "hand_state": handstate.tolist(),
+#                     "image_path": image_path
+#                 }
+#                 motor_data_list.append(motor_data)
+#                 motor_count += 1
+
+#     except Exception as e:
+#         print(f"[ERROR] motor_logger encountered an error: {e}")
+
+#     finally:
+#         with open(log_filename, "w") as f:
+#             json.dump(motor_data_list, f, indent=4)
+                
+
+
+
+def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
     """Receive and process frames from RS camera, then store filenames in the queue."""
     rs_filename = os.path.join(dirname, "rs.mp4")
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     rs_writer = None
+    motor_data_list = []
+    log_filename = os.path.join(dirname, "motor_data.txt")
 
     context = zmq.Context()
     socket = context.socket(zmq.PULL)
     socket.connect("tcp://192.168.123.162:5556")
 
     frame_count = 0
+    next_capture_time = start_time
     print(f"[INFO] rs_receiver started. Saving video to {rs_filename}")
 
     try:
@@ -145,13 +182,26 @@ def rs_receiver(dirname, frame_queue, stop_event):
                     rs_filename, fourcc, 30, (frame_shape[1], frame_shape[0])
                 )
 
-            frame_filename = os.path.join(dirname, f"frame_{frame_count:06d}.jpg")
-            cv2.imwrite(frame_filename, frame)
+            current_time = time.time()
+            if current_time >= next_capture_time:
+                frame_filename = os.path.join(dirname, f"images/frame_{frame_count:06d}.jpg")
+                cv2.imwrite(frame_filename, frame)
+                # frame_queue.put(frame_filename)
+
+                armstate, armv = h1arm.GetMotorState()
+                handstate = h1hand.get_hand_state()
+                motor_data = {
+                    "time": current_time,
+                    "arm_state": armstate.tolist(),
+                    "hand_state": handstate.tolist(),
+                    "image_path": frame_filename
+                }
+                motor_data_list.append(motor_data)
+                frame_count += 1
+                next_capture_time = start_time + frame_count * DELAY
 
             rs_writer.write(frame)
-            frame_queue.put(frame_filename)
 
-            frame_count += 1
 
     except Exception as e:
         print(f"[ERROR] rs_receiver encountered an error: {e}")
@@ -160,6 +210,8 @@ def rs_receiver(dirname, frame_queue, stop_event):
         if rs_writer:
             rs_writer.release()
             print(f"[INFO] Video saved successfully as {rs_filename}")
+        with open(log_filename, "w") as f:
+            json.dump(motor_data_list, f, indent=4)
         context.term()
         print("[INFO] rs_receiver process has exited.")
 
@@ -179,6 +231,8 @@ if __name__ == "__main__":
     h1hand = H1HandController()
     h1arm = H1ArmController()
     arm_ik = Arm_IK()
+    global rs_thread
+    global motor_thread
 
     try:
         user_input = input(
@@ -187,42 +241,55 @@ if __name__ == "__main__":
         if user_input.lower() == "s":
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
             os.mkdir(dirname)
+
+            images_dir = os.path.join(dirname, "images")
+            os.mkdir(images_dir)
             data_writer = DataWriter(dirname)
 
+            start_time = time.time()
+
             rs_thread = threading.Thread(
-                target=rs_receiver, args=(dirname, frame_queue, stop_event)
+                target=rs_receiver, args=(dirname, stop_event, start_time, h1arm, h1hand)
             )
             rs_thread.start()
 
+            # motor_thread = threading.Thread(
+            #     target=motor_logger, args=(dirname, stop_event, start_time, h1arm, h1hand)
+            # )
+            # motor_thread.start()
+
             while True:
-                profile("Main loop started")
+                # profile("Main loop started")
                 # time.sleep(0.05)
 
-                frame_filename = (
-                    frame_queue.get()
-                    if not frame_queue.empty()
-                    else "frame_not_available.jpg"
-                )
+                # frame_filename = (
+                #     frame_queue.get()
+                #     if not frame_queue.empty()
+                #     else "frame_not_available.jpg"
+                # )
 
                 imustate = h1arm.GetIMUState()
                 profile("get imu finished")
                 armstate, armv = h1arm.GetMotorState()
-                profile("get arm finished")
+                # profile("get arm finished")
                 handstate = h1hand.get_hand_state()
-                profile("get hand finished")
+                # profile("get hand finished")
+                motor_time = time.time()
+
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     teleoperator.step()
                 )
-                profile("ik teleop finished")
+
+                # profile("ik teleop finished")
                 sol_q, tau_ff, flag = arm_ik.ik_fun(
                     left_pose, right_pose, armstate, armv
                 )
-                t = datetime.datetime.now()
+                ik_time = time.time()
+                # t = datetime.datetime.now()
 
-                profile("ik finished")
+                # profile("ik finished")
 
-                data_writer.write_data(t, frame_filename, armstate, handstate, imustate)
-                print("write data", datetime.datetime.now())
+                data_writer.write_data(motor_time-start_time, ik_time-start_time, sol_q, tau_ff, head_rmat, left_pose, right_pose)
 
                 q_poseList = np.zeros(35)
                 q_tau_ff = np.zeros(35)
@@ -249,4 +316,5 @@ if __name__ == "__main__":
     finally:
         stop_event.set()
         rs_thread.join()
+        # motor_thread.join()
         exit(0)
