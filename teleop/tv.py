@@ -13,9 +13,8 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from dex_retargeting.retargeting_config import RetargetingConfig
-
 from constants_vuer import tip_indices
+from dex_retargeting.retargeting_config import RetargetingConfig
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
@@ -25,6 +24,7 @@ sys.path.append(parent_dir)
 import struct
 
 from robot_control.robot_hand import H1HandController
+
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
@@ -93,12 +93,14 @@ class DataWriter:
         self.data = []
         self.filepath = os.path.join(dirname, "data_log.json")
 
-    def write_data(self, timestamp, image_filename, arm_state, hand_state):
+    def write_data(self, timestamp, image_filename, arm_state, hand_state, imu_state):
         with self.lock:
             entry = {
                 "timestamp": timestamp.isoformat(),
                 "arm_state": arm_state.tolist(),
                 "hand_state": hand_state.tolist(),
+                "imu_state_omega": imu_state.omega.tolist(),
+                "imu_state_rpy": imu_state.rpy.tolist(),
                 "image_path": image_filename,
             }
             self.data.append(entry)
@@ -202,6 +204,8 @@ if __name__ == "__main__":
                     else "frame_not_available.jpg"
                 )
 
+                imustate = h1arm.GetIMUState()
+                profile("get imu finished")
                 armstate, armv = h1arm.GetMotorState()
                 profile("get arm finished")
                 handstate = h1hand.get_hand_state()
@@ -217,7 +221,7 @@ if __name__ == "__main__":
 
                 profile("ik finished")
 
-                data_writer.write_data(t, frame_filename, armstate, handstate)
+                data_writer.write_data(t, frame_filename, armstate, handstate, imustate)
                 print("write data", datetime.datetime.now())
 
                 q_poseList = np.zeros(35)

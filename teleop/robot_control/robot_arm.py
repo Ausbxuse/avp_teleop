@@ -235,6 +235,9 @@ class H1ArmController:
         else:
             return None,None
 
+    def GetIMUState(self):
+        return self.base_state_buffer.GetData()
+
     def SubscribeState(self):
         while True:
             if self.lowstate_subscriber.msg:
