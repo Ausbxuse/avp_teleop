@@ -6,10 +6,13 @@
 #include <cstring>
 #include <cmath>   // for sinf, cosf
 #include <csignal> // for signal handling
+#include <iomanip>
+#include <sstream>    // for stringstream
 
 #include "livox_lidar_api.h"
 #include "livox_lidar_def.h"
 
+void SavePointCloudToPCD(const std::string& filename);
 // Define a simple point structure for our custom PCD writer.
 struct PointXYZ {
     float x;
@@ -35,6 +38,25 @@ void SignalHandler(int signal) {
     }
 }
 
+std::string GetTimestampFilename() {
+    // Get current time as system_clock time_point.
+    auto now = std::chrono::system_clock::now();
+    // Convert to time_t for formatting.
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    // Get milliseconds (remainder of duration).
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now.time_since_epoch()) % 1000;
+
+    // Format the time to YYYYMMDD_HHMMSS
+    char timeStr[64];
+    std::strftime(timeStr, sizeof(timeStr), "%m%d_%H%M%S", std::localtime(&t));
+
+    // Build filename with milliseconds appended.
+    std::stringstream ss;
+    ss << timeStr << "_" << std::setfill('0') <<std::setw(3) << ms.count() << ".pcd";
+    return ss.str();
+}
+
 // Callback function matching the SDK's expected signature.
 // According to the header, the callback is defined as:
 //   typedef void (*LivoxLidarPointCloudCallBack)(const uint32_t handle, const uint8_t dev_type,
@@ -57,7 +79,7 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
     
     // The number of points is provided by the 'dot_num' field.
     uint16_t num_points = packet->dot_num;
-    std::cout << "Number of points in packet: " << num_points << std::endl;
+    /*std::cout << "Number of points in packet: " << num_points << std::endl;*/
     
     // Process the point cloud data based on the point data type.
     if (packet->data_type == kLivoxLidarCartesianCoordinateHighData) {
@@ -104,6 +126,8 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
     else {
         std::cerr << "Unknown point data type: " << static_cast<int>(packet->data_type) << std::endl;
     }
+    std::string filename = GetTimestampFilename();
+    SavePointCloudToPCD(filename);
 }
 
 // Custom function to save the collected point cloud data as an ASCII PCD file.
@@ -188,12 +212,11 @@ int main(int argc, const char* argv[]) {
     std::cout << "Collecting point cloud data. Press Ctrl+C to stop recording." << std::endl;
 
     // Run until the user sends a SIGINT (Ctrl+C).
-    while (!g_stop) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    /*while (!g_stop) {*/
+    /*    std::this_thread::sleep_for(std::chrono::milliseconds(100));*/
+    /*}*/
 
     // "Finally" block: Save data and clean up.
-    SavePointCloudToPCD("livox_pointcloud.pcd");
     LivoxLidarSdkUninit();
     std::cout << "Livox LiDAR SDK Uninitialized. Recording complete." << std::endl;
 
