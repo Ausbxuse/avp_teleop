@@ -1,7 +1,10 @@
+import atexit
 import datetime
 import json
 import os
 import pickle
+import signal
+import subprocess
 import sys
 import threading
 import time
@@ -13,8 +16,9 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from constants_vuer import tip_indices
 from dex_retargeting.retargeting_config import RetargetingConfig
+
+from constants_vuer import tip_indices
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
@@ -24,12 +28,12 @@ sys.path.append(parent_dir)
 import struct
 
 from robot_control.robot_hand import H1HandController
-
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
 FREQ = 30
-DELAY = 1/FREQ
+DELAY = 1 / FREQ
+
 
 class VuerTeleop:
     def __init__(self, config_file_path):
@@ -95,7 +99,9 @@ class DataWriter:
         self.data = []
         self.filepath = os.path.join(dirname, "ik_data.json")
 
-    def write_data(self, armtime, iktime, sol_q, tau_ff, head_rmat, left_pose, right_pose):
+    def write_data(
+        self, armtime, iktime, sol_q, tau_ff, head_rmat, left_pose, right_pose
+    ):
         # with self.lock:
         entry = {
             "armtime": armtime,
@@ -139,8 +145,16 @@ class DataWriter:
 #     finally:
 #         with open(log_filename, "w") as f:
 #             json.dump(motor_data_list, f, indent=4)
-                
 
+
+def cleanup(lidar_proc):
+    if lidar_proc.poll() is None:  # if the process is still running
+        print("Sending SIGINT to the lidar_process...")
+        lidar_proc.send_signal(signal.SIGINT)
+        try:
+            lidar_proc.wait(timeout=5)  # wait for it to terminate gracefully
+        except lidar_proc.TimeoutExpired:
+            lidar_proc.kill()  # force kill if needed
 
 
 def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
@@ -184,7 +198,9 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
 
             current_time = time.time()
             if current_time >= next_capture_time:
-                frame_filename = os.path.join(dirname, f"images/frame_{frame_count:06d}.jpg")
+                frame_filename = os.path.join(
+                    dirname, f"images/frame_{frame_count:06d}.jpg"
+                )
                 cv2.imwrite(frame_filename, frame)
                 # frame_queue.put(frame_filename)
 
@@ -194,14 +210,13 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                     "time": current_time,
                     "arm_state": armstate.tolist(),
                     "hand_state": handstate.tolist(),
-                    "image_path": frame_filename
+                    "image_path": frame_filename,
                 }
                 motor_data_list.append(motor_data)
                 frame_count += 1
                 next_capture_time = start_time + frame_count * DELAY
 
             rs_writer.write(frame)
-
 
     except Exception as e:
         print(f"[ERROR] rs_receiver encountered an error: {e}")
@@ -223,6 +238,7 @@ def profile(name):
 
 
 if __name__ == "__main__":
+
     manager = Manager()
     frame_queue = manager.Queue()
     stop_event = threading.Event()
@@ -240,6 +256,7 @@ if __name__ == "__main__":
         )
         if user_input.lower() == "s":
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
+            proc = subprocess.Popen(["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar"])
             os.mkdir(dirname)
 
             images_dir = os.path.join(dirname, "images")
@@ -249,7 +266,8 @@ if __name__ == "__main__":
             start_time = time.time()
 
             rs_thread = threading.Thread(
-                target=rs_receiver, args=(dirname, stop_event, start_time, h1arm, h1hand)
+                target=rs_receiver,
+                args=(dirname, stop_event, start_time, h1arm, h1hand),
             )
             rs_thread.start()
 
@@ -289,7 +307,15 @@ if __name__ == "__main__":
 
                 # profile("ik finished")
 
-                data_writer.write_data(motor_time-start_time, ik_time-start_time, sol_q, tau_ff, head_rmat, left_pose, right_pose)
+                data_writer.write_data(
+                    motor_time - start_time,
+                    ik_time - start_time,
+                    sol_q,
+                    tau_ff,
+                    head_rmat,
+                    left_pose,
+                    right_pose,
+                )
 
                 q_poseList = np.zeros(35)
                 q_tau_ff = np.zeros(35)
