@@ -43,12 +43,16 @@ std::string GetTimestampFilepath(std::string output_dir) {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                   now.time_since_epoch()) % 1000;
 
-    char timeStr[64];
-    std::strftime(timeStr, sizeof(timeStr), "%m%d_%H%M%S", std::localtime(&t));
+
+    double time = std::chrono::duration<double>(
+        std::chrono::system_clock::now().time_since_epoch()
+    ).count();
+    std::string timeStr = std::to_string(time);
+ 
 
     // Build filepath with milliseconds appended.
     std::stringstream ss;
-    ss << timeStr << "_" << std::setfill('0') << std::setw(3) << ms.count() << ".pcd";
+    ss << timeStr << ".pcd";
     return output_dir + ss.str();
 }
 

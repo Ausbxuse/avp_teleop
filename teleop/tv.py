@@ -206,17 +206,17 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
 
                 armstate, armv = h1arm.GetMotorState()
                 handstate = h1hand.get_hand_state()
-                # imustate = h1arm.getIMUState()
+                imustate = h1arm.GetIMUState()
                 motor_data = {
                     "index": frame_count,
                     "time": current_time,
                     "arm_state": armstate.tolist(),
                     "hand_state": handstate.tolist(),
                     "image_path": frame_filename,
-                    # "imu_omega": imustate.omega.tolist(),
-                    # "imu_pyl": imustate.pyl.tolist(),
+                    "imu_omega": imustate.omega,
+                    "imu_rpy": imustate.rpy,
                     "ik_data": None,
-                    "lidar": None
+                    "lidar": None   
                 }
                 motor_data_list.append(motor_data)
                 frame_count += 1
@@ -244,7 +244,17 @@ def ik_is_ready(ik_data_list, time_key):
     return True, closest_ik_entry
 
 
-def merge_data_to_pkl(motor_data_path, ik_data_path, output_path):
+def merge_data_to_pkl(motor_data_path, ik_data_path, lidar_data_path, output_path):
+    lidar_time_list = []
+
+
+    lidar_files = [f for f in os.listdir(lidar_data_path) if os.path.isfile(os.path.join(lidar_data_path, f))]
+
+    for lidar_file_name in lidar_files:
+        time_parts = lidar_file_name.split(".")[0:2]
+        lidar_time_list.append(float(time_parts[0] + "." + time_parts[1]))
+    
+
     print("loading")
     with open(motor_data_path, "r") as f:
         robot_data_json_list = json.load(f)
@@ -265,6 +275,12 @@ def merge_data_to_pkl(motor_data_path, ik_data_path, output_path):
             last_motor_data = robot_data_dict[time_key]["ik_data"]
         else:
             robot_data_dict[time_key]["ik_data"] = last_motor_data 
+
+        # merge lidar path
+        closest_lidar_time = min(lidar_time_list, key=lambda x: abs(x - time_key))
+
+        robot_data_dict[time_key]["lidar"] = os.path.join("lidar", f"{closest_lidar_time}.pcd")
+
 
     # with open(output_path, "wb") as f:
     #     print("4")
@@ -307,6 +323,7 @@ if __name__ == "__main__":
             loop_idx = 0
 
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
+            start_time = time.time()
             proc = subprocess.Popen(["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar"])
             os.mkdir(dirname)
 
@@ -314,7 +331,7 @@ if __name__ == "__main__":
             os.mkdir(images_dir)
             data_writer = DataWriter(dirname)
 
-            start_time = time.time()
+            
 
             rs_thread = threading.Thread(
                 target=rs_receiver,
@@ -392,5 +409,6 @@ if __name__ == "__main__":
     ik_filepath = os.path.join(dirname, "ik_data.json")
     motor_filepath = os.path.join(dirname, "motor_data.txt")
     output_filepath = os.path.join(dirname, "merged_data.json")
-    merge_data_to_pkl(motor_filepath, ik_filepath, output_filepath)
+    lidar_filepath = os.path.join(dirname, "lidar")
+    merge_data_to_pkl(motor_filepath, ik_filepath, lidar_filepath, output_filepath)
 
