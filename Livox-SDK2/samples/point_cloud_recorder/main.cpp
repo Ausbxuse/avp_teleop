@@ -9,18 +9,21 @@
 #include <iomanip>
 #include <sstream>
 #include <mutex>
+#include <filesystem>
 
 #include "livox_lidar_api.h"
 #include "livox_lidar_def.h"
 
-struct PointXYZ {
+namespace fs = std::filesystem;
+
+struct Point {
     float x;
     float y;
     float z;
 };
 
 // Global container for point cloud data.
-std::vector<PointXYZ> cloud;
+std::vector<Point> cloud;
 std::mutex cloud_mutex;
 
 volatile uint32_t g_lidar_handle = 0;
@@ -34,29 +37,36 @@ void SignalHandler(int signal) {
     }
 }
 
-std::string GetTimestampFilename() {
-    // Get current time as system_clock time_point.
+std::string GetTimestampFilepath(std::string output_dir) {
     auto now = std::chrono::system_clock::now();
-    // Convert to time_t for formatting.
     std::time_t t = std::chrono::system_clock::to_time_t(now);
-    // Get milliseconds (remainder of duration).
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                   now.time_since_epoch()) % 1000;
 
     char timeStr[64];
     std::strftime(timeStr, sizeof(timeStr), "%m%d_%H%M%S", std::localtime(&t));
 
-    // Build filename with milliseconds appended.
+    // Build filepath with milliseconds appended.
     std::stringstream ss;
     ss << timeStr << "_" << std::setfill('0') << std::setw(3) << ms.count() << ".pcd";
-    return ss.str();
+    return output_dir + ss.str();
 }
 
 // New helper: Save a given vector of points to an ASCII PCD file.
-void SavePointsToPCD(const std::vector<PointXYZ>& points, const std::string& filename) {
-    std::ofstream ofs(filename);
+void SavePointsToPCD(const std::vector<Point>& points, const std::string& filepath) {
+
+    fs::path dir = fs::path(filepath).parent_path();
+
+    if (!fs::exists(dir)) {
+        if (!fs::create_directories(dir)) {
+            std::cerr << "Failed to create directory: " << dir << std::endl;
+            return;
+        }
+    }
+
+    std::ofstream ofs(filepath);
     if (!ofs.is_open()) {
-        std::cerr << "Failed to open file: " << filename << std::endl;
+        std::cerr << "Failed to open file: " << filepath << std::endl;
         return;
     }
     ofs << "# .PCD v0.7 - Point Cloud Data file format\n";
@@ -75,7 +85,7 @@ void SavePointsToPCD(const std::vector<PointXYZ>& points, const std::string& fil
         ofs << point.x << " " << point.y << " " << point.z << "\n";
     }
     ofs.close();
-    std::cout << "Saved " << points.size() << " points to " << filename << std::endl;
+    std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;
 }
 
 void PointCloudCallback(const uint32_t handle, const uint8_t dev_type, 
@@ -85,15 +95,14 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
         std::cout << "Discovered LiDAR handle: " << g_lidar_handle << std::endl;
     }
 
-    std::cout << "Received packet from LiDAR handle: " << handle
-              << ", dev_type: " << static_cast<int>(dev_type) << std::endl;
+    /*std::cout << "Received packet from LiDAR handle: " << handle*/
+    /*          << ", dev_type: " << static_cast<int>(dev_type) << std::endl;*/
     
     if (!packet || !packet->data) {
         std::cerr << "Packet data is null!" << std::endl;
         return;
     }
     
-    // The number of points is provided by the 'dot_num' field.
     uint16_t num_points = packet->dot_num;
     
     // Process the point cloud data based on the point data type.
@@ -104,7 +113,7 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
         LivoxLidarCartesianHighRawPoint* points = 
             reinterpret_cast<LivoxLidarCartesianHighRawPoint*>(packet->data);
         for (uint16_t i = 0; i < num_points; ++i) {
-            PointXYZ point;
+            Point point;
             point.x = static_cast<float>(points[i].x);
             point.y = static_cast<float>(points[i].y);
             point.z = static_cast<float>(points[i].z);
@@ -116,7 +125,7 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
         LivoxLidarCartesianLowRawPoint* points = 
             reinterpret_cast<LivoxLidarCartesianLowRawPoint*>(packet->data);
         for (uint16_t i = 0; i < num_points; ++i) {
-            PointXYZ point;
+            Point point;
             point.x = static_cast<float>(points[i].x);
             point.y = static_cast<float>(points[i].y);
             point.z = static_cast<float>(points[i].z);
@@ -128,7 +137,7 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
         LivoxLidarSpherPoint* points = 
             reinterpret_cast<LivoxLidarSpherPoint*>(packet->data);
         for (uint16_t i = 0; i < num_points; ++i) {
-            PointXYZ point;
+            Point point;
             float depth = static_cast<float>(points[i].depth);
             // Assuming theta and phi are provided in degrees.
             float theta = static_cast<float>(points[i].theta) * (3.14159265358979323846f / 180.0f);
@@ -142,19 +151,19 @@ void PointCloudCallback(const uint32_t handle, const uint8_t dev_type,
     else {
         std::cerr << "Unknown point data type: " << static_cast<int>(packet->data_type) << std::endl;
     }
-    // Note: The saving step is now handled in a separate thread.
 }
 
 int main(int argc, const char* argv[]) {
     // Install the SIGINT handler.
     std::signal(SIGINT, SignalHandler);
 
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <config_path>" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <config_path> " << "<output_path>"<< std::endl;
         return -1;
     }
 
     std::string config_path = argv[1];
+    std::string output_dir = std::string(argv[2]) + "/";
 
     if (!LivoxLidarSdkInit(config_path.c_str())) {
         std::cerr << "Failed to initialize Livox LiDAR SDK!" << std::endl;
@@ -186,25 +195,30 @@ int main(int argc, const char* argv[]) {
     }
 
     // periodically save .pcd (per every 33ms)
-    std::thread saving_thread([](){
-        const std::chrono::milliseconds interval(33);
-        while (!g_stop) {
-            std::this_thread::sleep_for(interval);
-            std::vector<PointXYZ> points_to_save;
-            {
-                std::lock_guard<std::mutex> lock(cloud_mutex);
-                // Swap out the current cloud and clear it.
-                if (!cloud.empty()) {
-                    points_to_save.swap(cloud);
-                }
-            }
-            if (!points_to_save.empty()) {
-                std::string filename = GetTimestampFilename();
-                SavePointsToPCD(points_to_save, filename);
-            }
+  std::thread saving_thread([output_dir]() {
+    using clock = std::chrono::steady_clock;
+    const std::chrono::milliseconds period(33); // fixed period of 33ms
+    auto next_tick = clock::now() + period;
+
+    while (!g_stop) {
+      std::string filepath = GetTimestampFilepath(output_dir);
+
+      std::vector<Point> points_to_save;
+      {
+        std::lock_guard<std::mutex> lock(cloud_mutex);
+        if (!cloud.empty()) {
+          points_to_save.swap(cloud);
         }
-    // NOTE: for the final period, don't save, since data might not be worth exact 33ms
-    });
+      }
+      if (!points_to_save.empty()) {
+        SavePointsToPCD(points_to_save, filepath);
+      }
+
+      // Sleep until the next scheduled tick.
+      std::this_thread::sleep_until(next_tick);
+      next_tick += period;
+    }
+  });
 
     std::cout << "Collecting point cloud data. Press Ctrl+C to stop recording." << std::endl;
 
@@ -213,7 +227,6 @@ int main(int argc, const char* argv[]) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    // Clean up: join the saving thread and uninitialize the SDK.
     if (saving_thread.joinable()) {
         saving_thread.join();
     }
