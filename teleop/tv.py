@@ -240,8 +240,15 @@ def ik_is_ready(ik_data_list, time_key):
     closest_ik_entry = min(ik_data_list, key=lambda x: abs(x["armtime"] - time_key))
     if abs(closest_ik_entry["armtime"] - time_key) > DELAY/2:
         return False, None
-    print("closest_ik_entry found", closest_ik_entry["armtime"], time_key)
+    # print("closest_ik_entry found", closest_ik_entry["armtime"], time_key)
     return True, closest_ik_entry
+
+def lidar_is_ready(lidar_time_list, time_key):
+    closest_lidar_entry = min(lidar_time_list, key=lambda x: abs(x - time_key))
+    if abs(closest_lidar_entry - time_key) > DELAY/2:
+        return False, None
+    # print("closest_ik_entry found", closest_ik_entry["armtime"], time_key)
+    return True, closest_lidar_entry
 
 
 def merge_data_to_pkl(motor_data_path, ik_data_path, lidar_data_path, output_path):
@@ -277,9 +284,9 @@ def merge_data_to_pkl(motor_data_path, ik_data_path, lidar_data_path, output_pat
             robot_data_dict[time_key]["ik_data"] = last_motor_data 
 
         # merge lidar path
-        closest_lidar_time = min(lidar_time_list, key=lambda x: abs(x - time_key))
-
-        robot_data_dict[time_key]["lidar"] = os.path.join("lidar", f"{closest_lidar_time}.pcd")
+        lidar_ready_flag, closest_lidar_time = lidar_is_ready(lidar_time_list, time_key)
+        if lidar_ready_flag:
+            robot_data_dict[time_key]["lidar"] = os.path.join("lidar", f"{closest_lidar_time}.pcd")
 
 
     # with open(output_path, "wb") as f:
