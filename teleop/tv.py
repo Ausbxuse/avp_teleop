@@ -17,17 +17,16 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from dex_retargeting.retargeting_config import RetargetingConfig
-
 from constants_vuer import tip_indices
+from dex_retargeting.retargeting_config import RetargetingConfig
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-import struct
 import pickle
+import struct
 
 from robot_control.robot_hand import H1HandController
 from teleop.robot_control.robot_arm import H1ArmController
@@ -467,7 +466,7 @@ if __name__ == "__main__":
                 sol_q, tau_ff, flag = arm_ik.ik_fun(
                     left_pose, right_pose, armstate, armv
                 )
-                # print("#hehehehehh 52333")
+                print("################ik:", sol_q)
                 ik_time = time.time()
                 # t = datetime.datetime.now()
 

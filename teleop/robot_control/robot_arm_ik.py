@@ -209,11 +209,11 @@ class Arm_IK:
 
         opts = {
             'ipopt':{
-                'print_level':3,
+                'print_level':0,
                 'max_iter':50,
                 'tol':1e-10
             },
-            'print_time':True
+            'print_time':False
         }
         self.opti.solver("ipopt", opts)
 
