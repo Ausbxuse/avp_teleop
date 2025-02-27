@@ -12,7 +12,6 @@ import zlib
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
 from pathlib import Path
 
-
 import cv2
 import numpy as np
 import yaml
@@ -35,8 +34,10 @@ from teleop.robot_control.robot_arm_ik import Arm_IK
 FREQ = 30
 DELAY = 1 / FREQ
 
-from multiprocessing import shared_memory, Semaphore
+from multiprocessing import Semaphore, shared_memory
+
 import numpy as np
+
 
 class SharedMemoryImage:
     def __init__(self, img_shape):
@@ -64,7 +65,6 @@ class SharedMemoryImage:
     def write_image(self, image):
         self.semaphore.acquire()
         try:
-            print("SM: gained semaphore in write image")
             np.copyto(self.img_array, image)
         finally:
             self.semaphore.release()
@@ -72,7 +72,6 @@ class SharedMemoryImage:
     def read_image(self):
         self.semaphore.acquire()
         try:
-            print("SM: gained semaphore in read image")
             image_copy = self.img_array.copy()
             return image_copy
         finally:
@@ -249,7 +248,7 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
 
     try:
         while not stop_event.is_set():
-            print("#######################1#####################")
+            # print("#######################1#####################")
             compressed_data = b""
             while True:
                 chunk = socket.recv()
@@ -260,10 +259,8 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
             data = zlib.decompress(compressed_data)
             frame_data = pickle.loads(data)
             frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
-            print("#######################2#####################")
+            # print("#######################2#####################")
             resized_frame = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_LINEAR)
-            print(resized_frame.shape)
-            print(resized_frame.dtype)
             sm.write_image(resized_frame)
 
 
@@ -271,13 +268,13 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
             if frame is None:
                 print("[ERROR] Failed to decode frame!")
                 continue  # Skip this frame if decoding failed
-            print("#######################3#####################")
+            # print("#######################3#####################")
             if rs_writer is None:
                 frame_shape = frame.shape
                 rs_writer = cv2.VideoWriter(
                     rs_filename, fourcc, 30, (frame_shape[1], frame_shape[0])
                 )
-            print("#######################4#####################")
+            # print("#######################4#####################")
             current_time = time.time()
             if current_time >= next_capture_time:
                 frame_filename = os.path.join(
@@ -294,7 +291,7 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                     "time": current_time,
                     "arm_state": armstate.tolist(),
                     "hand_state": handstate.tolist(),
-                    "image_path": frame_filename,
+                    "image_path": f"images/frame_{frame_count:06d}.jpg",
                     "imu_omega": imustate.omega,
                     "imu_rpy": imustate.rpy,
                     "ik_data": None,
@@ -303,10 +300,12 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                 motor_data_list.append(motor_data)
                 frame_count += 1
                 next_capture_time = start_time + frame_count * DELAY
-            print("#######################5#####################")
+            # print("#######################5#####################")
             rs_writer.write(frame)
             time.sleep(0.05)
 
+    except KeyboardInterrupt as e:
+        print(f"[INTR] keyboard interrupted: {e}")
     except Exception as e:
         print(f"[ERROR] rs_receiver encountered an error: {e}")
 
@@ -418,7 +417,7 @@ if __name__ == "__main__":
 
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
             start_time = time.time()
-            #proc = subprocess.Popen(["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar"])
+            proc = subprocess.Popen(["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar"])
             os.mkdir(dirname)
 
             images_dir = os.path.join(dirname, "images")
@@ -466,7 +465,7 @@ if __name__ == "__main__":
                 sol_q, tau_ff, flag = arm_ik.ik_fun(
                     left_pose, right_pose, armstate, armv
                 )
-                print("################ik:", sol_q)
+                # print("################ik:", sol_q)
                 ik_time = time.time()
                 # t = datetime.datetime.now()
 
