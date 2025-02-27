@@ -94,9 +94,9 @@ class Arm_IK:
 
         # Initialize the Meshcat visualizer  for visualization
         self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
-        self.vis.initViewer(open=False) # True---False
+        self.vis.initViewer(open=True) # True---False
         self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(False, frame_ids=[113, 114], axis_length = 0.15, axis_width = 5) # True ---False
+        self.vis.displayFrames(True, frame_ids=[113, 114], axis_length = 0.15, axis_width = 5) # True ---False
         self.vis.display(pin.neutral(self.reduced_robot.model))
 
         # for i in range(self.reduced_robot.model.nframes):
