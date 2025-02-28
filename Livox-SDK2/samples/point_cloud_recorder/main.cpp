@@ -200,7 +200,7 @@ int main(int argc, const char* argv[]) {
     // periodically save .pcd (per every 33ms)
   std::thread saving_thread([output_dir]() {
     using clock = std::chrono::steady_clock;
-    const std::chrono::milliseconds period(33); // fixed period of 33ms
+    const std::chrono::milliseconds period(1/30); // fixed period of 33ms
     while (true) {
       auto now = std::chrono::system_clock::now();
       auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
