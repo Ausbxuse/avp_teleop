@@ -558,14 +558,14 @@ if __name__ == "__main__":
         print("Recording ended!")
 
         stop_event.set()
-        rs_thread.join()
-        import pdb
+        # rs_thread.join()
+        # import pdb
 
-        pdb.set_trace()
+        # pdb.set_trace()
         if rs_thread.is_alive():
+            rs_thread.join(2)
             rs_thread.terminate()
-            rs_thread.join()
-        cleanup()
+        cleanup(proc)
 
     ik_filepath = os.path.join(dirname, "ik_data.json")
     motor_filepath = os.path.join(dirname, "motor_data.txt")
