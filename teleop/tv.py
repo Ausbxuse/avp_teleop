@@ -245,7 +245,7 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
     frame_count = 0
     next_capture_time = start_time
     print(f"[INFO] rs_receiver started. Saving video to {rs_filename}")
-
+    socket.setsockopt(zmq.RCVTIMEO, 200)
     try:
         while not stop_event.is_set():
             # print("#######################1#####################")
@@ -498,7 +498,10 @@ if __name__ == "__main__":
         print("Recording ended!")
 
         stop_event.set()
-        rs_thread.join(timeout=1)
+        rs_thread.join()  # or rs_thread.join(5)
+        if rs_thread.is_alive():
+            rs_thread.terminate()
+            rs_thread.join()
         
 
     ik_filepath = os.path.join(dirname, "ik_data.json")

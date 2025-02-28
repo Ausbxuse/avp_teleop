@@ -22,7 +22,6 @@ struct Point {
     float z;
 };
 
-// Global container for point cloud data.
 std::vector<Point> cloud;
 std::mutex cloud_mutex;
 
@@ -89,7 +88,7 @@ void SavePointsToPCD(const std::vector<Point>& points, const std::string& filepa
         ofs << point.x << " " << point.y << " " << point.z << "\n";
     }
     ofs.close();
-    /*std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;*/
+    std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;
 }
 
 void PointCloudCallback(const uint32_t handle, const uint8_t dev_type, 
@@ -202,8 +201,19 @@ int main(int argc, const char* argv[]) {
   std::thread saving_thread([output_dir]() {
     using clock = std::chrono::steady_clock;
     const std::chrono::milliseconds period(33); // fixed period of 33ms
+    while (true) {
+      auto now = std::chrono::system_clock::now();
+      auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+
+        if (ms.count() % period.count() == 0) {
+            std::cout << "starting at " << ms.count() << std::endl;
+            break;
+        }
+    }
     auto next_tick = clock::now() + period;
 
+    // TODO: remove first data
     while (!g_stop) {
       std::string filepath = GetTimestampFilepath(output_dir);
 
@@ -218,7 +228,6 @@ int main(int argc, const char* argv[]) {
         SavePointsToPCD(points_to_save, filepath);
       }
 
-      // Sleep until the next scheduled tick.
       std::this_thread::sleep_until(next_tick);
       next_tick += period;
     }
