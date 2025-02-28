@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 import yaml
 import zmq
+import math
 from constants_vuer import tip_indices
 from dex_retargeting.retargeting_config import RetargetingConfig
 from Preprocessor import VuerPreprocessor
@@ -247,6 +248,8 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
     motor_data_list = []
     log_filename = os.path.join(dirname, "motor_data.txt")
 
+    is_first = True
+
     context = zmq.Context()
     socket = context.socket(zmq.PULL)
     socket.connect("tcp://192.168.123.162:5556")
@@ -284,8 +287,31 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                     rs_filename, fourcc, 30, (frame_shape[1], frame_shape[0])
                 )
             # print("#######################4#####################")
+            current_time = time.time() 
+            if is_first is True:
+                print(current_time)
+                integer_part = int(current_time)
+                decimal_part = current_time - integer_part
+                ms_part = int(decimal_part * 1000) % 1000  
+
+                next_ms_part = ((ms_part // 33) + 1) * 33 % 1000
+
+                next_capture_time = integer_part + next_ms_part / 1000 
+                print(next_capture_time) 
+                print(time.time())
+                time.sleep(next_capture_time - current_time)
+                current_time = time.time()
+                print(current_time)
+                is_first = False
+            
+            current_time = time.time()
+            if next_capture_time >= current_time:
+                time.sleep(next_capture_time - current_time)
+
             current_time = time.time()
             if current_time >= next_capture_time:
+                print("current write time", time.time())
+                print("ideal capture time", next_capture_time)
                 frame_filename = os.path.join(
                     dirname, f"images/frame_{frame_count:06d}.jpg"
                 )
@@ -309,10 +335,9 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                 }
                 motor_data_list.append(motor_data)
                 frame_count += 1
-                next_capture_time = start_time + frame_count * DELAY
+                next_capture_time += DELAY
             # print("#######################5#####################")
             rs_writer.write(frame)
-            time.sleep(0.05)
 
     except KeyboardInterrupt as e:
         print(f"[INTR] keyboard interrupted: {e}")
@@ -451,6 +476,8 @@ if __name__ == "__main__":
                 args=(dirname, stop_event, start_time, h1arm, h1hand),
             )
             rs_thread.start()
+            
+            
             # import pdb; spdb.set_trace()
             # motor_thread = threading.Thread(
             #     target=mot    or_logger, args=(dirname, stop_event, start_time, h1arm, h1hand)
