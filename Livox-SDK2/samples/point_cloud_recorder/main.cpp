@@ -212,6 +212,8 @@ int main(int argc, const char* argv[]) {
             break;
         }
     }
+
+    cloud.clear()
     auto next_tick = clock::now() + period;
 
     // TODO: remove first data
