@@ -262,7 +262,7 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
         while not stop_event.is_set():
             # print("#######################1#####################")
             compressed_data = b""
-            while True:
+            while not stop_event.is_set():
                 chunk = socket.recv()
                 compressed_data += chunk
                 if len(chunk) < 120000:  # Check for last chunk
