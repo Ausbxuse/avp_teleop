@@ -17,8 +17,9 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from constants_vuer import tip_indices
 from dex_retargeting.retargeting_config import RetargetingConfig
+
+from constants_vuer import tip_indices
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
@@ -270,9 +271,13 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
 
             data = zlib.decompress(compressed_data)
             frame_data = pickle.loads(data)
-            frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
-            color_frame = frame[:, : frame // 2]
-            depth_frame = frame[:, frame // 2 :]
+            frame = cv2.imdecode(
+                frame_data, cv2.IMREAD_COLOR
+            )  # numpy array (height, width)
+            with open("test.txt", "a") as f:
+                f.write(f"{frame.shape}")
+            color_frame = frame[:, : frame.shape[1] // 2]
+            depth_frame = frame[:, frame.shape[1] // 2 :]
             # print("#######################2#####################")
             resized_frame = cv2.resize(
                 color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
@@ -314,10 +319,15 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
             if current_time >= next_capture_time:
                 print("current write time", time.time())
                 print("ideal capture time", next_capture_time)
-                frame_filename = os.path.join(
-                    dirname, f"images/frame_{frame_count:06d}.jpg"
+                color_filename = os.path.join(
+                    dirname, f"color/frame_{frame_count:06d}.jpg"
                 )
-                cv2.imwrite(frame_filename, frame)
+                cv2.imwrite(color_filename, color_frame)
+
+                depth_filename = os.path.join(
+                    dirname, f"depth/frame_{frame_count:06d}.jpg"
+                )
+                cv2.imwrite(depth_filename, depth_frame)
                 # frame_queue.put(frame_filename)
 
                 armstate, armv = h1arm.GetMotorState()
@@ -329,8 +339,8 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                     "arm_state": armstate.tolist(),
                     "leg_state": legstate.tolist(),
                     "hand_state": handstate.tolist(),
-                    "image": color_frame.tolist(),
-                    "depth": depth_frame.tolist(),
+                    "image": f"color/frame_{frame_count:06d}.jpg",
+                    "depth": f"depth/frame_{frame_count:06d}.jpg",
                     "imu_omega": imustate.omega,
                     "imu_rpy": imustate.rpy,
                     "ik_data": None,
@@ -473,8 +483,9 @@ if __name__ == "__main__":
             )
             os.mkdir(dirname)
 
-            images_dir = os.path.join(dirname, "images")
+            images_dir = os.path.join(dirname, "color")
             os.mkdir(images_dir)
+            os.mkdir(os.path.join(dirname, "depth"))
             data_writer = DataWriter(dirname)
 
             rs_thread = Process(
@@ -508,7 +519,7 @@ if __name__ == "__main__":
                 # print("#hehehehehh 33333")
 
                 # profile("get hand finished")
-                motor_time = time.time()    
+                motor_time = time.time()
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     teleoperator.step()
