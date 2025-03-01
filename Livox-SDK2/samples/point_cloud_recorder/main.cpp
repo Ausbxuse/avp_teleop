@@ -88,7 +88,7 @@ void SavePointsToPCD(const std::vector<Point>& points, const std::string& filepa
         ofs << point.x << " " << point.y << " " << point.z << "\n";
     }
     ofs.close();
-    std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;
+    /*std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;*/
 }
 
 void PointCloudCallback(const uint32_t handle, const uint8_t dev_type, 

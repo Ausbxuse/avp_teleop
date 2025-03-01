@@ -296,7 +296,7 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
             # print("#######################4#####################")
             current_time = time.time()
             if is_first is True:
-                print(current_time)
+                # print(current_time)
                 integer_part = int(current_time)
                 decimal_part = current_time - integer_part
                 ms_part = int(decimal_part * 1000) % 1000
@@ -304,11 +304,11 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
                 next_ms_part = ((ms_part // 33) + 1) * 33 % 1000
 
                 next_capture_time = integer_part + next_ms_part / 1000
-                print(next_capture_time)
-                print(time.time())
+                # print(next_capture_time)
+                # print(time.time())
                 time.sleep(next_capture_time - current_time)
                 current_time = time.time()
-                print(current_time)
+                # print(current_time)
                 is_first = False
 
             current_time = time.time()
@@ -317,8 +317,8 @@ def rs_receiver(dirname, stop_event, start_time, h1arm, h1hand):
 
             current_time = time.time()
             if current_time >= next_capture_time:
-                print("current write time", time.time())
-                print("ideal capture time", next_capture_time)
+                # print("current write time", time.time())
+                # print("ideal capture time", next_capture_time)
                 color_filename = os.path.join(
                     dirname, f"color/frame_{frame_count:06d}.jpg"
                 )
