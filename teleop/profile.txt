@@ -1,0 +1,1922 @@
+2025-02-28 17:49:38.969787:Main loop started
+2025-02-28 17:49:38.971078:reading shared memory
+2025-02-28 17:49:38.971119:copied to shared memory
+2025-02-28 17:49:38.971248:before teleop step
+2025-02-28 17:49:39.367260:teleop finished
+2025-02-28 17:49:39.417158:ik finished
+2025-02-28 17:49:39.427246:Main loop started
+2025-02-28 17:49:39.429626:reading shared memory
+2025-02-28 17:49:39.430733:copied to shared memory
+2025-02-28 17:49:39.431096:before teleop step
+2025-02-28 17:49:39.783246:teleop finished
+2025-02-28 17:49:39.804866:ik finished
+2025-02-28 17:49:39.807079:Main loop started
+2025-02-28 17:49:39.813501:reading shared memory
+2025-02-28 17:49:39.813572:copied to shared memory
+2025-02-28 17:49:39.813638:before teleop step
+2025-02-28 17:49:40.052988:teleop finished
+2025-02-28 17:49:40.066807:ik finished
+2025-02-28 17:49:40.070700:Main loop started
+2025-02-28 17:49:40.072110:reading shared memory
+2025-02-28 17:49:40.072585:copied to shared memory
+2025-02-28 17:49:40.072670:before teleop step
+2025-02-28 17:49:40.254373:teleop finished
+2025-02-28 17:49:40.277559:ik finished
+2025-02-28 17:49:40.282267:Main loop started
+2025-02-28 17:49:40.282334:reading shared memory
+2025-02-28 17:49:40.282384:copied to shared memory
+2025-02-28 17:49:40.282432:before teleop step
+2025-02-28 17:49:40.520611:teleop finished
+2025-02-28 17:49:40.535160:ik finished
+2025-02-28 17:49:40.536870:Main loop started
+2025-02-28 17:49:40.536898:reading shared memory
+2025-02-28 17:49:40.536917:copied to shared memory
+2025-02-28 17:49:40.536965:before teleop step
+2025-02-28 17:49:40.670390:teleop finished
+2025-02-28 17:49:40.683198:ik finished
+2025-02-28 17:49:40.684101:Main loop started
+2025-02-28 17:49:40.684123:reading shared memory
+2025-02-28 17:49:40.684136:copied to shared memory
+2025-02-28 17:49:40.684175:before teleop step
+2025-02-28 17:49:40.728835:teleop finished
+2025-02-28 17:49:40.741521:ik finished
+2025-02-28 17:49:40.744672:Main loop started
+2025-02-28 17:49:40.744696:reading shared memory
+2025-02-28 17:49:40.745524:copied to shared memory
+2025-02-28 17:49:40.745582:before teleop step
+2025-02-28 17:49:40.820452:teleop finished
+2025-02-28 17:49:40.843494:ik finished
+2025-02-28 17:49:40.855020:Main loop started
+2025-02-28 17:49:40.855076:reading shared memory
+2025-02-28 17:49:40.855101:copied to shared memory
+2025-02-28 17:49:40.855168:before teleop step
+2025-02-28 17:49:41.189105:teleop finished
+2025-02-28 17:49:41.202177:ik finished
+2025-02-28 17:49:41.209781:Main loop started
+2025-02-28 17:49:41.211022:reading shared memory
+2025-02-28 17:49:41.211077:copied to shared memory
+2025-02-28 17:49:41.214097:before teleop step
+2025-02-28 17:49:41.420501:teleop finished
+2025-02-28 17:49:41.433001:ik finished
+2025-02-28 17:49:41.449607:Main loop started
+2025-02-28 17:49:41.449718:reading shared memory
+2025-02-28 17:49:41.449784:copied to shared memory
+2025-02-28 17:49:41.449910:before teleop step
+2025-02-28 17:49:41.595078:teleop finished
+2025-02-28 17:49:41.612548:ik finished
+2025-02-28 17:49:41.618514:Main loop started
+2025-02-28 17:49:41.622288:reading shared memory
+2025-02-28 17:49:41.623352:copied to shared memory
+2025-02-28 17:49:41.623437:before teleop step
+2025-02-28 17:49:41.737862:teleop finished
+2025-02-28 17:49:41.750310:ik finished
+2025-02-28 17:49:41.752712:Main loop started
+2025-02-28 17:49:41.752752:reading shared memory
+2025-02-28 17:49:41.752769:copied to shared memory
+2025-02-28 17:49:41.752828:before teleop step
+2025-02-28 17:49:41.858779:teleop finished
+2025-02-28 17:49:41.876609:ik finished
+2025-02-28 17:49:41.886180:Main loop started
+2025-02-28 17:49:41.886215:reading shared memory
+2025-02-28 17:49:41.886230:copied to shared memory
+2025-02-28 17:49:41.886282:before teleop step
+2025-02-28 17:49:41.997485:teleop finished
+2025-02-28 17:49:42.016646:ik finished
+2025-02-28 17:49:42.042952:Main loop started
+2025-02-28 17:49:42.043039:reading shared memory
+2025-02-28 17:49:42.043447:copied to shared memory
+2025-02-28 17:49:42.043498:before teleop step
+2025-02-28 17:49:42.122900:teleop finished
+2025-02-28 17:49:42.137140:ik finished
+2025-02-28 17:49:42.150732:Main loop started
+2025-02-28 17:49:42.151875:reading shared memory
+2025-02-28 17:49:42.151920:copied to shared memory
+2025-02-28 17:49:42.151967:before teleop step
+2025-02-28 17:49:42.337608:teleop finished
+2025-02-28 17:49:42.349675:ik finished
+2025-02-28 17:49:42.358739:Main loop started
+2025-02-28 17:49:42.359988:reading shared memory
+2025-02-28 17:49:42.361259:copied to shared memory
+2025-02-28 17:49:42.361452:before teleop step
+2025-02-28 17:49:42.514903:teleop finished
+2025-02-28 17:49:42.528056:ik finished
+2025-02-28 17:49:42.548590:Main loop started
+2025-02-28 17:49:42.548642:reading shared memory
+2025-02-28 17:49:42.548683:copied to shared memory
+2025-02-28 17:49:42.548750:before teleop step
+2025-02-28 17:49:42.661041:teleop finished
+2025-02-28 17:49:42.677427:ik finished
+2025-02-28 17:49:42.687437:Main loop started
+2025-02-28 17:49:42.687472:reading shared memory
+2025-02-28 17:49:42.687486:copied to shared memory
+2025-02-28 17:49:42.687535:before teleop step
+2025-02-28 17:49:42.898268:teleop finished
+2025-02-28 17:49:42.922852:ik finished
+2025-02-28 17:49:42.935099:Main loop started
+2025-02-28 17:49:42.937875:reading shared memory
+2025-02-28 17:49:42.938002:copied to shared memory
+2025-02-28 17:49:42.938103:before teleop step
+2025-02-28 17:49:43.129024:teleop finished
+2025-02-28 17:49:43.143506:ik finished
+2025-02-28 17:49:43.155834:Main loop started
+2025-02-28 17:49:43.155877:reading shared memory
+2025-02-28 17:49:43.155899:copied to shared memory
+2025-02-28 17:49:43.155956:before teleop step
+2025-02-28 17:49:43.265523:teleop finished
+2025-02-28 17:49:43.281309:ik finished
+2025-02-28 17:49:43.289602:Main loop started
+2025-02-28 17:49:43.289632:reading shared memory
+2025-02-28 17:49:43.289645:copied to shared memory
+2025-02-28 17:49:43.289683:before teleop step
+2025-02-28 17:49:43.482945:teleop finished
+2025-02-28 17:49:43.497033:ik finished
+2025-02-28 17:49:43.510505:Main loop started
+2025-02-28 17:49:43.510574:reading shared memory
+2025-02-28 17:49:43.510599:copied to shared memory
+2025-02-28 17:49:43.510656:before teleop step
+2025-02-28 17:49:43.665493:teleop finished
+2025-02-28 17:49:43.682676:ik finished
+2025-02-28 17:49:43.700933:Main loop started
+2025-02-28 17:49:43.700985:reading shared memory
+2025-02-28 17:49:43.701851:copied to shared memory
+2025-02-28 17:49:43.701932:before teleop step
+2025-02-28 17:49:43.896344:teleop finished
+2025-02-28 17:49:43.909625:ik finished
+2025-02-28 17:49:43.924431:Main loop started
+2025-02-28 17:49:43.924504:reading shared memory
+2025-02-28 17:49:43.925223:copied to shared memory
+2025-02-28 17:49:43.925304:before teleop step
+2025-02-28 17:49:44.123590:teleop finished
+2025-02-28 17:49:44.138342:ik finished
+2025-02-28 17:49:44.145107:Main loop started
+2025-02-28 17:49:44.145254:reading shared memory
+2025-02-28 17:49:44.145287:copied to shared memory
+2025-02-28 17:49:44.145353:before teleop step
+2025-02-28 17:49:44.320039:teleop finished
+2025-02-28 17:49:44.341555:ik finished
+2025-02-28 17:49:44.352454:Main loop started
+2025-02-28 17:49:44.352636:reading shared memory
+2025-02-28 17:49:44.352980:copied to shared memory
+2025-02-28 17:49:44.353046:before teleop step
+2025-02-28 17:49:44.525343:teleop finished
+2025-02-28 17:49:44.541781:ik finished
+2025-02-28 17:49:44.559285:Main loop started
+2025-02-28 17:49:44.559330:reading shared memory
+2025-02-28 17:49:44.559353:copied to shared memory
+2025-02-28 17:49:44.559405:before teleop step
+2025-02-28 17:49:44.755654:teleop finished
+2025-02-28 17:49:44.778168:ik finished
+2025-02-28 17:49:44.788739:Main loop started
+2025-02-28 17:49:44.790946:reading shared memory
+2025-02-28 17:49:44.793248:copied to shared memory
+2025-02-28 17:49:44.793353:before teleop step
+2025-02-28 17:49:44.967444:teleop finished
+2025-02-28 17:49:44.985295:ik finished
+2025-02-28 17:49:44.996144:Main loop started
+2025-02-28 17:49:44.996199:reading shared memory
+2025-02-28 17:49:44.996223:copied to shared memory
+2025-02-28 17:49:45.000196:before teleop step
+2025-02-28 17:49:45.318182:teleop finished
+2025-02-28 17:49:45.336526:ik finished
+2025-02-28 17:49:45.355507:Main loop started
+2025-02-28 17:49:45.361116:reading shared memory
+2025-02-28 17:49:45.361183:copied to shared memory
+2025-02-28 17:49:45.361297:before teleop step
+2025-02-28 17:49:45.539469:teleop finished
+2025-02-28 17:49:45.555934:ik finished
+2025-02-28 17:49:45.574018:Main loop started
+2025-02-28 17:49:45.578809:reading shared memory
+2025-02-28 17:49:45.579647:copied to shared memory
+2025-02-28 17:49:45.582501:before teleop step
+2025-02-28 17:49:45.703772:teleop finished
+2025-02-28 17:49:45.715820:ik finished
+2025-02-28 17:49:45.729307:Main loop started
+2025-02-28 17:49:45.729864:reading shared memory
+2025-02-28 17:49:45.729901:copied to shared memory
+2025-02-28 17:49:45.729956:before teleop step
+2025-02-28 17:49:45.895573:teleop finished
+2025-02-28 17:49:45.907868:ik finished
+2025-02-28 17:49:45.924358:Main loop started
+2025-02-28 17:49:45.924412:reading shared memory
+2025-02-28 17:49:45.924429:copied to shared memory
+2025-02-28 17:49:45.924468:before teleop step
+2025-02-28 17:49:46.091406:teleop finished
+2025-02-28 17:49:46.113471:ik finished
+2025-02-28 17:49:46.142294:Main loop started
+2025-02-28 17:49:46.144321:reading shared memory
+2025-02-28 17:49:46.144349:copied to shared memory
+2025-02-28 17:49:46.146860:before teleop step
+2025-02-28 17:49:46.257235:teleop finished
+2025-02-28 17:49:46.275642:ik finished
+2025-02-28 17:49:46.314372:Main loop started
+2025-02-28 17:49:46.314435:reading shared memory
+2025-02-28 17:49:46.314469:copied to shared memory
+2025-02-28 17:49:46.314545:before teleop step
+2025-02-28 17:49:46.532731:teleop finished
+2025-02-28 17:49:46.552877:ik finished
+2025-02-28 17:49:46.568372:Main loop started
+2025-02-28 17:49:46.569356:reading shared memory
+2025-02-28 17:49:46.569701:copied to shared memory
+2025-02-28 17:49:46.569912:before teleop step
+2025-02-28 17:49:46.727935:teleop finished
+2025-02-28 17:49:46.747532:ik finished
+2025-02-28 17:49:46.778959:Main loop started
+2025-02-28 17:49:46.779019:reading shared memory
+2025-02-28 17:49:46.779038:copied to shared memory
+2025-02-28 17:49:46.779082:before teleop step
+2025-02-28 17:49:46.847832:teleop finished
+2025-02-28 17:49:46.861315:ik finished
+2025-02-28 17:49:46.886843:Main loop started
+2025-02-28 17:49:46.887833:reading shared memory
+2025-02-28 17:49:46.887880:copied to shared memory
+2025-02-28 17:49:46.887990:before teleop step
+2025-02-28 17:49:46.997539:teleop finished
+2025-02-28 17:49:47.011209:ik finished
+2025-02-28 17:49:47.032826:Main loop started
+2025-02-28 17:49:47.032869:reading shared memory
+2025-02-28 17:49:47.032892:copied to shared memory
+2025-02-28 17:49:47.032949:before teleop step
+2025-02-28 17:49:47.213397:teleop finished
+2025-02-28 17:49:47.223961:ik finished
+2025-02-28 17:49:47.252924:Main loop started
+2025-02-28 17:49:47.253001:reading shared memory
+2025-02-28 17:49:47.253026:copied to shared memory
+2025-02-28 17:49:47.253086:before teleop step
+2025-02-28 17:49:47.487247:teleop finished
+2025-02-28 17:49:47.495643:ik finished
+2025-02-28 17:49:47.511768:Main loop started
+2025-02-28 17:49:47.511879:reading shared memory
+2025-02-28 17:49:47.511982:copied to shared memory
+2025-02-28 17:49:47.512064:before teleop step
+2025-02-28 17:49:47.664312:teleop finished
+2025-02-28 17:49:47.680704:ik finished
+2025-02-28 17:49:47.696663:Main loop started
+2025-02-28 17:49:47.696705:reading shared memory
+2025-02-28 17:49:47.696719:copied to shared memory
+2025-02-28 17:49:47.696762:before teleop step
+2025-02-28 17:49:47.855107:teleop finished
+2025-02-28 17:49:47.869199:ik finished
+2025-02-28 17:49:47.897893:Main loop started
+2025-02-28 17:49:47.899111:reading shared memory
+2025-02-28 17:49:47.899144:copied to shared memory
+2025-02-28 17:49:47.899189:before teleop step
+2025-02-28 17:49:48.072887:teleop finished
+2025-02-28 17:49:48.083845:ik finished
+2025-02-28 17:49:48.096780:Main loop started
+2025-02-28 17:49:48.096892:reading shared memory
+2025-02-28 17:49:48.096960:copied to shared memory
+2025-02-28 17:49:48.097083:before teleop step
+2025-02-28 17:49:48.250516:teleop finished
+2025-02-28 17:49:48.264620:ik finished
+2025-02-28 17:49:48.306709:Main loop started
+2025-02-28 17:49:48.306765:reading shared memory
+2025-02-28 17:49:48.306781:copied to shared memory
+2025-02-28 17:49:48.306839:before teleop step
+2025-02-28 17:49:48.423639:teleop finished
+2025-02-28 17:49:48.439700:ik finished
+2025-02-28 17:49:48.477301:Main loop started
+2025-02-28 17:49:48.477381:reading shared memory
+2025-02-28 17:49:48.477403:copied to shared memory
+2025-02-28 17:49:48.477531:before teleop step
+2025-02-28 17:49:48.812000:teleop finished
+2025-02-28 17:49:48.824359:ik finished
+2025-02-28 17:49:48.853349:Main loop started
+2025-02-28 17:49:48.853394:reading shared memory
+2025-02-28 17:49:48.853414:copied to shared memory
+2025-02-28 17:49:48.853464:before teleop step
+2025-02-28 17:49:48.996632:teleop finished
+2025-02-28 17:49:49.007747:ik finished
+2025-02-28 17:49:49.029816:Main loop started
+2025-02-28 17:49:49.029855:reading shared memory
+2025-02-28 17:49:49.029869:copied to shared memory
+2025-02-28 17:49:49.029928:before teleop step
+2025-02-28 17:49:49.179286:teleop finished
+2025-02-28 17:49:49.199225:ik finished
+2025-02-28 17:49:49.259155:Main loop started
+2025-02-28 17:49:49.264268:reading shared memory
+2025-02-28 17:49:49.264834:copied to shared memory
+2025-02-28 17:49:49.265361:before teleop step
+2025-02-28 17:49:49.566176:teleop finished
+2025-02-28 17:49:49.582228:ik finished
+2025-02-28 17:49:49.605626:Main loop started
+2025-02-28 17:49:49.605671:reading shared memory
+2025-02-28 17:49:49.605686:copied to shared memory
+2025-02-28 17:49:49.609897:before teleop step
+2025-02-28 17:49:49.816363:teleop finished
+2025-02-28 17:49:49.828183:ik finished
+2025-02-28 17:49:49.855918:Main loop started
+2025-02-28 17:49:49.856523:reading shared memory
+2025-02-28 17:49:49.856564:copied to shared memory
+2025-02-28 17:49:49.856625:before teleop step
+2025-02-28 17:49:50.134033:teleop finished
+2025-02-28 17:49:50.152196:ik finished
+2025-02-28 17:49:50.187556:Main loop started
+2025-02-28 17:49:50.189437:reading shared memory
+2025-02-28 17:49:50.189481:copied to shared memory
+2025-02-28 17:49:50.193451:before teleop step
+2025-02-28 17:49:50.450594:teleop finished
+2025-02-28 17:49:50.470806:ik finished
+2025-02-28 17:49:50.499066:Main loop started
+2025-02-28 17:49:50.499126:reading shared memory
+2025-02-28 17:49:50.499156:copied to shared memory
+2025-02-28 17:49:50.499220:before teleop step
+2025-02-28 17:49:50.756542:teleop finished
+2025-02-28 17:49:50.768461:ik finished
+2025-02-28 17:49:50.795656:Main loop started
+2025-02-28 17:49:50.795707:reading shared memory
+2025-02-28 17:49:50.795735:copied to shared memory
+2025-02-28 17:49:50.795795:before teleop step
+2025-02-28 17:49:50.948703:teleop finished
+2025-02-28 17:49:50.959669:ik finished
+2025-02-28 17:49:50.999321:Main loop started
+2025-02-28 17:49:51.003837:reading shared memory
+2025-02-28 17:49:51.003900:copied to shared memory
+2025-02-28 17:49:51.003966:before teleop step
+2025-02-28 17:49:51.118916:teleop finished
+2025-02-28 17:49:51.137800:ik finished
+2025-02-28 17:49:51.170503:Main loop started
+2025-02-28 17:49:51.171225:reading shared memory
+2025-02-28 17:49:51.171286:copied to shared memory
+2025-02-28 17:49:51.171377:before teleop step
+2025-02-28 17:49:51.364478:teleop finished
+2025-02-28 17:49:51.384792:ik finished
+2025-02-28 17:49:51.414384:Main loop started
+2025-02-28 17:49:51.414455:reading shared memory
+2025-02-28 17:49:51.414478:copied to shared memory
+2025-02-28 17:49:51.414536:before teleop step
+2025-02-28 17:49:51.566348:teleop finished
+2025-02-28 17:49:51.588082:ik finished
+2025-02-28 17:49:51.622777:Main loop started
+2025-02-28 17:49:51.623152:reading shared memory
+2025-02-28 17:49:51.624032:copied to shared memory
+2025-02-28 17:49:51.624122:before teleop step
+2025-02-28 17:49:51.830716:teleop finished
+2025-02-28 17:49:51.852741:ik finished
+2025-02-28 17:49:51.874422:Main loop started
+2025-02-28 17:49:51.878160:reading shared memory
+2025-02-28 17:49:51.878222:copied to shared memory
+2025-02-28 17:49:51.878311:before teleop step
+2025-02-28 17:49:52.075185:teleop finished
+2025-02-28 17:49:52.089873:ik finished
+2025-02-28 17:49:52.147096:Main loop started
+2025-02-28 17:49:52.147144:reading shared memory
+2025-02-28 17:49:52.150653:copied to shared memory
+2025-02-28 17:49:52.151584:before teleop step
+2025-02-28 17:49:52.365269:teleop finished
+2025-02-28 17:49:52.378194:ik finished
+2025-02-28 17:49:52.424775:Main loop started
+2025-02-28 17:49:52.424827:reading shared memory
+2025-02-28 17:49:52.424847:copied to shared memory
+2025-02-28 17:49:52.424911:before teleop step
+2025-02-28 17:49:52.659202:teleop finished
+2025-02-28 17:49:52.669438:ik finished
+2025-02-28 17:49:52.694836:Main loop started
+2025-02-28 17:49:52.694891:reading shared memory
+2025-02-28 17:49:52.695016:copied to shared memory
+2025-02-28 17:49:52.695072:before teleop step
+2025-02-28 17:49:52.880195:teleop finished
+2025-02-28 17:49:52.901184:ik finished
+2025-02-28 17:49:52.941161:Main loop started
+2025-02-28 17:49:52.941234:reading shared memory
+2025-02-28 17:49:52.941286:copied to shared memory
+2025-02-28 17:49:52.941358:before teleop step
+2025-02-28 17:49:53.025687:teleop finished
+2025-02-28 17:49:53.041970:ik finished
+2025-02-28 17:49:53.079428:Main loop started
+2025-02-28 17:49:53.079553:reading shared memory
+2025-02-28 17:49:53.079584:copied to shared memory
+2025-02-28 17:49:53.079638:before teleop step
+2025-02-28 17:49:53.182617:teleop finished
+2025-02-28 17:49:53.194812:ik finished
+2025-02-28 17:49:53.228869:Main loop started
+2025-02-28 17:49:53.228940:reading shared memory
+2025-02-28 17:49:53.232030:copied to shared memory
+2025-02-28 17:49:53.233952:before teleop step
+2025-02-28 17:49:53.407070:teleop finished
+2025-02-28 17:49:53.419702:ik finished
+2025-02-28 17:49:53.448409:Main loop started
+2025-02-28 17:49:53.448479:reading shared memory
+2025-02-28 17:49:53.448502:copied to shared memory
+2025-02-28 17:49:53.449800:before teleop step
+2025-02-28 17:49:53.578667:teleop finished
+2025-02-28 17:49:53.594364:ik finished
+2025-02-28 17:49:53.618370:Main loop started
+2025-02-28 17:49:53.618440:reading shared memory
+2025-02-28 17:49:53.618461:copied to shared memory
+2025-02-28 17:49:53.618512:before teleop step
+2025-02-28 17:49:53.778903:teleop finished
+2025-02-28 17:49:53.794444:ik finished
+2025-02-28 17:49:53.823591:Main loop started
+2025-02-28 17:49:53.823699:reading shared memory
+2025-02-28 17:49:53.827305:copied to shared memory
+2025-02-28 17:49:53.827487:before teleop step
+2025-02-28 17:49:53.957721:teleop finished
+2025-02-28 17:49:53.976683:ik finished
+2025-02-28 17:49:53.991476:Main loop started
+2025-02-28 17:49:53.991517:reading shared memory
+2025-02-28 17:49:53.991536:copied to shared memory
+2025-02-28 17:49:53.991617:before teleop step
+2025-02-28 17:49:54.276973:teleop finished
+2025-02-28 17:49:54.294165:ik finished
+2025-02-28 17:49:54.356284:Main loop started
+2025-02-28 17:49:54.357142:reading shared memory
+2025-02-28 17:49:54.357185:copied to shared memory
+2025-02-28 17:49:54.357230:before teleop step
+2025-02-28 17:49:54.514363:teleop finished
+2025-02-28 17:49:54.532061:ik finished
+2025-02-28 17:49:54.581074:Main loop started
+2025-02-28 17:49:54.581125:reading shared memory
+2025-02-28 17:49:54.584015:copied to shared memory
+2025-02-28 17:49:54.585095:before teleop step
+2025-02-28 17:49:54.801670:teleop finished
+2025-02-28 17:49:54.816186:ik finished
+2025-02-28 17:49:54.858405:Main loop started
+2025-02-28 17:49:54.858458:reading shared memory
+2025-02-28 17:49:54.858474:copied to shared memory
+2025-02-28 17:49:54.858519:before teleop step
+2025-02-28 17:49:55.021192:teleop finished
+2025-02-28 17:49:55.032568:ik finished
+2025-02-28 17:49:55.063307:Main loop started
+2025-02-28 17:49:55.063599:reading shared memory
+2025-02-28 17:49:55.063626:copied to shared memory
+2025-02-28 17:49:55.063883:before teleop step
+2025-02-28 17:49:55.186043:teleop finished
+2025-02-28 17:49:55.212578:ik finished
+2025-02-28 17:49:55.243781:Main loop started
+2025-02-28 17:49:55.249150:reading shared memory
+2025-02-28 17:49:55.252095:copied to shared memory
+2025-02-28 17:49:55.252383:before teleop step
+2025-02-28 17:49:55.497850:teleop finished
+2025-02-28 17:49:55.515193:ik finished
+2025-02-28 17:49:55.565310:Main loop started
+2025-02-28 17:49:55.565918:reading shared memory
+2025-02-28 17:49:55.566763:copied to shared memory
+2025-02-28 17:49:55.566877:before teleop step
+2025-02-28 17:49:55.765001:teleop finished
+2025-02-28 17:49:55.779147:ik finished
+2025-02-28 17:49:55.797801:Main loop started
+2025-02-28 17:49:55.799311:reading shared memory
+2025-02-28 17:49:55.799338:copied to shared memory
+2025-02-28 17:49:55.799379:before teleop step
+2025-02-28 17:49:55.956520:teleop finished
+2025-02-28 17:49:55.969912:ik finished
+2025-02-28 17:49:56.011496:Main loop started
+2025-02-28 17:49:56.011557:reading shared memory
+2025-02-28 17:49:56.011580:copied to shared memory
+2025-02-28 17:49:56.015820:before teleop step
+2025-02-28 17:49:56.105161:teleop finished
+2025-02-28 17:49:56.122481:ik finished
+2025-02-28 17:49:56.160825:Main loop started
+2025-02-28 17:49:56.160872:reading shared memory
+2025-02-28 17:49:56.160892:copied to shared memory
+2025-02-28 17:49:56.160942:before teleop step
+2025-02-28 17:49:56.327286:teleop finished
+2025-02-28 17:49:56.348649:ik finished
+2025-02-28 17:49:56.393089:Main loop started
+2025-02-28 17:49:56.393340:reading shared memory
+2025-02-28 17:49:56.393370:copied to shared memory
+2025-02-28 17:49:56.393422:before teleop step
+2025-02-28 17:49:56.492881:teleop finished
+2025-02-28 17:49:56.505613:ik finished
+2025-02-28 17:49:56.548803:Main loop started
+2025-02-28 17:49:56.552413:reading shared memory
+2025-02-28 17:49:56.552755:copied to shared memory
+2025-02-28 17:49:56.552804:before teleop step
+2025-02-28 17:54:11.329052:Main loop started
+2025-02-28 17:54:11.329887:reading shared memory
+2025-02-28 17:54:11.329930:copied to shared memory
+2025-02-28 17:54:11.332459:before teleop step
+2025-02-28 17:54:11.566665:teleop finished
+2025-02-28 17:54:11.607812:ik finished
+2025-02-28 17:54:11.610670:Main loop started
+2025-02-28 17:54:11.614210:reading shared memory
+2025-02-28 17:54:11.616299:copied to shared memory
+2025-02-28 17:54:11.621412:before teleop step
+2025-02-28 17:54:11.758445:teleop finished
+2025-02-28 17:54:11.777589:ik finished
+2025-02-28 17:54:11.778563:Main loop started
+2025-02-28 17:54:11.778586:reading shared memory
+2025-02-28 17:54:11.778600:copied to shared memory
+2025-02-28 17:54:11.779469:before teleop step
+2025-02-28 17:54:11.965668:teleop finished
+2025-02-28 17:54:11.991910:ik finished
+2025-02-28 17:54:11.998682:Main loop started
+2025-02-28 17:54:11.998759:reading shared memory
+2025-02-28 17:54:11.998788:copied to shared memory
+2025-02-28 17:54:11.998850:before teleop step
+2025-02-28 17:54:12.170326:teleop finished
+2025-02-28 17:54:12.190713:ik finished
+2025-02-28 17:54:12.207768:Main loop started
+2025-02-28 17:54:12.207847:reading shared memory
+2025-02-28 17:54:12.212926:copied to shared memory
+2025-02-28 17:54:12.214674:before teleop step
+2025-02-28 17:54:12.405293:teleop finished
+2025-02-28 17:54:12.422976:ik finished
+2025-02-28 17:54:12.432717:Main loop started
+2025-02-28 17:54:12.432785:reading shared memory
+2025-02-28 17:54:12.432821:copied to shared memory
+2025-02-28 17:54:12.432907:before teleop step
+2025-02-28 17:54:12.645874:teleop finished
+2025-02-28 17:54:12.660664:ik finished
+2025-02-28 17:54:12.676887:Main loop started
+2025-02-28 17:54:12.676959:reading shared memory
+2025-02-28 17:54:12.676995:copied to shared memory
+2025-02-28 17:54:12.677057:before teleop step
+2025-02-28 17:54:12.805695:teleop finished
+2025-02-28 17:54:12.818413:ik finished
+2025-02-28 17:54:12.823775:Main loop started
+2025-02-28 17:54:12.827436:reading shared memory
+2025-02-28 17:54:12.829131:copied to shared memory
+2025-02-28 17:54:12.834522:before teleop step
+2025-02-28 17:54:12.998464:teleop finished
+2025-02-28 17:54:13.014307:ik finished
+2025-02-28 17:54:13.019259:Main loop started
+2025-02-28 17:54:13.019305:reading shared memory
+2025-02-28 17:54:13.019326:copied to shared memory
+2025-02-28 17:54:13.019375:before teleop step
+2025-02-28 17:54:13.118657:teleop finished
+2025-02-28 17:54:13.132242:ik finished
+2025-02-28 17:54:13.141538:Main loop started
+2025-02-28 17:54:13.142348:reading shared memory
+2025-02-28 17:54:13.142920:copied to shared memory
+2025-02-28 17:54:13.142983:before teleop step
+2025-02-28 17:54:13.243751:teleop finished
+2025-02-28 17:54:13.255936:ik finished
+2025-02-28 17:54:13.271802:Main loop started
+2025-02-28 17:54:13.283530:reading shared memory
+2025-02-28 17:54:13.283810:copied to shared memory
+2025-02-28 17:54:13.284121:before teleop step
+2025-02-28 17:54:13.487764:teleop finished
+2025-02-28 17:54:13.498180:ik finished
+2025-02-28 17:54:13.502553:Main loop started
+2025-02-28 17:54:13.504692:reading shared memory
+2025-02-28 17:54:13.506151:copied to shared memory
+2025-02-28 17:54:13.506218:before teleop step
+2025-02-28 17:54:13.752932:teleop finished
+2025-02-28 17:54:13.764978:ik finished
+2025-02-28 17:54:13.782206:Main loop started
+2025-02-28 17:54:13.786510:reading shared memory
+2025-02-28 17:54:13.786603:copied to shared memory
+2025-02-28 17:54:13.786692:before teleop step
+2025-02-28 17:54:13.934199:teleop finished
+2025-02-28 17:54:13.957003:ik finished
+2025-02-28 17:54:13.973198:Main loop started
+2025-02-28 17:54:13.974213:reading shared memory
+2025-02-28 17:54:13.974303:copied to shared memory
+2025-02-28 17:54:13.974377:before teleop step
+2025-02-28 17:54:14.156534:teleop finished
+2025-02-28 17:54:14.170907:ik finished
+2025-02-28 17:54:14.186356:Main loop started
+2025-02-28 17:54:14.187966:reading shared memory
+2025-02-28 17:54:14.192870:copied to shared memory
+2025-02-28 17:54:14.196166:before teleop step
+2025-02-28 17:54:14.435547:teleop finished
+2025-02-28 17:54:14.455192:ik finished
+2025-02-28 17:54:14.458021:Main loop started
+2025-02-28 17:54:14.458531:reading shared memory
+2025-02-28 17:54:14.458558:copied to shared memory
+2025-02-28 17:54:14.458632:before teleop step
+2025-02-28 17:54:14.790388:teleop finished
+2025-02-28 17:54:14.812670:ik finished
+2025-02-28 17:54:14.824967:Main loop started
+2025-02-28 17:54:14.825033:reading shared memory
+2025-02-28 17:54:14.825508:copied to shared memory
+2025-02-28 17:54:14.828778:before teleop step
+2025-02-28 17:54:15.028396:teleop finished
+2025-02-28 17:54:15.045550:ik finished
+2025-02-28 17:54:15.056564:Main loop started
+2025-02-28 17:54:15.059673:reading shared memory
+2025-02-28 17:54:15.059736:copied to shared memory
+2025-02-28 17:54:15.061083:before teleop step
+2025-02-28 17:54:15.304902:teleop finished
+2025-02-28 17:54:15.327419:ik finished
+2025-02-28 17:54:15.344772:Main loop started
+2025-02-28 17:54:15.344827:reading shared memory
+2025-02-28 17:54:15.348535:copied to shared memory
+2025-02-28 17:54:15.348645:before teleop step
+2025-02-28 17:54:15.494896:teleop finished
+2025-02-28 17:54:15.512565:ik finished
+2025-02-28 17:54:15.521420:Main loop started
+2025-02-28 17:54:15.522733:reading shared memory
+2025-02-28 17:54:15.525531:copied to shared memory
+2025-02-28 17:54:15.525595:before teleop step
+2025-02-28 17:54:15.608854:teleop finished
+2025-02-28 17:54:15.619535:ik finished
+2025-02-28 17:54:15.634370:Main loop started
+2025-02-28 17:54:15.634411:reading shared memory
+2025-02-28 17:54:15.634433:copied to shared memory
+2025-02-28 17:54:15.634487:before teleop step
+2025-02-28 17:54:15.728171:teleop finished
+2025-02-28 17:54:15.745229:ik finished
+2025-02-28 17:54:15.760664:Main loop started
+2025-02-28 17:54:15.760703:reading shared memory
+2025-02-28 17:54:15.760721:copied to shared memory
+2025-02-28 17:54:15.760784:before teleop step
+2025-02-28 17:54:15.908519:teleop finished
+2025-02-28 17:54:15.928014:ik finished
+2025-02-28 17:54:15.947153:Main loop started
+2025-02-28 17:54:15.947247:reading shared memory
+2025-02-28 17:54:15.947311:copied to shared memory
+2025-02-28 17:54:15.947419:before teleop step
+2025-02-28 17:54:16.174197:teleop finished
+2025-02-28 17:54:16.190127:ik finished
+2025-02-28 17:54:16.204653:Main loop started
+2025-02-28 17:54:16.204709:reading shared memory
+2025-02-28 17:54:16.204752:copied to shared memory
+2025-02-28 17:54:16.208035:before teleop step
+2025-02-28 17:54:16.483002:teleop finished
+2025-02-28 17:54:16.498079:ik finished
+2025-02-28 17:54:16.521804:Main loop started
+2025-02-28 17:54:16.523434:reading shared memory
+2025-02-28 17:54:16.523509:copied to shared memory
+2025-02-28 17:54:16.526626:before teleop step
+2025-02-28 17:54:16.777232:teleop finished
+2025-02-28 17:54:16.795542:ik finished
+2025-02-28 17:54:16.822037:Main loop started
+2025-02-28 17:54:16.823318:reading shared memory
+2025-02-28 17:54:16.823382:copied to shared memory
+2025-02-28 17:54:16.823465:before teleop step
+2025-02-28 17:54:16.968538:teleop finished
+2025-02-28 17:54:16.996974:ik finished
+2025-02-28 17:54:17.011453:Main loop started
+2025-02-28 17:54:17.011524:reading shared memory
+2025-02-28 17:54:17.011548:copied to shared memory
+2025-02-28 17:54:17.011605:before teleop step
+2025-02-28 17:54:17.217990:teleop finished
+2025-02-28 17:54:17.234134:ik finished
+2025-02-28 17:54:17.257746:Main loop started
+2025-02-28 17:54:17.257798:reading shared memory
+2025-02-28 17:54:17.257944:copied to shared memory
+2025-02-28 17:54:17.258009:before teleop step
+2025-02-28 17:54:17.368488:teleop finished
+2025-02-28 17:54:17.387685:ik finished
+2025-02-28 17:54:17.406513:Main loop started
+2025-02-28 17:54:17.406596:reading shared memory
+2025-02-28 17:54:17.406632:copied to shared memory
+2025-02-28 17:54:17.406720:before teleop step
+2025-02-28 17:54:17.557531:teleop finished
+2025-02-28 17:54:17.577360:ik finished
+2025-02-28 17:54:17.595637:Main loop started
+2025-02-28 17:54:17.595702:reading shared memory
+2025-02-28 17:54:17.595726:copied to shared memory
+2025-02-28 17:54:17.595787:before teleop step
+2025-02-28 17:54:17.732501:teleop finished
+2025-02-28 17:54:17.753284:ik finished
+2025-02-28 17:54:17.780142:Main loop started
+2025-02-28 17:54:17.780212:reading shared memory
+2025-02-28 17:54:17.780235:copied to shared memory
+2025-02-28 17:54:17.780312:before teleop step
+2025-02-28 17:54:17.836769:teleop finished
+2025-02-28 17:54:17.854086:ik finished
+2025-02-28 17:54:17.873158:Main loop started
+2025-02-28 17:54:17.877127:reading shared memory
+2025-02-28 17:54:17.877193:copied to shared memory
+2025-02-28 17:54:17.877258:before teleop step
+2025-02-28 17:54:17.987644:teleop finished
+2025-02-28 17:54:17.999665:ik finished
+2025-02-28 17:54:18.015730:Main loop started
+2025-02-28 17:54:18.016052:reading shared memory
+2025-02-28 17:54:18.016074:copied to shared memory
+2025-02-28 17:54:18.016121:before teleop step
+2025-02-28 17:54:18.091214:teleop finished
+2025-02-28 17:54:18.102933:ik finished
+2025-02-28 17:54:18.127570:Main loop started
+2025-02-28 17:54:18.127630:reading shared memory
+2025-02-28 17:54:18.132436:copied to shared memory
+2025-02-28 17:54:18.132910:before teleop step
+2025-02-28 17:54:18.173351:teleop finished
+2025-02-28 17:54:18.184800:ik finished
+2025-02-28 17:54:18.198777:Main loop started
+2025-02-28 17:54:18.202461:reading shared memory
+2025-02-28 17:54:18.203266:copied to shared memory
+2025-02-28 17:54:18.203330:before teleop step
+2025-02-28 17:54:18.356427:teleop finished
+2025-02-28 17:54:18.373547:ik finished
+2025-02-28 17:54:18.393130:Main loop started
+2025-02-28 17:54:18.393201:reading shared memory
+2025-02-28 17:54:18.393230:copied to shared memory
+2025-02-28 17:54:18.393314:before teleop step
+2025-02-28 17:54:18.492832:teleop finished
+2025-02-28 17:54:18.508046:ik finished
+2025-02-28 17:54:18.538888:Main loop started
+2025-02-28 17:54:18.539229:reading shared memory
+2025-02-28 17:54:18.539402:copied to shared memory
+2025-02-28 17:54:18.539558:before teleop step
+2025-02-28 17:54:18.712792:teleop finished
+2025-02-28 17:54:18.724864:ik finished
+2025-02-28 17:54:18.738689:Main loop started
+2025-02-28 17:54:18.740097:reading shared memory
+2025-02-28 17:54:18.740143:copied to shared memory
+2025-02-28 17:54:18.740234:before teleop step
+2025-02-28 17:54:18.951401:teleop finished
+2025-02-28 17:54:18.964137:ik finished
+2025-02-28 17:54:18.986117:Main loop started
+2025-02-28 17:54:18.986300:reading shared memory
+2025-02-28 17:54:18.986335:copied to shared memory
+2025-02-28 17:54:18.986409:before teleop step
+2025-02-28 17:54:19.252097:teleop finished
+2025-02-28 17:54:19.269134:ik finished
+2025-02-28 17:54:19.294129:Main loop started
+2025-02-28 17:54:19.294710:reading shared memory
+2025-02-28 17:54:19.294793:copied to shared memory
+2025-02-28 17:54:19.294877:before teleop step
+2025-02-28 17:54:19.525760:teleop finished
+2025-02-28 17:54:19.546504:ik finished
+2025-02-28 17:54:19.579589:Main loop started
+2025-02-28 17:54:19.579967:reading shared memory
+2025-02-28 17:54:19.580017:copied to shared memory
+2025-02-28 17:54:19.580067:before teleop step
+2025-02-28 17:54:19.776248:teleop finished
+2025-02-28 17:54:19.793221:ik finished
+2025-02-28 17:54:19.832295:Main loop started
+2025-02-28 17:54:19.832387:reading shared memory
+2025-02-28 17:54:19.832424:copied to shared memory
+2025-02-28 17:54:19.832504:before teleop step
+2025-02-28 17:54:20.062944:teleop finished
+2025-02-28 17:54:20.083072:ik finished
+2025-02-28 17:54:20.104807:Main loop started
+2025-02-28 17:54:20.104951:reading shared memory
+2025-02-28 17:54:20.104975:copied to shared memory
+2025-02-28 17:54:20.105032:before teleop step
+2025-02-28 17:54:20.197233:teleop finished
+2025-02-28 17:54:20.227700:ik finished
+2025-02-28 17:54:20.253897:Main loop started
+2025-02-28 17:54:20.254185:reading shared memory
+2025-02-28 17:54:20.254226:copied to shared memory
+2025-02-28 17:54:20.254544:before teleop step
+2025-02-28 17:54:20.441940:teleop finished
+2025-02-28 17:54:20.460431:ik finished
+2025-02-28 17:54:20.504329:Main loop started
+2025-02-28 17:54:20.504400:reading shared memory
+2025-02-28 17:54:20.504424:copied to shared memory
+2025-02-28 17:54:20.504569:before teleop step
+2025-02-28 17:54:20.730736:teleop finished
+2025-02-28 17:54:20.749331:ik finished
+2025-02-28 17:54:20.778826:Main loop started
+2025-02-28 17:54:20.781074:reading shared memory
+2025-02-28 17:54:20.784737:copied to shared memory
+2025-02-28 17:54:20.784824:before teleop step
+2025-02-28 17:54:20.930113:teleop finished
+2025-02-28 17:54:20.947118:ik finished
+2025-02-28 17:54:20.968017:Main loop started
+2025-02-28 17:54:20.972041:reading shared memory
+2025-02-28 17:54:20.972095:copied to shared memory
+2025-02-28 17:54:20.972136:before teleop step
+2025-02-28 17:54:21.134347:teleop finished
+2025-02-28 17:54:21.154747:ik finished
+2025-02-28 17:54:21.192128:Main loop started
+2025-02-28 17:54:21.196088:reading shared memory
+2025-02-28 17:54:21.196164:copied to shared memory
+2025-02-28 17:54:21.196587:before teleop step
+2025-02-28 17:54:21.420864:teleop finished
+2025-02-28 17:54:21.438590:ik finished
+2025-02-28 17:54:21.474111:Main loop started
+2025-02-28 17:54:21.474166:reading shared memory
+2025-02-28 17:54:21.474187:copied to shared memory
+2025-02-28 17:54:21.474241:before teleop step
+2025-02-28 17:54:21.595018:teleop finished
+2025-02-28 17:54:21.612750:ik finished
+2025-02-28 17:54:21.628787:Main loop started
+2025-02-28 17:54:21.628823:reading shared memory
+2025-02-28 17:54:21.628837:copied to shared memory
+2025-02-28 17:54:21.628889:before teleop step
+2025-02-28 17:54:21.745143:teleop finished
+2025-02-28 17:54:21.762828:ik finished
+2025-02-28 17:54:21.793339:Main loop started
+2025-02-28 17:54:21.798377:reading shared memory
+2025-02-28 17:54:21.798440:copied to shared memory
+2025-02-28 17:54:21.798507:before teleop step
+2025-02-28 17:54:22.081577:teleop finished
+2025-02-28 17:54:22.096993:ik finished
+2025-02-28 17:54:22.115281:Main loop started
+2025-02-28 17:54:22.115325:reading shared memory
+2025-02-28 17:54:22.115340:copied to shared memory
+2025-02-28 17:54:22.115396:before teleop step
+2025-02-28 17:54:22.359631:teleop finished
+2025-02-28 17:54:22.391138:ik finished
+2025-02-28 17:54:22.426158:Main loop started
+2025-02-28 17:54:22.426504:reading shared memory
+2025-02-28 17:54:22.426539:copied to shared memory
+2025-02-28 17:54:22.426585:before teleop step
+2025-02-28 17:54:22.534291:teleop finished
+2025-02-28 17:54:22.547890:ik finished
+2025-02-28 17:54:22.582516:Main loop started
+2025-02-28 17:54:22.582554:reading shared memory
+2025-02-28 17:54:22.582701:copied to shared memory
+2025-02-28 17:54:22.582757:before teleop step
+2025-02-28 17:54:22.691867:teleop finished
+2025-02-28 17:54:22.710076:ik finished
+2025-02-28 17:54:22.748121:Main loop started
+2025-02-28 17:54:22.748194:reading shared memory
+2025-02-28 17:54:22.748230:copied to shared memory
+2025-02-28 17:54:22.748301:before teleop step
+2025-02-28 17:54:22.926376:teleop finished
+2025-02-28 17:54:22.944129:ik finished
+2025-02-28 17:54:22.984946:Main loop started
+2025-02-28 17:54:22.988137:reading shared memory
+2025-02-28 17:54:22.989796:copied to shared memory
+2025-02-28 17:54:22.990959:before teleop step
+2025-02-28 17:54:23.161769:teleop finished
+2025-02-28 17:54:23.181860:ik finished
+2025-02-28 17:54:23.221785:Main loop started
+2025-02-28 17:54:23.223053:reading shared memory
+2025-02-28 17:54:23.223399:copied to shared memory
+2025-02-28 17:54:23.223530:before teleop step
+2025-02-28 17:54:23.389305:teleop finished
+2025-02-28 17:54:23.405235:ik finished
+2025-02-28 17:54:23.449927:Main loop started
+2025-02-28 17:54:23.449993:reading shared memory
+2025-02-28 17:54:23.450018:copied to shared memory
+2025-02-28 17:54:23.450076:before teleop step
+2025-02-28 17:54:23.630066:teleop finished
+2025-02-28 17:54:23.649644:ik finished
+2025-02-28 17:54:23.687117:Main loop started
+2025-02-28 17:54:23.687188:reading shared memory
+2025-02-28 17:54:23.687209:copied to shared memory
+2025-02-28 17:54:23.687303:before teleop step
+2025-02-28 17:54:23.894420:teleop finished
+2025-02-28 17:54:23.907648:ik finished
+2025-02-28 17:54:23.961538:Main loop started
+2025-02-28 17:54:23.961594:reading shared memory
+2025-02-28 17:54:23.961619:copied to shared memory
+2025-02-28 17:54:23.961942:before teleop step
+2025-02-28 17:54:24.112512:teleop finished
+2025-02-28 17:54:24.131494:ik finished
+2025-02-28 17:54:24.178766:Main loop started
+2025-02-28 17:54:24.178817:reading shared memory
+2025-02-28 17:54:24.178840:copied to shared memory
+2025-02-28 17:54:24.178893:before teleop step
+2025-02-28 17:54:24.365816:teleop finished
+2025-02-28 17:54:24.380479:ik finished
+2025-02-28 17:54:24.421759:Main loop started
+2025-02-28 17:54:24.421810:reading shared memory
+2025-02-28 17:54:24.421838:copied to shared memory
+2025-02-28 17:54:24.421999:before teleop step
+2025-02-28 17:54:24.707250:teleop finished
+2025-02-28 17:54:24.724017:ik finished
+2025-02-28 17:54:24.778924:Main loop started
+2025-02-28 17:54:24.779003:reading shared memory
+2025-02-28 17:54:24.779029:copied to shared memory
+2025-02-28 17:54:24.781964:before teleop step
+2025-02-28 17:54:24.977020:teleop finished
+2025-02-28 17:54:24.995539:ik finished
+2025-02-28 17:54:25.038588:Main loop started
+2025-02-28 17:54:25.041781:reading shared memory
+2025-02-28 17:54:25.042817:copied to shared memory
+2025-02-28 17:54:25.043212:before teleop step
+2025-02-28 17:54:25.256594:teleop finished
+2025-02-28 17:54:25.268257:ik finished
+2025-02-28 17:54:25.297242:Main loop started
+2025-02-28 17:54:25.297481:reading shared memory
+2025-02-28 17:54:25.297513:copied to shared memory
+2025-02-28 17:54:25.297565:before teleop step
+2025-02-28 17:54:25.384529:teleop finished
+2025-02-28 17:54:25.400912:ik finished
+2025-02-28 17:54:25.429166:Main loop started
+2025-02-28 17:54:25.430656:reading shared memory
+2025-02-28 17:54:25.430766:copied to shared memory
+2025-02-28 17:54:25.430920:before teleop step
+2025-02-28 17:54:25.564664:teleop finished
+2025-02-28 17:54:25.580303:ik finished
+2025-02-28 17:54:25.605674:Main loop started
+2025-02-28 17:54:25.607052:reading shared memory
+2025-02-28 17:54:25.608227:copied to shared memory
+2025-02-28 17:54:25.609338:before teleop step
+2025-02-28 17:54:25.674541:teleop finished
+2025-02-28 17:54:25.693588:ik finished
+2025-02-28 17:54:25.722570:Main loop started
+2025-02-28 17:54:25.722616:reading shared memory
+2025-02-28 17:54:25.724933:copied to shared memory
+2025-02-28 17:54:25.725100:before teleop step
+2025-02-28 17:54:25.824005:teleop finished
+2025-02-28 17:54:25.840012:ik finished
+2025-02-28 17:54:25.860141:Main loop started
+2025-02-28 17:54:25.860183:reading shared memory
+2025-02-28 17:54:25.860199:copied to shared memory
+2025-02-28 17:54:25.860243:before teleop step
+2025-02-28 17:54:25.942660:teleop finished
+2025-02-28 17:54:25.955458:ik finished
+2025-02-28 17:54:25.992046:Main loop started
+2025-02-28 17:54:25.992699:reading shared memory
+2025-02-28 17:54:25.992729:copied to shared memory
+2025-02-28 17:54:25.992775:before teleop step
+2025-02-28 17:54:26.077007:teleop finished
+2025-02-28 17:54:26.093213:ik finished
+2025-02-28 17:54:26.129164:Main loop started
+2025-02-28 17:54:26.129211:reading shared memory
+2025-02-28 17:54:26.129239:copied to shared memory
+2025-02-28 17:54:26.129307:before teleop step
+2025-02-28 17:54:26.229103:teleop finished
+2025-02-28 17:54:26.244051:ik finished
+2025-02-28 17:54:26.276007:Main loop started
+2025-02-28 17:54:26.278184:reading shared memory
+2025-02-28 17:54:26.278285:copied to shared memory
+2025-02-28 17:54:26.281992:before teleop step
+2025-02-28 17:54:26.378407:teleop finished
+2025-02-28 17:54:26.393039:ik finished
+2025-02-28 17:54:26.433650:Main loop started
+2025-02-28 17:54:26.433849:reading shared memory
+2025-02-28 17:54:26.433876:copied to shared memory
+2025-02-28 17:54:26.433943:before teleop step
+2025-02-28 17:54:26.554760:teleop finished
+2025-02-28 17:54:26.570040:ik finished
+2025-02-28 17:54:26.607156:Main loop started
+2025-02-28 17:54:26.609886:reading shared memory
+2025-02-28 17:54:26.609960:copied to shared memory
+2025-02-28 17:54:26.610052:before teleop step
+2025-02-28 17:54:26.708025:teleop finished
+2025-02-28 17:54:26.722983:ik finished
+2025-02-28 17:54:26.751418:Main loop started
+2025-02-28 17:54:26.751489:reading shared memory
+2025-02-28 17:54:26.751514:copied to shared memory
+2025-02-28 17:54:26.751591:before teleop step
+2025-02-28 17:54:26.802139:teleop finished
+2025-02-28 17:54:26.813699:ik finished
+2025-02-28 17:54:26.850962:Main loop started
+2025-02-28 17:54:26.851005:reading shared memory
+2025-02-28 17:54:26.851025:copied to shared memory
+2025-02-28 17:54:26.851127:before teleop step
+2025-02-28 17:54:26.920081:teleop finished
+2025-02-28 17:54:26.930896:ik finished
+2025-02-28 17:54:26.959820:Main loop started
+2025-02-28 17:54:26.959867:reading shared memory
+2025-02-28 17:54:26.959891:copied to shared memory
+2025-02-28 17:54:26.959944:before teleop step
+2025-02-28 17:54:27.026798:teleop finished
+2025-02-28 17:54:27.035539:ik finished
+2025-02-28 17:54:27.044112:Main loop started
+2025-02-28 17:54:27.045528:reading shared memory
+2025-02-28 17:54:27.045569:copied to shared memory
+2025-02-28 17:54:27.045628:before teleop step
+2025-02-28 17:54:27.101871:teleop finished
+2025-02-28 17:54:27.114423:ik finished
+2025-02-28 17:54:27.154994:Main loop started
+2025-02-28 17:54:27.155049:reading shared memory
+2025-02-28 17:54:27.155264:copied to shared memory
+2025-02-28 17:54:27.157364:before teleop step
+2025-02-28 17:54:27.246172:teleop finished
+2025-02-28 17:54:27.260001:ik finished
+2025-02-28 17:54:27.294122:Main loop started
+2025-02-28 17:54:27.298230:reading shared memory
+2025-02-28 17:54:27.298292:copied to shared memory
+2025-02-28 17:54:27.298380:before teleop step
+2025-02-28 17:54:27.422367:teleop finished
+2025-02-28 17:54:27.435906:ik finished
+2025-02-28 17:54:27.471431:Main loop started
+2025-02-28 17:54:27.473464:reading shared memory
+2025-02-28 17:54:27.473494:copied to shared memory
+2025-02-28 17:54:27.474120:before teleop step
+2025-02-28 17:54:27.781998:teleop finished
+2025-02-28 17:54:27.802862:ik finished
+2025-02-28 17:54:27.832324:Main loop started
+2025-02-28 17:54:27.835754:reading shared memory
+2025-02-28 17:54:27.836710:copied to shared memory
+2025-02-28 17:54:27.836803:before teleop step
+2025-02-28 17:54:27.959435:teleop finished
+2025-02-28 17:54:27.977144:ik finished
+2025-02-28 17:54:28.038444:Main loop started
+2025-02-28 17:54:28.038519:reading shared memory
+2025-02-28 17:54:28.038551:copied to shared memory
+2025-02-28 17:54:28.038622:before teleop step
+2025-02-28 17:54:28.149870:teleop finished
+2025-02-28 17:54:28.164032:ik finished
+2025-02-28 17:54:28.219983:Main loop started
+2025-02-28 17:54:28.220848:reading shared memory
+2025-02-28 17:54:28.220887:copied to shared memory
+2025-02-28 17:54:28.221607:before teleop step
+2025-02-28 17:54:28.325906:teleop finished
+2025-02-28 17:54:28.339208:ik finished
+2025-02-28 17:54:28.391682:Main loop started
+2025-02-28 17:54:28.391734:reading shared memory
+2025-02-28 17:54:28.391762:copied to shared memory
+2025-02-28 17:54:28.391814:before teleop step
+2025-02-28 17:54:28.465347:teleop finished
+2025-02-28 17:54:28.482725:ik finished
+2025-02-28 17:54:28.515052:Main loop started
+2025-02-28 17:54:28.519701:reading shared memory
+2025-02-28 17:54:28.520922:copied to shared memory
+2025-02-28 17:54:28.521022:before teleop step
+2025-02-28 17:54:28.689489:teleop finished
+2025-02-28 17:54:28.720664:ik finished
+2025-02-28 17:54:28.784896:Main loop started
+2025-02-28 17:54:28.786181:reading shared memory
+2025-02-28 17:54:28.786215:copied to shared memory
+2025-02-28 17:54:28.786263:before teleop step
+2025-02-28 17:54:28.931110:teleop finished
+2025-02-28 17:54:28.945662:ik finished
+2025-02-28 17:54:28.986679:Main loop started
+2025-02-28 17:54:28.986942:reading shared memory
+2025-02-28 17:54:28.986971:copied to shared memory
+2025-02-28 17:54:28.987028:before teleop step
+2025-02-28 17:54:29.078104:teleop finished
+2025-02-28 17:54:29.094712:ik finished
+2025-02-28 17:54:29.157789:Main loop started
+2025-02-28 17:54:29.157837:reading shared memory
+2025-02-28 17:54:29.157918:copied to shared memory
+2025-02-28 17:54:29.157977:before teleop step
+2025-02-28 17:54:29.268548:teleop finished
+2025-02-28 17:54:29.283557:ik finished
+2025-02-28 17:54:29.342071:Main loop started
+2025-02-28 17:54:29.342147:reading shared memory
+2025-02-28 17:54:29.342170:copied to shared memory
+2025-02-28 17:54:29.347420:before teleop step
+2025-02-28 17:54:29.568357:teleop finished
+2025-02-28 17:54:29.586976:ik finished
+2025-02-28 17:54:29.619256:Main loop started
+2025-02-28 17:54:29.619321:reading shared memory
+2025-02-28 17:54:29.619343:copied to shared memory
+2025-02-28 17:54:29.619407:before teleop step
+2025-02-28 17:54:29.726251:teleop finished
+2025-02-28 17:54:29.736982:ik finished
+2025-02-28 17:54:29.795863:Main loop started
+2025-02-28 17:54:29.795911:reading shared memory
+2025-02-28 17:54:29.795933:copied to shared memory
+2025-02-28 17:54:29.795983:before teleop step
+2025-02-28 17:54:29.855884:teleop finished
+2025-02-28 17:54:29.870617:ik finished
+2025-02-28 17:54:29.930775:Main loop started
+2025-02-28 17:54:29.930837:reading shared memory
+2025-02-28 17:54:29.930858:copied to shared memory
+2025-02-28 17:54:29.930924:before teleop step
+2025-02-28 17:54:29.992417:teleop finished
+2025-02-28 17:54:30.005566:ik finished
+2025-02-28 17:54:30.052558:Main loop started
+2025-02-28 17:54:30.053562:reading shared memory
+2025-02-28 17:54:30.053586:copied to shared memory
+2025-02-28 17:54:30.053629:before teleop step
+2025-02-28 17:54:30.130831:teleop finished
+2025-02-28 17:54:30.143158:ik finished
+2025-02-28 17:54:30.207262:Main loop started
+2025-02-28 17:54:30.207333:reading shared memory
+2025-02-28 17:54:30.207355:copied to shared memory
+2025-02-28 17:54:30.207411:before teleop step
+2025-02-28 17:54:30.275314:teleop finished
+2025-02-28 17:54:30.288768:ik finished
+2025-02-28 17:54:30.347389:Main loop started
+2025-02-28 17:54:30.347458:reading shared memory
+2025-02-28 17:54:30.347497:copied to shared memory
+2025-02-28 17:54:30.347580:before teleop step
+2025-02-28 17:54:30.524023:teleop finished
+2025-02-28 17:54:30.541235:ik finished
+2025-02-28 17:54:30.626157:Main loop started
+2025-02-28 17:54:30.626205:reading shared memory
+2025-02-28 17:54:30.626225:copied to shared memory
+2025-02-28 17:54:30.626280:before teleop step
+2025-02-28 17:54:30.754883:teleop finished
+2025-02-28 17:54:30.772257:ik finished
+2025-02-28 17:54:30.838123:Main loop started
+2025-02-28 17:54:30.838171:reading shared memory
+2025-02-28 17:54:30.838199:copied to shared memory
+2025-02-28 17:54:30.838255:before teleop step
+2025-02-28 17:54:30.927983:teleop finished
+2025-02-28 17:54:30.952292:ik finished
+2025-02-28 17:54:31.018546:Main loop started
+2025-02-28 17:54:31.018611:reading shared memory
+2025-02-28 17:54:31.018649:copied to shared memory
+2025-02-28 17:54:31.018715:before teleop step
+2025-02-28 17:54:31.143630:teleop finished
+2025-02-28 17:54:31.158554:ik finished
+2025-02-28 17:54:31.212581:Main loop started
+2025-02-28 17:54:31.212702:reading shared memory
+2025-02-28 17:54:31.212723:copied to shared memory
+2025-02-28 17:54:31.212782:before teleop step
+2025-02-28 17:54:31.359162:teleop finished
+2025-02-28 17:54:31.367727:ik finished
+2025-02-28 17:54:31.409476:Main loop started
+2025-02-28 17:54:31.409552:reading shared memory
+2025-02-28 17:54:31.409577:copied to shared memory
+2025-02-28 17:54:31.409641:before teleop step
+2025-02-28 17:54:31.556466:teleop finished
+2025-02-28 17:54:31.570924:ik finished
+2025-02-28 17:54:31.596218:Main loop started
+2025-02-28 17:54:31.597107:reading shared memory
+2025-02-28 17:54:31.597143:copied to shared memory
+2025-02-28 17:54:31.597196:before teleop step
+2025-02-28 17:54:31.738965:teleop finished
+2025-02-28 17:54:31.753332:ik finished
+2025-02-28 17:54:31.829900:Main loop started
+2025-02-28 17:54:31.834181:reading shared memory
+2025-02-28 17:54:31.839828:copied to shared memory
+2025-02-28 17:54:31.839986:before teleop step
+2025-02-28 17:54:31.971896:teleop finished
+2025-02-28 17:54:31.985473:ik finished
+2025-02-28 17:54:32.032128:Main loop started
+2025-02-28 17:54:32.032190:reading shared memory
+2025-02-28 17:54:32.032218:copied to shared memory
+2025-02-28 17:54:32.032291:before teleop step
+2025-02-28 17:54:32.306470:teleop finished
+2025-02-28 17:54:32.322531:ik finished
+2025-02-28 17:54:32.363794:Main loop started
+2025-02-28 17:54:32.365410:reading shared memory
+2025-02-28 17:54:32.365436:copied to shared memory
+2025-02-28 17:54:32.365497:before teleop step
+2025-02-28 17:54:32.529765:teleop finished
+2025-02-28 17:54:32.543862:ik finished
+2025-02-28 17:54:32.607845:Main loop started
+2025-02-28 17:54:32.607902:reading shared memory
+2025-02-28 17:54:32.607991:copied to shared memory
+2025-02-28 17:54:32.608703:before teleop step
+2025-02-28 17:54:32.670132:teleop finished
+2025-02-28 17:54:32.682966:ik finished
+2025-02-28 17:54:32.733875:Main loop started
+2025-02-28 17:54:32.733948:reading shared memory
+2025-02-28 17:54:32.733982:copied to shared memory
+2025-02-28 17:54:32.734037:before teleop step
+2025-02-28 17:54:32.825987:teleop finished
+2025-02-28 17:54:32.845246:ik finished
+2025-02-28 17:54:32.889701:Main loop started
+2025-02-28 17:54:32.889832:reading shared memory
+2025-02-28 17:54:32.896729:copied to shared memory
+2025-02-28 17:54:32.900197:before teleop step
+2025-02-28 17:54:33.014669:teleop finished
+2025-02-28 17:54:33.028485:ik finished
+2025-02-28 17:54:33.181655:Main loop started
+2025-02-28 17:54:33.182816:reading shared memory
+2025-02-28 17:54:33.183054:copied to shared memory
+2025-02-28 17:54:33.183145:before teleop step
+2025-02-28 17:54:33.316663:teleop finished
+2025-02-28 17:54:33.339406:ik finished
+2025-02-28 17:54:33.407553:Main loop started
+2025-02-28 17:54:33.407644:reading shared memory
+2025-02-28 17:54:33.410570:copied to shared memory
+2025-02-28 17:54:33.411763:before teleop step
+2025-02-28 17:54:33.507209:teleop finished
+2025-02-28 17:54:33.521953:ik finished
+2025-02-28 17:54:33.574908:Main loop started
+2025-02-28 17:54:33.574942:reading shared memory
+2025-02-28 17:54:33.574957:copied to shared memory
+2025-02-28 17:54:33.574994:before teleop step
+2025-02-28 17:54:33.626580:teleop finished
+2025-02-28 17:54:33.637418:ik finished
+2025-02-28 17:54:33.694010:Main loop started
+2025-02-28 17:54:33.694053:reading shared memory
+2025-02-28 17:54:33.694068:copied to shared memory
+2025-02-28 17:54:33.694112:before teleop step
+2025-02-28 17:54:33.763213:teleop finished
+2025-02-28 17:54:33.775627:ik finished
+2025-02-28 17:54:33.821837:Main loop started
+2025-02-28 17:54:33.821894:reading shared memory
+2025-02-28 17:54:33.821910:copied to shared memory
+2025-02-28 17:54:33.825692:before teleop step
+2025-02-28 17:54:33.891847:teleop finished
+2025-02-28 17:54:33.911045:ik finished
+2025-02-28 17:54:33.973844:Main loop started
+2025-02-28 17:54:33.973894:reading shared memory
+2025-02-28 17:54:33.973922:copied to shared memory
+2025-02-28 17:54:33.973992:before teleop step
+2025-02-28 17:54:34.136766:teleop finished
+2025-02-28 17:54:34.149339:ik finished
+2025-02-28 17:54:34.225230:Main loop started
+2025-02-28 17:54:34.225303:reading shared memory
+2025-02-28 17:54:34.225335:copied to shared memory
+2025-02-28 17:54:34.225400:before teleop step
+2025-02-28 17:54:34.326873:teleop finished
+2025-02-28 17:54:34.341323:ik finished
+2025-02-28 17:54:34.426464:Main loop started
+2025-02-28 17:54:34.426609:reading shared memory
+2025-02-28 17:54:34.426682:copied to shared memory
+2025-02-28 17:54:34.426802:before teleop step
+2025-02-28 17:54:34.594178:teleop finished
+2025-02-28 17:54:34.606126:ik finished
+2025-02-28 17:54:34.666771:Main loop started
+2025-02-28 17:54:34.672124:reading shared memory
+2025-02-28 17:54:34.675405:copied to shared memory
+2025-02-28 17:54:34.675661:before teleop step
+2025-02-28 17:54:34.759324:teleop finished
+2025-02-28 17:54:34.774528:ik finished
+2025-02-28 17:54:34.842567:Main loop started
+2025-02-28 17:54:34.842623:reading shared memory
+2025-02-28 17:54:34.842653:copied to shared memory
+2025-02-28 17:54:34.842722:before teleop step
+2025-02-28 17:54:35.036938:teleop finished
+2025-02-28 17:54:35.052443:ik finished
+2025-02-28 17:54:35.125103:Main loop started
+2025-02-28 17:54:35.125157:reading shared memory
+2025-02-28 17:54:35.125181:copied to shared memory
+2025-02-28 17:54:35.125237:before teleop step
+2025-02-28 17:54:35.263179:teleop finished
+2025-02-28 17:54:35.276917:ik finished
+2025-02-28 17:54:35.353847:Main loop started
+2025-02-28 17:54:35.354930:reading shared memory
+2025-02-28 17:54:35.354983:copied to shared memory
+2025-02-28 17:54:35.355050:before teleop step
+2025-02-28 17:54:35.501181:teleop finished
+2025-02-28 17:54:35.519348:ik finished
+2025-02-28 17:54:35.550685:Main loop started
+2025-02-28 17:54:35.551610:reading shared memory
+2025-02-28 17:54:35.551636:copied to shared memory
+2025-02-28 17:54:35.551684:before teleop step
+2025-02-28 17:54:35.598643:teleop finished
+2025-02-28 17:54:35.607477:ik finished
+2025-02-28 17:54:35.651800:Main loop started
+2025-02-28 17:54:35.660079:reading shared memory
+2025-02-28 17:54:35.660122:copied to shared memory
+2025-02-28 17:54:35.660171:before teleop step
+2025-02-28 17:54:35.720648:teleop finished
+2025-02-28 17:54:35.740262:ik finished
+2025-02-28 17:54:35.798750:Main loop started
+2025-02-28 17:54:35.798797:reading shared memory
+2025-02-28 17:54:35.798819:copied to shared memory
+2025-02-28 17:54:35.798873:before teleop step
+2025-02-28 17:54:35.937300:teleop finished
+2025-02-28 17:54:35.956170:ik finished
+2025-02-28 17:54:36.024263:Main loop started
+2025-02-28 17:54:36.024309:reading shared memory
+2025-02-28 17:54:36.024325:copied to shared memory
+2025-02-28 17:54:36.024366:before teleop step
+2025-02-28 17:54:36.080115:teleop finished
+2025-02-28 17:54:36.090312:ik finished
+2025-02-28 17:54:36.151635:Main loop started
+2025-02-28 17:54:36.151695:reading shared memory
+2025-02-28 17:54:36.151713:copied to shared memory
+2025-02-28 17:54:36.151764:before teleop step
+2025-02-28 17:54:36.230689:teleop finished
+2025-02-28 17:54:36.245262:ik finished
+2025-02-28 17:54:36.280490:Main loop started
+2025-02-28 17:54:36.280607:reading shared memory
+2025-02-28 17:54:36.280636:copied to shared memory
+2025-02-28 17:54:36.281192:before teleop step
+2025-02-28 17:54:36.416089:teleop finished
+2025-02-28 17:54:36.440881:ik finished
+2025-02-28 17:54:36.495285:Main loop started
+2025-02-28 17:54:36.495360:reading shared memory
+2025-02-28 17:54:36.495388:copied to shared memory
+2025-02-28 17:54:36.495449:before teleop step
+2025-02-28 17:54:36.620255:teleop finished
+2025-02-28 17:54:36.635676:ik finished
+2025-02-28 17:54:36.691320:Main loop started
+2025-02-28 17:54:36.691376:reading shared memory
+2025-02-28 17:54:36.691398:copied to shared memory
+2025-02-28 17:54:36.691456:before teleop step
+2025-02-28 17:54:36.775254:teleop finished
+2025-02-28 17:54:36.793732:ik finished
+2025-02-28 17:54:36.842528:Main loop started
+2025-02-28 17:54:36.847650:reading shared memory
+2025-02-28 17:54:36.850796:copied to shared memory
+2025-02-28 17:54:36.851179:before teleop step
+2025-02-28 17:54:36.930525:teleop finished
+2025-02-28 17:54:36.941551:ik finished
+2025-02-28 17:54:36.994325:Main loop started
+2025-02-28 17:54:36.994683:reading shared memory
+2025-02-28 17:54:36.995967:copied to shared memory
+2025-02-28 17:54:36.998639:before teleop step
+2025-02-28 17:54:37.087639:teleop finished
+2025-02-28 17:54:37.103744:ik finished
+2025-02-28 17:54:37.165383:Main loop started
+2025-02-28 17:54:37.165443:reading shared memory
+2025-02-28 17:54:37.165489:copied to shared memory
+2025-02-28 17:54:37.165548:before teleop step
+2025-02-28 17:54:37.396755:teleop finished
+2025-02-28 17:54:37.413149:ik finished
+2025-02-28 17:54:37.493265:Main loop started
+2025-02-28 17:54:37.493496:reading shared memory
+2025-02-28 17:54:37.493528:copied to shared memory
+2025-02-28 17:54:37.495582:before teleop step
+2025-02-28 17:54:37.731477:teleop finished
+2025-02-28 17:54:37.749225:ik finished
+2025-02-28 17:54:37.789762:Main loop started
+2025-02-28 17:54:37.793384:reading shared memory
+2025-02-28 17:54:37.793922:copied to shared memory
+2025-02-28 17:54:37.794000:before teleop step
+2025-02-28 17:54:37.865958:teleop finished
+2025-02-28 17:54:37.877904:ik finished
+2025-02-28 17:54:37.965916:Main loop started
+2025-02-28 17:54:37.970815:reading shared memory
+2025-02-28 17:54:37.971291:copied to shared memory
+2025-02-28 17:54:37.971614:before teleop step
+2025-02-28 17:54:38.108583:teleop finished
+2025-02-28 17:54:38.125328:ik finished
+2025-02-28 17:54:38.196556:Main loop started
+2025-02-28 17:54:38.196600:reading shared memory
+2025-02-28 17:54:38.196616:copied to shared memory
+2025-02-28 17:54:38.196664:before teleop step
+2025-02-28 17:54:38.341402:teleop finished
+2025-02-28 17:54:38.359269:ik finished
+2025-02-28 17:54:38.429484:Main loop started
+2025-02-28 17:54:38.429546:reading shared memory
+2025-02-28 17:54:38.429571:copied to shared memory
+2025-02-28 17:54:38.429631:before teleop step
+2025-02-28 17:54:38.712556:teleop finished
+2025-02-28 17:54:38.729667:ik finished
+2025-02-28 17:54:38.798837:Main loop started
+2025-02-28 17:54:38.798883:reading shared memory
+2025-02-28 17:54:38.798906:copied to shared memory
+2025-02-28 17:54:38.798959:before teleop step
+2025-02-28 17:54:38.953446:teleop finished
+2025-02-28 17:54:38.980652:ik finished
+2025-02-28 17:54:39.043600:Main loop started
+2025-02-28 17:54:39.046080:reading shared memory
+2025-02-28 17:54:39.047030:copied to shared memory
+2025-02-28 17:54:39.047087:before teleop step
+2025-02-28 17:54:39.127390:teleop finished
+2025-02-28 17:54:39.142824:ik finished
+2025-02-28 17:54:39.205656:Main loop started
+2025-02-28 17:54:39.206524:reading shared memory
+2025-02-28 17:54:39.206586:copied to shared memory
+2025-02-28 17:54:39.206647:before teleop step
+2025-02-28 17:54:39.363864:teleop finished
+2025-02-28 17:54:39.376004:ik finished
+2025-02-28 17:54:39.422728:Main loop started
+2025-02-28 17:54:39.422782:reading shared memory
+2025-02-28 17:54:39.422798:copied to shared memory
+2025-02-28 17:54:39.422854:before teleop step
+2025-02-28 17:54:39.561134:teleop finished
+2025-02-28 17:54:39.578239:ik finished
+2025-02-28 17:54:39.688467:Main loop started
+2025-02-28 17:54:39.688678:reading shared memory
+2025-02-28 17:54:39.690603:copied to shared memory
+2025-02-28 17:54:39.693605:before teleop step
+2025-02-28 17:54:39.885842:teleop finished
+2025-02-28 17:54:39.904359:ik finished
+2025-02-28 17:54:40.016914:Main loop started
+2025-02-28 17:54:40.017069:reading shared memory
+2025-02-28 17:54:40.017097:copied to shared memory
+2025-02-28 17:54:40.017157:before teleop step
+2025-02-28 17:54:40.211228:teleop finished
+2025-02-28 17:54:40.233154:ik finished
+2025-02-28 17:54:40.315410:Main loop started
+2025-02-28 17:54:40.316612:reading shared memory
+2025-02-28 17:54:40.322358:copied to shared memory
+2025-02-28 17:54:40.324628:before teleop step
+2025-02-28 17:54:40.447471:teleop finished
+2025-02-28 17:54:40.459542:ik finished
+2025-02-28 17:54:40.529850:Main loop started
+2025-02-28 17:54:40.529928:reading shared memory
+2025-02-28 17:54:40.529949:copied to shared memory
+2025-02-28 17:54:40.529996:before teleop step
+2025-02-28 17:54:40.723873:teleop finished
+2025-02-28 17:54:40.740929:ik finished
+2025-02-28 17:54:40.809061:Main loop started
+2025-02-28 17:54:40.813689:reading shared memory
+2025-02-28 17:54:40.813730:copied to shared memory
+2025-02-28 17:54:40.813790:before teleop step
+2025-02-28 17:54:40.891424:teleop finished
+2025-02-28 17:54:40.902803:ik finished
+2025-02-28 17:54:40.999260:Main loop started
+2025-02-28 17:54:40.999328:reading shared memory
+2025-02-28 17:54:40.999672:copied to shared memory
+2025-02-28 17:54:40.999857:before teleop step
+2025-02-28 17:54:41.306800:teleop finished
+2025-02-28 17:54:41.325636:ik finished
+2025-02-28 17:54:41.359288:Main loop started
+2025-02-28 17:54:41.359348:reading shared memory
+2025-02-28 17:54:41.359373:copied to shared memory
+2025-02-28 17:54:41.359433:before teleop step
+2025-02-28 17:54:41.557511:teleop finished
+2025-02-28 17:54:41.577058:ik finished
+2025-02-28 17:54:41.668368:Main loop started
+2025-02-28 17:54:41.668428:reading shared memory
+2025-02-28 17:54:41.668450:copied to shared memory
+2025-02-28 17:54:41.668503:before teleop step
+2025-02-28 17:54:41.806289:teleop finished
+2025-02-28 17:54:41.822675:ik finished
+2025-02-28 17:54:41.912850:Main loop started
+2025-02-28 17:54:41.912924:reading shared memory
+2025-02-28 17:54:41.912948:copied to shared memory
+2025-02-28 17:54:41.913008:before teleop step
+2025-02-28 17:54:42.014067:teleop finished
+2025-02-28 17:54:42.026483:ik finished
+2025-02-28 17:54:42.074357:Main loop started
+2025-02-28 17:54:42.074665:reading shared memory
+2025-02-28 17:54:42.074713:copied to shared memory
+2025-02-28 17:54:42.074778:before teleop step
+2025-02-28 17:54:42.178104:teleop finished
+2025-02-28 17:54:42.196047:ik finished
+2025-02-28 17:54:42.259409:Main loop started
+2025-02-28 17:54:42.262605:reading shared memory
+2025-02-28 17:54:42.262655:copied to shared memory
+2025-02-28 17:54:42.262838:before teleop step
+2025-02-28 17:54:42.464171:teleop finished
+2025-02-28 17:54:42.478970:ik finished
+2025-02-28 17:54:42.548941:Main loop started
+2025-02-28 17:54:42.549019:reading shared memory
+2025-02-28 17:54:42.549042:copied to shared memory
+2025-02-28 17:54:42.549123:before teleop step
+2025-02-28 17:54:42.743980:teleop finished
+2025-02-28 17:54:42.769364:ik finished
+2025-02-28 17:54:42.834577:Main loop started
+2025-02-28 17:54:42.836258:reading shared memory
+2025-02-28 17:54:42.836581:copied to shared memory
+2025-02-28 17:54:42.836648:before teleop step
+2025-02-28 17:54:42.992299:teleop finished
+2025-02-28 17:54:43.013158:ik finished
+2025-02-28 17:54:43.050107:Main loop started
+2025-02-28 17:54:43.050681:reading shared memory
+2025-02-28 17:54:43.050705:copied to shared memory
+2025-02-28 17:54:43.050755:before teleop step
+2025-02-28 17:54:43.153543:teleop finished
+2025-02-28 17:54:43.172438:ik finished
+2025-02-28 17:54:43.240605:Main loop started
+2025-02-28 17:54:43.240656:reading shared memory
+2025-02-28 17:54:43.240862:copied to shared memory
+2025-02-28 17:54:43.240916:before teleop step
+2025-02-28 17:54:43.347989:teleop finished
+2025-02-28 17:54:43.361724:ik finished
+2025-02-28 17:54:43.425710:Main loop started
+2025-02-28 17:54:43.425800:reading shared memory
+2025-02-28 17:54:43.425825:copied to shared memory
+2025-02-28 17:54:43.425892:before teleop step
+2025-02-28 17:54:43.634706:teleop finished
+2025-02-28 17:54:43.646732:ik finished
+2025-02-28 17:54:43.710450:Main loop started
+2025-02-28 17:54:43.710516:reading shared memory
+2025-02-28 17:54:43.710533:copied to shared memory
+2025-02-28 17:54:43.710577:before teleop step
+2025-02-28 17:54:43.768910:teleop finished
+2025-02-28 17:54:43.782224:ik finished
+2025-02-28 17:54:43.838656:Main loop started
+2025-02-28 17:54:43.838736:reading shared memory
+2025-02-28 17:54:43.838987:copied to shared memory
+2025-02-28 17:54:43.839097:before teleop step
+2025-02-28 17:54:43.935827:teleop finished
+2025-02-28 17:54:43.966239:ik finished
+2025-02-28 17:54:44.034990:Main loop started
+2025-02-28 17:54:44.036485:reading shared memory
+2025-02-28 17:54:44.036533:copied to shared memory
+2025-02-28 17:54:44.036585:before teleop step
+2025-02-28 17:54:44.190877:teleop finished
+2025-02-28 17:54:44.209407:ik finished
+2025-02-28 17:54:44.269797:Main loop started
+2025-02-28 17:54:44.270132:reading shared memory
+2025-02-28 17:54:44.270440:copied to shared memory
+2025-02-28 17:54:44.270587:before teleop step
+2025-02-28 17:54:44.378665:teleop finished
+2025-02-28 17:54:44.385702:ik finished
+2025-02-28 17:54:44.437485:Main loop started
+2025-02-28 17:54:44.437527:reading shared memory
+2025-02-28 17:54:44.437542:copied to shared memory
+2025-02-28 17:54:44.437582:before teleop step
+2025-02-28 17:54:44.597114:teleop finished
+2025-02-28 17:54:44.611619:ik finished
+2025-02-28 17:54:44.651723:Main loop started
+2025-02-28 17:54:44.651768:reading shared memory
+2025-02-28 17:54:44.651782:copied to shared memory
+2025-02-28 17:54:44.651849:before teleop step
+2025-02-28 17:54:44.902695:teleop finished
+2025-02-28 17:54:44.925667:ik finished
+2025-02-28 17:54:44.993592:Main loop started
+2025-02-28 17:54:44.993640:reading shared memory
+2025-02-28 17:54:44.994036:copied to shared memory
+2025-02-28 17:54:44.994106:before teleop step
+2025-02-28 17:54:45.102353:teleop finished
+2025-02-28 17:54:45.124327:ik finished
+2025-02-28 17:54:45.239059:Main loop started
+2025-02-28 17:54:45.244012:reading shared memory
+2025-02-28 17:54:45.244054:copied to shared memory
+2025-02-28 17:54:45.245330:before teleop step
+2025-02-28 17:54:45.330695:teleop finished
+2025-02-28 17:54:45.347194:ik finished
+2025-02-28 17:54:45.414423:Main loop started
+2025-02-28 17:54:45.414483:reading shared memory
+2025-02-28 17:54:45.414535:copied to shared memory
+2025-02-28 17:54:45.414593:before teleop step
+2025-02-28 17:54:45.483810:teleop finished
+2025-02-28 17:54:45.497787:ik finished
+2025-02-28 17:54:45.577693:Main loop started
+2025-02-28 17:54:45.577742:reading shared memory
+2025-02-28 17:54:45.579562:copied to shared memory
+2025-02-28 17:54:45.579629:before teleop step
+2025-02-28 17:54:45.684118:teleop finished
+2025-02-28 17:54:45.701034:ik finished
+2025-02-28 17:54:45.785854:Main loop started
+2025-02-28 17:54:45.785896:reading shared memory
+2025-02-28 17:54:45.785910:copied to shared memory
+2025-02-28 17:54:45.785957:before teleop step
+2025-02-28 17:54:45.968772:teleop finished
+2025-02-28 17:54:45.995013:ik finished
+2025-02-28 17:54:46.146700:Main loop started
+2025-02-28 17:54:46.149334:reading shared memory
+2025-02-28 17:54:46.151040:copied to shared memory
+2025-02-28 17:54:46.154015:before teleop step
+2025-02-28 17:54:46.311349:teleop finished
+2025-02-28 17:54:46.331660:ik finished
+2025-02-28 17:54:46.446798:Main loop started
+2025-02-28 17:54:46.446944:reading shared memory
+2025-02-28 17:54:46.447022:copied to shared memory
+2025-02-28 17:54:46.447155:before teleop step
+2025-02-28 17:54:46.647795:teleop finished
+2025-02-28 17:54:46.672885:ik finished
+2025-02-28 17:54:46.753090:Main loop started
+2025-02-28 17:54:46.754407:reading shared memory
+2025-02-28 17:54:46.754472:copied to shared memory
+2025-02-28 17:54:46.754557:before teleop step
+2025-02-28 17:54:46.859700:teleop finished
+2025-02-28 17:54:46.876210:ik finished
+2025-02-28 17:54:46.938791:Main loop started
+2025-02-28 17:54:46.939896:reading shared memory
+2025-02-28 17:54:46.939929:copied to shared memory
+2025-02-28 17:54:46.939992:before teleop step
+2025-02-28 17:54:47.067485:teleop finished
+2025-02-28 17:54:47.089894:ik finished
+2025-02-28 17:54:47.179117:Main loop started
+2025-02-28 17:54:47.179183:reading shared memory
+2025-02-28 17:54:47.179210:copied to shared memory
+2025-02-28 17:54:47.179267:before teleop step
+2025-02-28 17:54:47.373600:teleop finished
+2025-02-28 17:54:47.392414:ik finished
+2025-02-28 17:54:47.476130:Main loop started
+2025-02-28 17:54:47.479534:reading shared memory
+2025-02-28 17:54:47.479824:copied to shared memory
+2025-02-28 17:54:47.479935:before teleop step
+2025-02-28 17:54:47.545374:teleop finished
+2025-02-28 17:54:47.562577:ik finished
+2025-02-28 17:54:47.646416:Main loop started
+2025-02-28 17:54:47.646489:reading shared memory
+2025-02-28 17:54:47.646514:copied to shared memory
+2025-02-28 17:54:47.646587:before teleop step
+2025-02-28 17:54:47.867598:teleop finished
+2025-02-28 17:54:47.879637:ik finished
+2025-02-28 17:54:47.966288:Main loop started
+2025-02-28 17:54:47.966344:reading shared memory
+2025-02-28 17:54:47.970498:copied to shared memory
+2025-02-28 17:54:47.974395:before teleop step
+2025-02-28 17:54:48.300921:teleop finished
+2025-02-28 17:54:48.326795:ik finished
+2025-02-28 17:54:48.429447:Main loop started
+2025-02-28 17:54:48.431324:reading shared memory
+2025-02-28 17:54:48.431494:copied to shared memory
+2025-02-28 17:54:48.431652:before teleop step
+2025-02-28 17:54:48.705740:teleop finished
+2025-02-28 17:54:48.720168:ik finished
+2025-02-28 17:54:48.804317:Main loop started
+2025-02-28 17:54:48.805583:reading shared memory
+2025-02-28 17:54:48.805672:copied to shared memory
+2025-02-28 17:54:48.805815:before teleop step
+2025-02-28 17:54:48.860417:teleop finished
+2025-02-28 17:54:48.873167:ik finished
+2025-02-28 17:54:48.949722:Main loop started
+2025-02-28 17:54:48.953707:reading shared memory
+2025-02-28 17:54:48.953941:copied to shared memory
+2025-02-28 17:54:48.957824:before teleop step
+2025-02-28 17:54:49.084190:teleop finished
+2025-02-28 17:54:49.103494:ik finished
+2025-02-28 17:54:49.221835:Main loop started
+2025-02-28 17:54:49.221907:reading shared memory
+2025-02-28 17:54:49.221934:copied to shared memory
+2025-02-28 17:54:49.221996:before teleop step
+2025-02-28 17:54:49.371720:teleop finished
+2025-02-28 17:54:49.381401:ik finished
+2025-02-28 17:54:49.485153:Main loop started
+2025-02-28 17:54:49.485643:reading shared memory
+2025-02-28 17:54:49.485720:copied to shared memory
+2025-02-28 17:54:49.488008:before teleop step
+2025-02-28 17:54:49.649930:teleop finished
+2025-02-28 17:54:49.660821:ik finished
+2025-02-28 17:54:49.736779:Main loop started
+2025-02-28 17:54:49.741387:reading shared memory
+2025-02-28 17:54:49.741748:copied to shared memory
+2025-02-28 17:54:49.743189:before teleop step
+2025-02-28 17:54:50.073631:teleop finished
+2025-02-28 17:54:50.087957:ik finished
+2025-02-28 17:54:50.149394:Main loop started
+2025-02-28 17:54:50.152262:reading shared memory
+2025-02-28 17:54:50.154401:copied to shared memory
+2025-02-28 17:54:50.154553:before teleop step
+2025-02-28 17:54:50.660065:teleop finished
+2025-02-28 17:54:50.677195:ik finished
+2025-02-28 17:54:50.734216:Main loop started
+2025-02-28 17:54:50.739682:reading shared memory
+2025-02-28 17:54:50.740696:copied to shared memory
+2025-02-28 17:54:50.740773:before teleop step
+2025-02-28 17:54:50.963498:teleop finished
+2025-02-28 17:54:50.981898:ik finished
+2025-02-28 17:54:51.067698:Main loop started
+2025-02-28 17:54:51.067930:reading shared memory
+2025-02-28 17:54:51.068005:copied to shared memory
+2025-02-28 17:54:51.068326:before teleop step
+2025-02-28 17:54:51.351425:teleop finished
+2025-02-28 17:54:51.364494:ik finished
+2025-02-28 17:54:51.465024:Main loop started
+2025-02-28 17:54:51.465095:reading shared memory
+2025-02-28 17:54:51.465121:copied to shared memory
+2025-02-28 17:54:51.465181:before teleop step
+2025-02-28 17:54:51.784847:teleop finished
+2025-02-28 17:54:51.804121:ik finished
+2025-02-28 17:54:51.904717:Main loop started
+2025-02-28 17:54:51.908287:reading shared memory
+2025-02-28 17:54:51.908821:copied to shared memory
+2025-02-28 17:54:51.909996:before teleop step
+2025-02-28 17:54:52.026495:teleop finished
+2025-02-28 17:54:52.037670:ik finished
+2025-02-28 17:54:52.129109:Main loop started
+2025-02-28 17:54:52.129169:reading shared memory
+2025-02-28 17:54:52.130493:copied to shared memory
+2025-02-28 17:54:52.132769:before teleop step
+2025-02-28 17:54:52.247860:teleop finished
+2025-02-28 17:54:52.261089:ik finished
+2025-02-28 17:54:52.334218:Main loop started
+2025-02-28 17:54:52.334252:reading shared memory
+2025-02-28 17:54:52.334266:copied to shared memory
+2025-02-28 17:54:52.334317:before teleop step
+2025-02-28 17:54:52.510048:teleop finished
+2025-02-28 17:54:52.524460:ik finished
+2025-02-28 17:54:52.561781:Main loop started
+2025-02-28 17:54:52.565682:reading shared memory
+2025-02-28 17:54:52.568002:copied to shared memory
+2025-02-28 17:54:52.572142:before teleop step
+2025-02-28 17:54:52.817321:teleop finished
+2025-02-28 17:54:52.842098:ik finished
+2025-02-28 17:54:52.955552:Main loop started
+2025-02-28 17:54:52.955736:reading shared memory
+2025-02-28 17:54:52.955779:copied to shared memory
+2025-02-28 17:54:52.955878:before teleop step
+2025-02-28 17:54:53.256115:teleop finished
+2025-02-28 17:54:53.280256:ik finished
+2025-02-28 17:54:53.349822:Main loop started
+2025-02-28 17:54:53.350811:reading shared memory
+2025-02-28 17:54:53.350855:copied to shared memory
+2025-02-28 17:54:53.350913:before teleop step
+2025-02-28 17:54:53.456088:teleop finished
+2025-02-28 17:54:53.471254:ik finished
+2025-02-28 17:54:53.544779:Main loop started
+2025-02-28 17:54:53.544821:reading shared memory
+2025-02-28 17:54:53.544843:copied to shared memory
+2025-02-28 17:54:53.544894:before teleop step
+2025-02-28 17:54:53.736704:teleop finished
+2025-02-28 17:54:53.760765:ik finished
+2025-02-28 17:54:53.853455:Main loop started
+2025-02-28 17:54:53.853526:reading shared memory
+2025-02-28 17:54:53.853551:copied to shared memory
+2025-02-28 17:54:53.853617:before teleop step
+2025-02-28 17:54:54.095317:teleop finished
+2025-02-28 17:54:54.119050:ik finished
+2025-02-28 17:54:54.202584:Main loop started
+2025-02-28 17:54:54.202632:reading shared memory
+2025-02-28 17:54:54.202651:copied to shared memory
+2025-02-28 17:54:54.202711:before teleop step
+2025-02-28 17:54:54.374234:teleop finished
+2025-02-28 17:54:54.392336:ik finished
+2025-02-28 17:54:54.503647:Main loop started
+2025-02-28 17:54:54.503720:reading shared memory
+2025-02-28 17:54:54.503745:copied to shared memory
+2025-02-28 17:54:54.503802:before teleop step
+2025-02-28 17:54:54.716818:teleop finished
+2025-02-28 17:54:54.741854:ik finished
+2025-02-28 17:54:54.829265:Main loop started
+2025-02-28 17:54:54.834347:reading shared memory
+2025-02-28 17:54:54.834414:copied to shared memory
+2025-02-28 17:54:54.834800:before teleop step
+2025-02-28 17:54:55.026451:teleop finished
+2025-02-28 17:54:55.038486:ik finished
+2025-02-28 17:54:55.132740:Main loop started
+2025-02-28 17:54:55.137057:reading shared memory
+2025-02-28 17:54:55.138640:copied to shared memory
+2025-02-28 17:54:55.138746:before teleop step
+2025-02-28 17:54:55.551113:teleop finished
+2025-02-28 17:54:55.565199:ik finished
+2025-02-28 17:54:55.631565:Main loop started
+2025-02-28 17:54:55.631856:reading shared memory
+2025-02-28 17:54:55.632935:copied to shared memory
+2025-02-28 17:54:55.633058:before teleop step
+2025-02-28 17:54:55.783350:teleop finished
+2025-02-28 17:54:55.794186:ik finished
+2025-02-28 17:54:55.881224:Main loop started
+2025-02-28 17:54:55.884336:reading shared memory
+2025-02-28 17:54:55.884407:copied to shared memory
+2025-02-28 17:54:55.884686:before teleop step
+2025-02-28 17:54:56.052009:teleop finished
+2025-02-28 17:54:56.065893:ik finished
+2025-02-28 17:54:56.179314:Main loop started
+2025-02-28 17:54:56.179774:reading shared memory
+2025-02-28 17:54:56.179802:copied to shared memory
+2025-02-28 17:54:56.179887:before teleop step
+2025-02-28 17:54:56.448809:teleop finished
+2025-02-28 17:54:56.463570:ik finished
+2025-02-28 17:54:56.580980:Main loop started
+2025-02-28 17:54:56.581029:reading shared memory
+2025-02-28 17:54:56.581044:copied to shared memory
+2025-02-28 17:54:56.581096:before teleop step
+2025-02-28 17:54:56.659475:teleop finished
+2025-02-28 17:54:56.678154:ik finished
+2025-02-28 17:54:56.795385:Main loop started
+2025-02-28 17:54:56.799916:reading shared memory
+2025-02-28 17:54:56.800362:copied to shared memory
+2025-02-28 17:54:56.800445:before teleop step
+2025-02-28 17:54:56.905323:teleop finished
+2025-02-28 17:54:56.930387:ik finished
+2025-02-28 17:54:57.075566:Main loop started
+2025-02-28 17:54:57.076429:reading shared memory
+2025-02-28 17:54:57.076488:copied to shared memory
+2025-02-28 17:54:57.076555:before teleop step
+2025-02-28 17:54:57.369076:teleop finished
+2025-02-28 17:54:57.382483:ik finished
+2025-02-28 17:54:57.525120:Main loop started
+2025-02-28 17:54:57.526137:reading shared memory
+2025-02-28 17:54:57.526187:copied to shared memory
+2025-02-28 17:54:57.526260:before teleop step
+2025-02-28 17:54:57.692683:teleop finished
+2025-02-28 17:54:57.713233:ik finished
+2025-02-28 17:54:57.833211:Main loop started
+2025-02-28 17:54:57.833278:reading shared memory
+2025-02-28 17:54:57.833304:copied to shared memory
+2025-02-28 17:54:57.833374:before teleop step
+2025-02-28 17:54:58.068908:teleop finished
+2025-02-28 17:54:58.082585:ik finished
+2025-02-28 17:54:58.195622:Main loop started
+2025-02-28 17:54:58.195889:reading shared memory
+2025-02-28 17:54:58.195931:copied to shared memory
+2025-02-28 17:54:58.196068:before teleop step
+2025-02-28 17:54:58.452489:teleop finished
+2025-02-28 17:54:58.463202:ik finished
+2025-02-28 17:54:58.528397:Main loop started
+2025-02-28 17:54:58.529592:reading shared memory
+2025-02-28 17:54:58.529626:copied to shared memory
+2025-02-28 17:54:58.529681:before teleop step
+2025-02-28 17:54:58.623098:teleop finished
+2025-02-28 17:54:58.635083:ik finished
+2025-02-28 17:54:58.745975:Main loop started
+2025-02-28 17:54:58.746044:reading shared memory
+2025-02-28 17:54:58.746066:copied to shared memory
+2025-02-28 17:54:58.746133:before teleop step
+2025-02-28 17:54:58.893869:teleop finished
+2025-02-28 17:54:58.907564:ik finished
+2025-02-28 17:54:59.026058:Main loop started
+2025-02-28 17:54:59.026129:reading shared memory
+2025-02-28 17:54:59.026173:copied to shared memory
+2025-02-28 17:54:59.026237:before teleop step
+2025-02-28 17:54:59.209696:teleop finished
+2025-02-28 17:54:59.227333:ik finished
+2025-02-28 17:54:59.381535:Main loop started
+2025-02-28 17:54:59.389563:reading shared memory
+2025-02-28 17:54:59.390563:copied to shared memory
+2025-02-28 17:54:59.390655:before teleop step
+2025-02-28 17:54:59.650376:teleop finished
+2025-02-28 17:54:59.660876:ik finished
+2025-02-28 17:54:59.779897:Main loop started
+2025-02-28 17:54:59.784323:reading shared memory
+2025-02-28 17:54:59.785652:copied to shared memory
+2025-02-28 17:54:59.785740:before teleop step
+2025-02-28 17:54:59.916497:teleop finished
+2025-02-28 17:54:59.932350:ik finished
+2025-02-28 17:55:00.091378:Main loop started
+2025-02-28 17:55:00.091645:reading shared memory
+2025-02-28 17:55:00.091721:copied to shared memory
+2025-02-28 17:55:00.091807:before teleop step
+2025-02-28 17:55:00.294237:teleop finished
+2025-02-28 17:55:00.304453:ik finished
+2025-02-28 17:55:00.393569:Main loop started
+2025-02-28 17:55:00.393629:reading shared memory
+2025-02-28 17:55:00.393652:copied to shared memory
+2025-02-28 17:55:00.393712:before teleop step
+2025-02-28 17:55:00.502837:teleop finished
+2025-02-28 17:55:00.524580:ik finished
+2025-02-28 17:55:00.611405:Main loop started
+2025-02-28 17:55:00.617992:reading shared memory
+2025-02-28 17:55:00.618040:copied to shared memory
+2025-02-28 17:55:00.618104:before teleop step
+2025-02-28 17:55:00.882394:teleop finished
+2025-02-28 17:55:00.900792:ik finished
+2025-02-28 17:55:00.985582:Main loop started
+2025-02-28 17:55:00.985629:reading shared memory
+2025-02-28 17:55:00.985716:copied to shared memory
+2025-02-28 17:55:00.986253:before teleop step
+2025-02-28 17:55:01.193136:teleop finished
+2025-02-28 17:55:01.203962:ik finished
+2025-02-28 17:55:01.320646:Main loop started
+2025-02-28 17:55:01.325686:reading shared memory
+2025-02-28 17:55:01.327246:copied to shared memory
+2025-02-28 17:55:01.331219:before teleop step
+2025-02-28 17:55:01.436346:teleop finished
+2025-02-28 17:55:01.450518:ik finished
+2025-02-28 17:55:01.550740:Main loop started
+2025-02-28 17:55:01.551075:reading shared memory
+2025-02-28 17:55:01.551130:copied to shared memory
+2025-02-28 17:55:01.551229:before teleop step
+2025-02-28 17:55:01.829404:teleop finished
+2025-02-28 17:55:01.843693:ik finished
+2025-02-28 17:55:01.916565:Main loop started
+2025-02-28 17:55:01.916625:reading shared memory
+2025-02-28 17:55:01.916641:copied to shared memory
+2025-02-28 17:55:01.916686:before teleop step
+2025-02-28 17:55:02.018594:teleop finished
+2025-02-28 17:55:02.030389:ik finished
+2025-02-28 17:55:02.130686:Main loop started
+2025-02-28 17:55:02.130746:reading shared memory
+2025-02-28 17:55:02.130769:copied to shared memory
+2025-02-28 17:55:02.130831:before teleop step
+2025-02-28 17:55:02.236340:teleop finished
+2025-02-28 17:55:02.253239:ik finished
+2025-02-28 17:55:02.344680:Main loop started
+2025-02-28 17:55:02.344748:reading shared memory
+2025-02-28 17:55:02.344771:copied to shared memory
+2025-02-28 17:55:02.345027:before teleop step
+2025-02-28 17:55:02.450311:teleop finished
+2025-02-28 17:55:02.464014:ik finished
+2025-02-28 17:55:02.528413:Main loop started
+2025-02-28 17:55:02.528455:reading shared memory
+2025-02-28 17:55:02.528571:copied to shared memory
+2025-02-28 17:55:02.531781:before teleop step
+2025-02-28 17:55:02.753041:teleop finished
+2025-02-28 17:55:02.765331:ik finished
+2025-02-28 17:55:02.839572:Main loop started
+2025-02-28 17:55:02.839643:reading shared memory
+2025-02-28 17:55:02.839666:copied to shared memory
+2025-02-28 17:55:02.839736:before teleop step
+2025-02-28 17:55:02.994905:teleop finished
+2025-02-28 17:55:03.014530:ik finished
+2025-02-28 17:55:03.127285:Main loop started
+2025-02-28 17:55:03.127352:reading shared memory
+2025-02-28 17:55:03.127376:copied to shared memory
+2025-02-28 17:55:03.127440:before teleop step
+2025-02-28 17:55:03.341616:teleop finished
+2025-02-28 17:55:03.357863:ik finished
+2025-02-28 17:55:03.492963:Main loop started
+2025-02-28 17:55:03.493033:reading shared memory
+2025-02-28 17:55:03.493063:copied to shared memory
+2025-02-28 17:55:03.495937:before teleop step
+2025-02-28 17:55:03.589835:teleop finished
+2025-02-28 17:55:03.603239:ik finished
+2025-02-28 17:55:03.697418:Main loop started
+2025-02-28 17:55:03.699977:reading shared memory
+2025-02-28 17:55:03.703887:copied to shared memory
+2025-02-28 17:55:03.704155:before teleop step
+2025-02-28 17:55:03.897719:teleop finished
+2025-02-28 17:55:03.916542:ik finished
+2025-02-28 17:55:04.022717:Main loop started
+2025-02-28 17:55:04.022778:reading shared memory
+2025-02-28 17:55:04.022800:copied to shared memory
+2025-02-28 17:55:04.022882:before teleop step
+2025-02-28 17:55:04.185688:teleop finished
+2025-02-28 17:55:04.203533:ik finished
+2025-02-28 17:55:04.335860:Main loop started
+2025-02-28 17:55:04.338619:reading shared memory
+2025-02-28 17:55:04.338767:copied to shared memory
+2025-02-28 17:55:04.340869:before teleop step
+2025-02-28 17:55:04.727494:teleop finished
+2025-02-28 17:55:04.747233:ik finished
+2025-02-28 17:55:04.889538:Main loop started
+2025-02-28 17:55:04.889590:reading shared memory
+2025-02-28 17:55:04.889612:copied to shared memory
+2025-02-28 17:55:04.889662:before teleop step
+2025-02-28 17:55:05.099284:teleop finished
+2025-02-28 17:55:05.108003:ik finished
+2025-02-28 17:55:05.206028:Main loop started
+2025-02-28 17:55:05.206522:reading shared memory
+2025-02-28 17:55:05.206559:copied to shared memory
+2025-02-28 17:55:05.206603:before teleop step
+2025-02-28 17:55:05.373161:teleop finished
+2025-02-28 17:55:05.392861:ik finished
+2025-02-28 17:55:05.478675:Main loop started
+2025-02-28 17:55:05.482945:reading shared memory
+2025-02-28 17:55:05.483024:copied to shared memory
+2025-02-28 17:55:05.483100:before teleop step
+2025-02-28 17:55:05.645403:teleop finished
+2025-02-28 17:55:05.659036:ik finished
+2025-02-28 17:55:05.806822:Main loop started
+2025-02-28 17:55:05.806870:reading shared memory
+2025-02-28 17:55:05.806894:copied to shared memory
+2025-02-28 17:55:05.810504:before teleop step
+2025-02-28 17:55:05.994209:teleop finished
+2025-02-28 17:55:06.006333:ik finished
+2025-02-28 17:55:06.090509:Main loop started
+2025-02-28 17:55:06.090578:reading shared memory
+2025-02-28 17:55:06.090601:copied to shared memory
+2025-02-28 17:55:06.090664:before teleop step
+2025-02-28 17:55:06.356558:teleop finished
+2025-02-28 17:55:06.368677:ik finished
+2025-02-28 17:55:06.507617:Main loop started
+2025-02-28 17:55:06.507708:reading shared memory
+2025-02-28 17:55:06.507737:copied to shared memory
+2025-02-28 17:55:06.507804:before teleop step
+2025-02-28 17:55:06.726857:teleop finished
+2025-02-28 17:55:06.752160:ik finished
+2025-02-28 17:55:06.904352:Main loop started
+2025-02-28 17:55:06.904490:reading shared memory
+2025-02-28 17:55:06.904558:copied to shared memory
+2025-02-28 17:55:06.908699:before teleop step
+2025-02-28 17:55:07.239612:teleop finished
+2025-02-28 17:55:07.262740:ik finished
+2025-02-28 17:55:07.380481:Main loop started
+2025-02-28 17:55:07.380700:reading shared memory
+2025-02-28 17:55:07.385600:copied to shared memory
+2025-02-28 17:55:07.386301:before teleop step
+2025-02-28 17:55:07.696201:teleop finished
+2025-02-28 17:55:07.713124:ik finished
+2025-02-28 17:55:07.774100:Main loop started
+2025-02-28 17:55:07.774414:reading shared memory
+2025-02-28 17:55:07.776535:copied to shared memory
+2025-02-28 17:55:07.781675:before teleop step
+2025-02-28 17:55:07.875783:teleop finished
+2025-02-28 17:55:07.890738:ik finished
+2025-02-28 17:55:08.002797:Main loop started
+2025-02-28 17:55:08.002865:reading shared memory
+2025-02-28 17:55:08.002891:copied to shared memory
+2025-02-28 17:55:08.002943:before teleop step
+2025-02-28 17:55:08.125709:teleop finished
+2025-02-28 17:55:08.140863:ik finished
+2025-02-28 17:55:08.229608:Main loop started
+2025-02-28 17:55:08.235247:reading shared memory
+2025-02-28 17:55:08.237047:copied to shared memory
+2025-02-28 17:55:08.237574:before teleop step
+2025-02-28 17:55:08.477319:teleop finished
+2025-02-28 17:55:08.489525:ik finished
+2025-02-28 17:55:08.564728:Main loop started
+2025-02-28 17:55:08.570386:reading shared memory
+2025-02-28 17:55:08.570425:copied to shared memory
+2025-02-28 17:55:08.570844:before teleop step
+2025-02-28 17:55:08.768331:teleop finished
+2025-02-28 17:55:08.786562:ik finished
+2025-02-28 17:55:08.875461:Main loop started
+2025-02-28 17:55:08.875892:reading shared memory
+2025-02-28 17:55:08.875936:copied to shared memory
+2025-02-28 17:55:08.876014:before teleop step
