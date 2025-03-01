@@ -393,7 +393,10 @@ def merge_data_to_pkl(motor_data_path, ik_data_path, lidar_data_path, output_pat
     ik_data_dict = {entry["armtime"]: entry for entry in ik_data_list}
     robot_data_dict = {entry["time"]: entry for entry in robot_data_json_list}
 
-    last_motor_data = None
+    if ik_data_list[0]["armtime"] > robot_data_json_list[0]["time"]:
+        last_motor_data = None
+    else:
+        last_motor_data = ik_data_list[0]
 
     for motor_entry in robot_data_json_list:
         time_key = motor_entry["time"]
@@ -503,7 +506,7 @@ if __name__ == "__main__":
                 # print("#hehehehehh 33333")
 
                 # profile("get hand finished")
-                motor_time = time.time()
+                motor_time = time.time()    
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     teleoperator.step()
