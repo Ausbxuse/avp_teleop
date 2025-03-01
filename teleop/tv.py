@@ -503,12 +503,14 @@ if __name__ == "__main__":
             left_angles = None
 
             while not stop_event.is_set():
-                # profile("Main loop started")
+                profile("Main loop started")
                 # time.sleep(0.05)
-                frame = sm.read_image()
+                # frame = sm.read_image()
+                profile("reading shared memory")
                 # print("#hehehehehhe")
                 # print("frame shape", frame.shape)
-                np.copyto(teleoperator.img_array, np.array(frame))
+                # np.copyto(teleoperator.img_array, np.array(frame))
+                profile("copied to shared memory")
 
                 # print("#hehehehehh 222222")
 
@@ -520,13 +522,14 @@ if __name__ == "__main__":
 
                 # profile("get hand finished")
                 motor_time = time.time()
+                profile("before teleop step")
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     teleoperator.step()
                 )
 
                 # print("#hehehehehh 444444")
-                # profile("ik teleop finished")
+                profile("teleop finished")
                 sol_q, tau_ff, flag = arm_ik.ik_fun(
                     left_pose, right_pose, armstate, armv
                 )
@@ -534,10 +537,17 @@ if __name__ == "__main__":
                 ik_time = time.time()
                 # t = datetime.datetime.now()
 
-                # profile("ik finished")
+                profile("ik finished")
+
 
                 q_poseList = np.zeros(35)
                 q_tau_ff = np.zeros(35)
+                q_poseList[13:27] = sol_q
+                # q_poseList[13:20] = q_poseList[20:27]
+
+                # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+
+                h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
                 # if flag:
                 #     q_poseList[13:27] = sol_q
@@ -546,15 +556,15 @@ if __name__ == "__main__":
                 #     q_poseList[13:27] = armstate
                 #     q_tau_ff = np.zeros(35)
 
-                if right_qpos is not None and left_qpos is not None:
-                    right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
-                    right_angles.append(1.2 - right_qpos[8])
-                    right_angles.append(0.5 - right_qpos[9])
-
-                    left_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
-                    left_angles.append(1.2 - left_qpos[8])
-                    left_angles.append(0.5 - left_qpos[9])
-                    h1hand.crtl(right_angles, left_angles)
+                # if right_qpos is not None and left_qpos is not None:
+                #     right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
+                #     right_angles.append(1.2 - right_qpos[8])
+                #     right_angles.append(0.5 - right_qpos[9])
+                #
+                #     left_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
+                #     left_angles.append(1.2 - left_qpos[8])
+                #     left_angles.append(0.5 - left_qpos[9])
+                #     h1hand.crtl(right_angles, left_angles)
 
                 data_writer.write_data(
                     right_angles,

@@ -71,14 +71,14 @@ class H1ArmController:
         self.motor_command_buffer = DataBuffer()
         self.base_state_buffer = DataBuffer()
 
-        self.kp_low = 140.0
-        self.kd_low = 7.5
+        self.kp_low = 70.0
+        self.kd_low = 7.5 * 1.5
 
-        self.kp_high = 200.0
-        self.kd_high = 5.0
+        self.kp_high = 100.0
+        self.kd_high = 5.0 * 1.5
 
-        self.kp_wrist = 35.0
-        self.kd_wrist = 6.0
+        self.kp_wrist = 18.0
+        self.kd_wrist = 6.0 * 1.5
 
         self.control_dt = 0.01
         self.hip_pitch_init_pos = -0.5

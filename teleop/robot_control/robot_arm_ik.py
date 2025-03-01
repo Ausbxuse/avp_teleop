@@ -93,11 +93,11 @@ class Arm_IK:
 
 
         # Initialize the Meshcat visualizer  for visualization
-        self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
-        self.vis.initViewer(open=False) # True---False
-        self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(False, frame_ids=[113, 114], axis_length = 0.15, axis_width = 5) # True ---False
-        self.vis.display(pin.neutral(self.reduced_robot.model))
+        #self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
+        #self.vis.initViewer(open=False) # True---False
+        #self.vis.loadViewerModel("pinocchio") 
+        #self.vis.displayFrames(False, frame_ids=[113, 114], axis_length = 0.15, axis_width = 5) # True ---False
+        #self.vis.display(pin.neutral(self.reduced_robot.model))
 
         # for i in range(self.reduced_robot.model.nframes):
         #    frame = self.reduced_robot.model.frames[i]
@@ -118,19 +118,19 @@ class Arm_IK:
         )
         axis_length = 0.1
         axis_width = 10
-        for frame_viz_name in frame_viz_names:
-            self.vis.viewer[frame_viz_name].set_object(
-                mg.LineSegments(
-                    mg.PointsGeometry(
-                        position=axis_length * FRAME_AXIS_POSITIONS,
-                        color=FRAME_AXIS_COLORS,
-                    ),
-                    mg.LineBasicMaterial(
-                        linewidth=axis_width,
-                        vertexColors=True,
-                    ),
-                )
-             )
+        # for frame_viz_name in frame_viz_names:
+        #     self.vis.viewer[frame_viz_name].set_object(
+        #         mg.LineSegments(
+        #             mg.PointsGeometry(
+        #                 position=axis_length * FRAME_AXIS_POSITIONS,
+        #                 color=FRAME_AXIS_COLORS,
+        #             ),
+        #             mg.LineBasicMaterial(
+        #                 linewidth=axis_width,
+        #                 vertexColors=True,
+        #             ),
+        #         )
+        #      )
 
 
 
@@ -236,8 +236,8 @@ class Arm_IK:
 
         left_pose, right_pose = self.adjust_pose(left_pose, right_pose)
 
-        self.vis.viewer['L_ee_target'].set_transform(left_pose)     # for visualization
-        self.vis.viewer['R_ee_target'].set_transform(right_pose)    # for visualization
+        # self.vis.viewer['L_ee_target'].set_transform(left_pose)     # for visualization
+        # self.vis.viewer['R_ee_target'].set_transform(right_pose)    # for visualization
 
         self.opti.set_value(self.param_tf_l, left_pose)
         self.opti.set_value(self.param_tf_r, right_pose)
@@ -249,7 +249,7 @@ class Arm_IK:
             sol_q = self.opti.value(self.var_q)
             
 
-            self.vis.display(sol_q) # for visualization
+            # self.vis.display(sol_q) # for visualization
 
 
             self.init_data = sol_q
