@@ -17,9 +17,8 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from dex_retargeting.retargeting_config import RetargetingConfig
-
 from constants_vuer import tip_indices
+from dex_retargeting.retargeting_config import RetargetingConfig
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
@@ -30,6 +29,7 @@ import pickle
 import struct
 
 from robot_control.robot_hand import H1HandController
+
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
@@ -174,6 +174,7 @@ class DataWriter:
             "right_pose": right_pose.tolist(),
         }
         self.data.append(entry)
+        print("collected data: ", self.data)
 
         with open(self.filepath, "w") as file:
             json.dump(self.data, file, indent=4)
@@ -237,7 +238,7 @@ def cleanup(lidar_proc):
         lidar_proc.send_signal(signal.SIGINT)
         try:
             lidar_proc.wait(timeout=5)  # wait for it to terminate gracefully
-        except lidar_proc.TimeoutExpired:
+        except subprocess.TimeoutExpired:
             lidar_proc.kill()  # force kill if needed
 
 
@@ -494,51 +495,37 @@ if __name__ == "__main__":
             )
             rs_thread.start()
 
-            # import pdb; spdb.set_trace()
-            # motor_thread = threading.Thread(
-            #     target=mot    or_logger, args=(dirname, stop_event, start_time, h1arm, h1hand)
-            # )
-            # motor_thread.start()
             right_angles = None
             left_angles = None
 
+            last_sol_q = None
             while not stop_event.is_set():
-                profile("Main loop started")
+                # profile("Main loop started")
                 # time.sleep(0.05)
-                # frame = sm.read_image()
-                profile("reading shared memory")
-                # print("#hehehehehhe")
+                frame = sm.read_image()
+                # profile("reading shared memory")
                 # print("frame shape", frame.shape)
-                # np.copyto(teleoperator.img_array, np.array(frame))
-                profile("copied to shared memory")
-
-                # print("#hehehehehh 222222")
-
+                np.copyto(teleoperator.img_array, np.array(frame))
+                # profile("copied to shared memory")
                 # profile("get imu finished")
                 armstate, armv = h1arm.GetMotorState()
                 # profile("get arm finished")
                 handstate = h1hand.get_hand_state()
-                # print("#hehehehehh 33333")
-
                 # profile("get hand finished")
                 motor_time = time.time()
-                profile("before teleop step")
+                # profile("before teleop step")
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     teleoperator.step()
                 )
-
-                # print("#hehehehehh 444444")
-                profile("teleop finished")
+                # profile("teleop finished")
                 sol_q, tau_ff, flag = arm_ik.ik_fun(
                     left_pose, right_pose, armstate, armv
                 )
                 # print("################ik:", sol_q)
                 ik_time = time.time()
-                # t = datetime.datetime.now()
 
-                profile("ik finished")
-
+                # profile("ik finished")
 
                 q_poseList = np.zeros(35)
                 q_tau_ff = np.zeros(35)
@@ -547,8 +534,39 @@ if __name__ == "__main__":
 
                 # h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
-                h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                if last_sol_q is not None:
+                    if np.any(np.abs(last_sol_q - sol_q) > np.pi / 4):
+                        print("movement too large!")
+                        continue
 
+                max_step_size = np.pi / 100
+
+                if np.any(np.abs(armstate - sol_q) > np.pi / 3):
+                    intermedia_sol_q = np.array(armstate)
+
+                    print("slowing for large movement!")
+                    while np.any(np.abs(sol_q - intermedia_sol_q) > np.pi / 6):
+
+                        step_sizes = np.clip(
+                            (sol_q - intermedia_sol_q) / 50,
+                            -max_step_size,
+                            max_step_size,
+                        )
+
+                        intermedia_sol_q += step_sizes
+                        q_poseList[13:27] = intermedia_sol_q
+                        # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                        # print("### q_pose list: ", q_poseList)
+
+                        time.sleep(0.01)  # Small delay for smooth motion
+                    # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                    # print("### q_pose list: ", q_poseList)
+                else:
+                    # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                    print("### q_pose list: ", q_poseList)
+                last_sol_q = sol_q
+
+                # TODO: add support for flag
                 # if flag:
                 #     q_poseList[13:27] = sol_q
                 #     q_tau_ff[13:27] = tau_ff
@@ -556,15 +574,15 @@ if __name__ == "__main__":
                 #     q_poseList[13:27] = armstate
                 #     q_tau_ff = np.zeros(35)
 
-                # if right_qpos is not None and left_qpos is not None:
-                #     right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
-                #     right_angles.append(1.2 - right_qpos[8])
-                #     right_angles.append(0.5 - right_qpos[9])
-                #
-                #     left_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
-                #     left_angles.append(1.2 - left_qpos[8])
-                #     left_angles.append(0.5 - left_qpos[9])
-                #     h1hand.crtl(right_angles, left_angles)
+                if right_qpos is not None and left_qpos is not None:
+                    right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
+                    right_angles.append(1.2 - right_qpos[8])
+                    right_angles.append(0.5 - right_qpos[9])
+
+                    left_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
+                    left_angles.append(1.2 - left_qpos[8])
+                    left_angles.append(0.5 - left_qpos[9])
+                    # h1hand.crtl(right_angles, left_angles)
 
                 data_writer.write_data(
                     right_angles,
@@ -592,6 +610,7 @@ if __name__ == "__main__":
             rs_thread.join(2)
             rs_thread.terminate()
         cleanup(proc)
+        sm.cleanup()
 
     ik_filepath = os.path.join(dirname, "ik_data.json")
     motor_filepath = os.path.join(dirname, "motor_data.txt")
