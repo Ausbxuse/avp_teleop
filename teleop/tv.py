@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import json
 import os
@@ -302,8 +303,10 @@ class LidarProcess:
 # Teleop and datacollector
 class RobotTaskmaster:
     def __init__(self, task_name, stop_event) -> None:
-        self.dirname = time.strftime("demo_%Y%m%d_%H%M%S")
-        os.mkdir(self.dirname)
+        self.dirname = time.strftime(f"demos/{task_name}/%Y%m%d_%H%M%S")
+        os.makedirs(self.dirname)
+        os.makedirs(os.path.join(self.dirname, "color"))
+        os.makedirs(os.path.join(self.dirname, "depth"))
         self.lidar_proc = LidarProcess(self.dirname)
         self.stop_event = stop_event
         self.teleop_lock = Lock()
@@ -324,8 +327,6 @@ class RobotTaskmaster:
             ),
         )
         self.ik_writer = IKDataWriter(self.dirname)
-        os.mkdir(os.path.join(self.dirname, "color"))
-        os.mkdir(os.path.join(self.dirname, "depth"))
         self.arm_ik = Arm_IK()
         self.first = True
 
@@ -449,10 +450,15 @@ class RobotTaskmaster:
 
 
 if __name__ == "__main__":
-
+    parser = argparse.ArgumentParser(description='Robot Teleoperation System')
+    # TODO: cleanup empty demo dirs
+    parser.add_argument('--task_name', type=str, default="default_task", 
+                        help='Name of the task for data collection (default: default_task)')
+    args = parser.parse_args()
+    
     stop_event = Event()
-    taskmaster = RobotTaskmaster("heehee", stop_event)
-    print("Interactive control:")
+    taskmaster = RobotTaskmaster(args.task_name, stop_event)
+    print(f"Robo master control (Task: {args.task_name}):")
     print("  Press 's' to start the taskmaster")
     print("  Press 'q' to stop and merge data")
 
