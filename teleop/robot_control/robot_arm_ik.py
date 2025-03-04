@@ -194,10 +194,7 @@ class Arm_IK:
         self.translational_cost = casadi.sumsqr(self.translational_error(self.var_q, self.param_tf_l, self.param_tf_r))
         self.rotation_cost = casadi.sumsqr(self.rotational_error(self.var_q, self.param_tf_l, self.param_tf_r))
         self.regularization = casadi.sumsqr(self.var_q)
-        print("var_q: ", self.var_q)
-        print("var_q_last: ", self.var_q_last)
         self.smooth_cost = casadi.sumsqr(self.var_q - self.var_q_last) # for smooth
-        print("smooth_cost", self.smooth_cost)
         # Setting optimization constraints and goals
         self.opti.subject_to(self.opti.bounded(
             self.reduced_robot.model.lowerPositionLimit,

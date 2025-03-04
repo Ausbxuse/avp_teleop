@@ -15,11 +15,6 @@ import cv2
 import numpy as np
 import zmq
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-import pickle
-
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
@@ -29,16 +24,15 @@ FREQ = 30
 DELAY = 1 / FREQ
 CHUNK_SIZE = 100
 
-
-import json
-import os
-import threading
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
 
 
 class IKDataWriter:
     def __init__(self, dirname, buffer_size=100):
         self.buffer = []
-        self.filepath = os.path.join(dirname, "ik_data.json")
+        self.filepath = os.path.join(dirname, "ik_data.jsonl")
         self.buffer_size = buffer_size
         self.lock = threading.Lock()
 
@@ -46,8 +40,8 @@ class IKDataWriter:
         self,
         right_angles,
         left_angles,
-        armtime,
-        iktime,
+        arm_time,
+        ik_time,
         sol_q,
         tau_ff,
         head_rmat,
@@ -57,8 +51,8 @@ class IKDataWriter:
         entry = {
             "right_angles": right_angles,
             "left_angles": left_angles,
-            "armtime": armtime,
-            "iktime": iktime,
+            "armtime": arm_time,
+            "iktime": ik_time,
             "sol_q": sol_q.tolist(),
             "tau_ff": tau_ff.tolist(),
             "head_rmat": head_rmat.tolist(),
@@ -230,11 +224,19 @@ def merge_data_to_pkl(robot_data_path, ik_data_path, lidar_data_path, output_pat
         lidar_time_list.append(float(time_parts[0] + "." + time_parts[1]))
 
     print("loading")
+    robot_data_json_list = []
     with open(robot_data_path, "r") as f:
-        robot_data_json_list = json.load(f)
+        for line in f:
+            line = line.strip()
+            if line:
+                robot_data_json_list.append(json.loads(line))
 
+    ik_data_list = []
     with open(ik_data_path, "r") as f:
-        ik_data_list = json.load(f)
+        for line in f:
+            line = line.strip()
+            if line:
+                ik_data_list.append(json.loads(line))
 
     ik_data_dict = {entry["armtime"]: entry for entry in ik_data_list}
     robot_data_dict = {entry["time"]: entry for entry in robot_data_json_list}
@@ -313,13 +315,12 @@ class RobotTaskmaster:
         self.h1hand = H1HandController()
         self.h1arm = H1ArmController()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
-        start_time = time.time()
         self.robot_data_proc = Process(
             target=robot_data_worker,
             args=(
                 self.dirname,
                 self.stop_event,
-                start_time,
+                time.time(),
                 self.h1arm,
                 self.h1hand,
                 self.teleop_lock,
@@ -390,20 +391,23 @@ class RobotTaskmaster:
         left_hand_angles = None
         last_sol_q = None
         while not self.stop_event.is_set():
+            prof_time = profile("mainloop started", 0)
             # profile("Main loop started")
             armstate, armv = self.h1arm.GetMotorState()
             # profile("get arm finished")
             motor_time = time.time()
-            # profile("before teleop step")
+            prof_time = profile("before teleop step", prof_time)
             # TODO: maybe thread might be faster
             with self.teleop_lock:
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     self.teleoperator.step()
                 )
-            # profile("teleop finished")
+            prof_time = profile("teleop finished", prof_time)
             sol_q, tau_ff, ik_flag = self.arm_ik.ik_fun(
                 left_pose, right_pose, armstate, armv
             )
+            prof_time = profile("ik finished", prof_time)
+            ik_time = time.time()
             if self.safelySetMotor(
                 ik_flag,
                 sol_q,
@@ -422,7 +426,7 @@ class RobotTaskmaster:
                 right_hand_angles,
                 left_hand_angles,
                 motor_time,
-                time.time(),
+                ik_time,
                 sol_q,
                 tau_ff,
                 head_rmat,
@@ -440,9 +444,9 @@ class RobotTaskmaster:
         print("Recording ended!")
 
     def merge_data(self):
-        ik_filepath = os.path.join(self.dirname, "ik_data.json")
+        ik_filepath = os.path.join(self.dirname, "ik_data.jsonl")
         motor_filepath = os.path.join(self.dirname, "robot_data.txt")
-        output_filepath = os.path.join(self.dirname, "merged_data.json")
+        output_filepath = os.path.join(self.dirname, "merged_data.jsonl")
         lidar_filepath = os.path.join(self.dirname, "lidar")
         merge_data_to_pkl(motor_filepath, ik_filepath, lidar_filepath, output_filepath)
 
@@ -459,6 +463,7 @@ if __name__ == "__main__":
     print(f"Robo master control (Task: {args.task_name}):")
     print("  Press 's' to start the taskmaster")
     print("  Press 'q' to stop and merge data")
+    running = False
 
     def run_taskmaster():
         global running
