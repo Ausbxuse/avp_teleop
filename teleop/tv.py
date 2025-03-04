@@ -17,8 +17,9 @@ import cv2
 import numpy as np
 import yaml
 import zmq
-from constants_vuer import tip_indices
 from dex_retargeting.retargeting_config import RetargetingConfig
+
+from constants_vuer import tip_indices
 from Preprocessor import VuerPreprocessor
 from TeleVision import OpenTeleVision
 
@@ -29,7 +30,6 @@ import pickle
 import struct
 
 from robot_control.robot_hand import H1HandController
-
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
@@ -481,7 +481,13 @@ if __name__ == "__main__":
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
             start_time = time.time()
             proc = subprocess.Popen(
-                ["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar", "&>", "/dev/null"]
+                [
+                    "./point_cloud_recorder",
+                    "./mid360_config.json",
+                    dirname + "/lidar",
+                    "&>",
+                    "/dev/null",
+                ]
             )
             os.mkdir(dirname)
 
@@ -535,23 +541,24 @@ if __name__ == "__main__":
 
                 # h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
-                dynamic_thresholds = np.array([
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/1.5, 
-                    np.pi/1.5,
-
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/3, 
-                    np.pi/1.5, 
-                    np.pi/1.5,
-                ])
+                dynamic_thresholds = np.array(
+                    [
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 1.5,
+                        np.pi / 1.5,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 3,
+                        np.pi / 1.5,
+                        np.pi / 1.5,
+                    ]
+                )
                 if last_sol_q is not None:
                     if np.any(np.abs(last_sol_q - sol_q) > dynamic_thresholds):
                         print("[ERROR] ik movement too large!")
@@ -560,35 +567,35 @@ if __name__ == "__main__":
                 # if np.any(np.abs(armstate - sol_q) > dynamic_thresholds):
                 #     print("[ERROR] armstate and ik movement too large!")
                 #     continue
-                
+
                 max_step_size = np.pi / 100
                 if np.any(np.abs(armstate - sol_q) > dynamic_thresholds) and first:
                     first = False
                     intermedia_sol_q = np.array(armstate)
-                
+
                     print("[ERROR] slowing for large movement!")
                     while np.any(np.abs(sol_q - intermedia_sol_q) > np.pi / 90):
-                
+
                         # step_sizes = np.clip(
                         #     (sol_q - intermedia_sol_q) / 50,
                         #     -max_step_size,
                         #     max_step_size,
                         # )
-                        step_sizes =  (sol_q - intermedia_sol_q) / 50
-                
+                        step_sizes = (sol_q - intermedia_sol_q) / 50
+
                         intermedia_sol_q += step_sizes
                         q_poseList[13:27] = intermedia_sol_q
                         print("intermedia_sol_q:", intermedia_sol_q)
                         print("solq            :", sol_q)
                         h1arm.SetMotorPose(q_poseList, q_tau_ff)
                         # print("### q_pose list: ", q_poseList)
-                
+
                         time.sleep(0.01)  # Small delay for smooth motion
                     q_poseList[13:27] = sol_q
                     h1arm.SetMotorPose(q_poseList, q_tau_ff)
                 else:
                     h1arm.SetMotorPose(q_poseList, q_tau_ff)
-                  # print("### q_pose list: ", q_poseList)
+                # print("### q_pose list: ", q_poseList)
                 last_sol_q = sol_q
 
                 # TODO: add support for flag
