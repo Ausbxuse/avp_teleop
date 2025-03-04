@@ -174,7 +174,7 @@ class DataWriter:
             "right_pose": right_pose.tolist(),
         }
         self.data.append(entry)
-        print("collected data: ", self.data)
+        # print("collected data: ", self.data)
 
         with open(self.filepath, "w") as file:
             json.dump(self.data, file, indent=4)
@@ -536,12 +536,12 @@ if __name__ == "__main__":
 
                 if last_sol_q is not None:
                     if np.any(np.abs(last_sol_q - sol_q) > np.pi / 4):
-                        print("movement too large!")
+                        print("ik movement too large!")
                         continue
 
                 max_step_size = np.pi / 100
 
-                if np.any(np.abs(armstate - sol_q) > np.pi / 3):
+                if np.any(np.abs(armstate - sol_q) > np.pi / 4):
                     intermedia_sol_q = np.array(armstate)
 
                     print("slowing for large movement!")
@@ -555,15 +555,19 @@ if __name__ == "__main__":
 
                         intermedia_sol_q += step_sizes
                         q_poseList[13:27] = intermedia_sol_q
-                        # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                        print("intermedia_sol_q:", intermedia_sol_q)
+                        print("solq            :", sol_q)
+                        h1arm.SetMotorPose(q_poseList, q_tau_ff)
                         # print("### q_pose list: ", q_poseList)
 
-                        time.sleep(0.01)  # Small delay for smooth motion
-                    # h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                        time.sleep(0.05)  # Small delay for smooth motion
+                    q_poseList[13:27] = sol_q
+                    print("setting the remaining qpose", q_poseList)
+                    h1arm.SetMotorPose(q_poseList, q_tau_ff)
                     # print("### q_pose list: ", q_poseList)
                 else:
-                    # h1arm.SetMotorPose(q_poseList, q_tau_ff)
-                    print("### q_pose list: ", q_poseList)
+                    h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                    # print("### q_pose list: ", q_poseList)
                 last_sol_q = sol_q
 
                 # TODO: add support for flag
