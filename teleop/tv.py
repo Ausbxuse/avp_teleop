@@ -29,11 +29,17 @@ DELAY = 1 / FREQ
 CHUNK_SIZE = 100
 
 
+import json
+import os
+import threading
+
+
 class IKDataWriter:
-    def __init__(self, dirname):
-        # self.lock = threading.Lock()
-        self.data = []
+    def __init__(self, dirname, buffer_size=100):
+        self.buffer = []
         self.filepath = os.path.join(dirname, "ik_data.json")
+        self.buffer_size = buffer_size
+        self.lock = threading.Lock()
 
     def write_data(
         self,
@@ -47,7 +53,6 @@ class IKDataWriter:
         left_pose,
         right_pose,
     ):
-        # with self.lock:
         entry = {
             "right_angles": right_angles,
             "left_angles": left_angles,
@@ -59,10 +64,21 @@ class IKDataWriter:
             "left_pose": left_pose.tolist(),
             "right_pose": right_pose.tolist(),
         }
-        self.data.append(entry)
+        self.buffer.append(entry)
+        if len(self.buffer) >= self.buffer_size:
+            self.flush()
 
-        with open(self.filepath, "w") as file:
-            json.dump(self.data, file, indent=4)
+    def flush(self):
+        with open(self.filepath, "a") as f:
+            for entry in self.buffer:
+                f.write(json.dumps(entry) + "\n")
+        self.buffer.clear()
+
+    def close(self):
+        """Flush any remaining entries."""
+        with self.lock:
+            if self.buffer:
+                self.flush()
 
 
 def sleep_until_mod33(time_curr):
@@ -378,6 +394,7 @@ class RobotTaskmaster:
             # profile("get arm finished")
             motor_time = time.time()
             # profile("before teleop step")
+            # TODO: maybe thread might be faster
             with self.teleop_lock:
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     self.teleoperator.step()
@@ -420,6 +437,7 @@ class RobotTaskmaster:
             self.robot_data_proc.join(2)
             self.robot_data_proc.terminate()
         self.lidar_proc.cleanup()
+        self.ik_writer.close()
         print("Recording ended!")
 
     def merge_data(self):
