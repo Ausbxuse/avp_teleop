@@ -474,13 +474,14 @@ if __name__ == "__main__":
             "Please enter the start signal (enter 's' to start the subsequent program): "
         )
         if user_input.lower() == "s":
+            first = True
             # image_process.start()
             loop_idx = 0
 
             dirname = time.strftime("demo_%Y%m%d_%H%M%S")
             start_time = time.time()
             proc = subprocess.Popen(
-                ["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar"]
+                ["./point_cloud_recorder", "./mid360_config.json", dirname + "/lidar", "&>", "/dev/null"]
             )
             os.mkdir(dirname)
 
@@ -534,40 +535,60 @@ if __name__ == "__main__":
 
                 # h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
+                dynamic_thresholds = np.array([
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/1.5, 
+                    np.pi/1.5,
+
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/3, 
+                    np.pi/1.5, 
+                    np.pi/1.5,
+                ])
                 if last_sol_q is not None:
-                    if np.any(np.abs(last_sol_q - sol_q) > np.pi / 4):
-                        print("ik movement too large!")
+                    if np.any(np.abs(last_sol_q - sol_q) > dynamic_thresholds):
+                        print("[ERROR] ik movement too large!")
                         continue
 
+                # if np.any(np.abs(armstate - sol_q) > dynamic_thresholds):
+                #     print("[ERROR] armstate and ik movement too large!")
+                #     continue
+                
                 max_step_size = np.pi / 100
-
-                if np.any(np.abs(armstate - sol_q) > np.pi / 4):
+                if np.any(np.abs(armstate - sol_q) > dynamic_thresholds) and first:
+                    first = False
                     intermedia_sol_q = np.array(armstate)
-
-                    print("slowing for large movement!")
-                    while np.any(np.abs(sol_q - intermedia_sol_q) > np.pi / 6):
-
-                        step_sizes = np.clip(
-                            (sol_q - intermedia_sol_q) / 50,
-                            -max_step_size,
-                            max_step_size,
-                        )
-
+                
+                    print("[ERROR] slowing for large movement!")
+                    while np.any(np.abs(sol_q - intermedia_sol_q) > np.pi / 90):
+                
+                        # step_sizes = np.clip(
+                        #     (sol_q - intermedia_sol_q) / 50,
+                        #     -max_step_size,
+                        #     max_step_size,
+                        # )
+                        step_sizes =  (sol_q - intermedia_sol_q) / 50
+                
                         intermedia_sol_q += step_sizes
                         q_poseList[13:27] = intermedia_sol_q
                         print("intermedia_sol_q:", intermedia_sol_q)
                         print("solq            :", sol_q)
                         h1arm.SetMotorPose(q_poseList, q_tau_ff)
                         # print("### q_pose list: ", q_poseList)
-
-                        time.sleep(0.05)  # Small delay for smooth motion
+                
+                        time.sleep(0.01)  # Small delay for smooth motion
                     q_poseList[13:27] = sol_q
-                    print("setting the remaining qpose", q_poseList)
                     h1arm.SetMotorPose(q_poseList, q_tau_ff)
-                    # print("### q_pose list: ", q_poseList)
                 else:
                     h1arm.SetMotorPose(q_poseList, q_tau_ff)
-                    # print("### q_pose list: ", q_poseList)
+                  # print("### q_pose list: ", q_poseList)
                 last_sol_q = sol_q
 
                 # TODO: add support for flag
