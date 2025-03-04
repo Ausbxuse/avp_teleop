@@ -28,8 +28,6 @@ FREQ = 30
 DELAY = 1 / FREQ
 CHUNK_SIZE = 100
 
-import numpy as np
-
 
 class IKDataWriter:
     def __init__(self, dirname):
@@ -62,7 +60,6 @@ class IKDataWriter:
             "right_pose": right_pose.tolist(),
         }
         self.data.append(entry)
-        # print("collected data: ", self.data)
 
         with open(self.filepath, "w") as file:
             json.dump(self.data, file, indent=4)
@@ -79,7 +76,7 @@ def sleep_until_mod33(time_curr):
     time.sleep(next_capture_time - time_curr)
 
 
-def recv_zmq_frame(socket):
+def recv_zmq_frame(socket, stop_event):
     compressed_data = b""
     while not stop_event.is_set():  # TODO: verify correctness
         chunk = socket.recv()
@@ -143,14 +140,13 @@ def robot_data_worker(
     socket.setsockopt(zmq.RCVTIMEO, 200)
     try:
         while not stop_event.is_set():
-            color_frame, depth_frame = recv_zmq_frame(socket)
+            color_frame, depth_frame = recv_zmq_frame(socket, stop_event)
             if color_frame is not None:
                 resized_frame = cv2.resize(
                     color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
                 )
-
-            with teleop_lock:
-                np.copyto(teleoperator.img_array, np.array(resized_frame))
+                with teleop_lock:
+                    np.copyto(teleoperator.img_array, np.array(resized_frame))
 
             time_curr = time.time()
             if is_first is True:
@@ -273,7 +269,9 @@ class LidarProcess:
         ]
 
     def run(self):
-        self.proc = subprocess.Popen(self.program_cmd)
+        self.proc = subprocess.Popen(
+            self.program_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
 
     def cleanup(self):
         if self.proc.poll() is None:  # if the process is still running
@@ -313,9 +311,10 @@ class RobotTaskmaster:
         os.mkdir(os.path.join(self.dirname, "color"))
         os.mkdir(os.path.join(self.dirname, "depth"))
         self.arm_ik = Arm_IK()
+        self.first = True
 
     def safelySetMotor(
-        self, ik_flag, sol_q, last_sol_q, tau_ff, first, armstate, right_qpos, left_qpos
+        self, ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
     ):
         q_poseList = np.zeros(35)
         q_tau_ff = np.zeros(35)
@@ -338,8 +337,8 @@ class RobotTaskmaster:
             print("[ERROR] ik flag false!")
             return False
 
-        if np.any(np.abs(armstate - sol_q) > dynamic_thresholds) and first:
-            first = False
+        if np.any(np.abs(armstate - sol_q) > dynamic_thresholds) and self.first:
+            self.first = False
             intermedia_sol_q = np.array(armstate)
 
             print("[ERROR] slowing for large movement!")
@@ -367,7 +366,6 @@ class RobotTaskmaster:
         return True
 
     def start(self):
-        first = True
         self.lidar_proc.run()
         self.robot_data_proc.start()
 
@@ -393,7 +391,6 @@ class RobotTaskmaster:
                 sol_q,
                 last_sol_q,
                 tau_ff,
-                first,
                 armstate,
                 right_qpos,
                 left_qpos,
@@ -405,7 +402,7 @@ class RobotTaskmaster:
             ik_time = time.time()
             # profile("ik finished")
 
-            self.ik_writer.write_data(
+            self.ik_writer.write_data(  # TODO:  inefficient!
                 right_hand_angles,
                 left_hand_angles,
                 motor_time,
@@ -435,7 +432,6 @@ class RobotTaskmaster:
 
 if __name__ == "__main__":
 
-    running = False
     stop_event = Event()
     taskmaster = RobotTaskmaster("heehee", stop_event)
     print("Interactive control:")
