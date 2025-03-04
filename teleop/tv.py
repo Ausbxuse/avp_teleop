@@ -379,7 +379,7 @@ class RobotTaskmaster:
             left_hand_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
             left_hand_angles.append(1.2 - left_qpos[8])
             left_hand_angles.append(0.5 - left_qpos[9])
-            self.h1hand.crtl(right_hand_angles, left_hand_angles)
+            self.h1hand.ctrl(right_hand_angles, left_hand_angles)
         return True
 
     def start(self):
@@ -416,15 +416,13 @@ class RobotTaskmaster:
                 last_sol_q = sol_q
             else:
                 continue
-            # print("################ik:", sol_q)
-            ik_time = time.time()
             # profile("ik finished")
 
             self.ik_writer.write_data(  # TODO:  inefficient!
                 right_hand_angles,
                 left_hand_angles,
                 motor_time,
-                ik_time,
+                time.time(),
                 sol_q,
                 tau_ff,
                 head_rmat,
