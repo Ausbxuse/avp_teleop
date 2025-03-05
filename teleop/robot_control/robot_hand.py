@@ -69,7 +69,7 @@ class H1HandController:
         self.stop_event.set()
         self.report_rpy_thread.join()
 
-     def reset(self):
+    def reset(self):
         if self.stop_event.is_set():
             self.stop_event.clear()
         self.report_rpy_thread = threading.Thread(target=self.subscribe_state)
