@@ -17,6 +17,7 @@ class H1HandController:
             "half": np.full(6, 0.5),
         }
         self.lock = threading.Lock()
+        self.stop_event = threading.Event()
         self.init_dds()
 
     def init_dds(self):
@@ -31,7 +32,7 @@ class H1HandController:
         self.report_rpy_thread.start()
 
     def subscribe_state(self):
-        while True:
+        while not self.stop_event.is_set():
             if self.handstate.msg:
                 self.state = self.handstate.msg
             time.sleep(0.01)
@@ -63,3 +64,7 @@ class H1HandController:
         with self.lock:
             q = np.array([self.state.states[i + 6].q for i in range(6)])
             return q
+
+    def shutdown(self):
+        self.stop_event.set()
+        self.report_rpy_thread.join()

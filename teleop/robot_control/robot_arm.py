@@ -56,6 +56,7 @@ np.set_printoptions(linewidth=240)
 class H1ArmController:
     def __init__(self):
         print("Initialize H1ArmController...")
+        self.stop_event = threading.Event()
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
         self.msg = unitree_hg.msg.dds_.LowCmd_()
@@ -125,6 +126,7 @@ class H1ArmController:
 
         self.command_writer_thread = threading.Thread(target=self.LowCommandWriter)
         self.command_writer_thread.start()
+
         print("Initialize H1ArmController OK!")
 
     def LowStateHandler(self, message):
@@ -198,7 +200,7 @@ class H1ArmController:
         self.msg.crc = self.__Crc32(calcdata)
 
     def LowCommandWriter(self):
-        while True:
+        while not self.stop_event.is_set():
             mc_tmp_ptr = self.motor_command_buffer.GetData()
             if mc_tmp_ptr:
                 for i in JointArmIndex:
@@ -213,7 +215,7 @@ class H1ArmController:
             time.sleep(0.002)
 
     def Control(self):
-        while True:
+        while not self.stop_event.is_set():
             ms_tmp_ptr = self.motor_state_buffer.GetData()
             if ms_tmp_ptr:
                 tem_q_desList = copy.deepcopy(self.q_desList)
@@ -259,7 +261,7 @@ class H1ArmController:
         return self.base_state_buffer.GetData()
 
     def SubscribeState(self):
-        while True:
+        while not self.stop_event.is_set():
             if self.lowstate_subscriber.msg:
                 self.LowStateHandler(self.lowstate_subscriber.msg)
             time.sleep(0.002)
@@ -304,6 +306,13 @@ class H1ArmController:
             JointIndex.kRightWristYaw,
         ]
         return motor_index in wrist_motors
+
+    def shutdown(self):
+        self.stop_event.set()
+        # Join threads
+        self.report_rpy_thread.join(timeout=1)
+        self.control_thread.join(timeout=1)
+        self.command_writer_thread.join(timeout=1)
 
 
 class JointArmIndex(IntEnum):
