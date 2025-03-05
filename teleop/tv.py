@@ -109,7 +109,9 @@ def recv_zmq_frame(socket, stop_event):
     return color_frame, depth_frame
 
 
-def get_robot_data(dirname, frame_count, color_frame, depth_frame, h1arm, h1hand):
+def get_robot_data(
+    dirname, frame_count, color_frame, depth_frame, h1arm, h1hand, time_curr
+):
     color_filename = os.path.join(dirname, f"color/frame_{frame_count:06d}.jpg")
     depth_filename = os.path.join(dirname, f"depth/frame_{frame_count:06d}.jpg")
     if color_frame is not None and depth_frame is not None:
@@ -121,7 +123,7 @@ def get_robot_data(dirname, frame_count, color_frame, depth_frame, h1arm, h1hand
     handstate = h1hand.get_hand_state()
     imustate = h1arm.GetIMUState()
     robot_data = {
-        "time": time.time(),
+        "time": time_curr,
         "arm_state": armstate.tolist(),
         "leg_state": legstate.tolist(),
         "hand_state": handstate.tolist(),
@@ -133,31 +135,6 @@ def get_robot_data(dirname, frame_count, color_frame, depth_frame, h1arm, h1hand
         "lidar": None,
     }
     return robot_data
-
-
-teleop_queue = Queue(maxsize=1)
-
-
-def teleoperator_updater(teleoperator, stop_event, update_rate=30):
-    """
-    This thread continuously updates the teleoperator's image array
-    at a steady rate of 30fps using frames from the teleop_queue.
-    """
-    update_interval = 1.0 / update_rate
-    while not stop_event.is_set():
-        try:
-            # Wait for the next frame with a timeout equal to the update interval.
-            frame = teleop_queue.get(timeout=update_interval)
-            # Update teleoperator's image (assuming direct assignment is acceptable).
-            # If teleoperator.img_array needs to be thread-safe, you can use a lock here,
-            # but since we only update from this thread, it may be unnecessary.
-            print("[DEBUG] received frame", frame.shape)
-            np.copyto(teleoperator.img_array, np.array(frame))
-        except Empty:
-            # No new frame arrived; optionally, you can skip updating.
-            pass
-        # Ensure a consistent update rate.
-        time.sleep(update_interval)
 
 
 def robot_data_worker(
@@ -173,7 +150,6 @@ def robot_data_worker(
     socket.connect("tcp://192.168.123.162:5556")
 
     frame_count = 0
-    next_capture_time = start_time
     socket.setsockopt(zmq.RCVTIMEO, 200)
     socket.setsockopt(zmq.RCVHWM, 1)
     try:
@@ -183,26 +159,45 @@ def robot_data_worker(
                 resized_frame = cv2.resize(
                     color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
                 )
-                try:
-                    teleop_queue.put_nowait(resized_frame)
-                except Full:
-                    try:
-                        teleop_queue.get_nowait()  # drop stale frame
-                    except Empty:
-                        pass
-                    teleop_queue.put_nowait(resized_frame)
+                with teleop_lock:
+                    np.copyto(teleoperator.img_array, np.array(resized_frame))
 
             time_curr = time.time()
             if is_first is True:
-                sleep_until_mod33(time_curr)
                 is_first = False
+                sleep_until_mod33(time_curr)
+                next_capture_time = time.time()  # % 33
+                robot_data = get_robot_data(  # % 33
+                    dirname,
+                    frame_count,
+                    color_frame,
+                    depth_frame,
+                    h1arm,
+                    h1hand,
+                    time.time(),
+                )
+                robot_data_list.append(robot_data)
+                frame_count += 1
+                next_capture_time += DELAY
+                if len(robot_data_list) >= CHUNK_SIZE:
+                    with open(log_filename, "a") as f:
+                        for data in robot_data_list:
+                            json.dump(data, f)
+                            f.write("\n")
+                    robot_data_list = []
+                continue
 
             time_curr = time.time()
             if time_curr < next_capture_time:
                 time.sleep(next_capture_time - time_curr)
-            else:
-                robot_data = get_robot_data(
-                    dirname, frame_count, color_frame, depth_frame, h1arm, h1hand
+                robot_data = get_robot_data(  # % 33
+                    dirname,
+                    frame_count,
+                    color_frame,
+                    depth_frame,
+                    h1arm,
+                    h1hand,
+                    time.time(),
                 )
                 robot_data_list.append(robot_data)
                 frame_count += 1
@@ -354,12 +349,6 @@ class RobotTaskmaster:
         self.lidar_proc = None
         self.ik_writer = None
 
-        self.teleop_thread = threading.Thread(
-            target=teleoperator_updater,
-            args=(self.teleoperator, self.stop_event, 30),
-            daemon=True,
-        )
-
     def safelySetMotor(
         self, ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
     ):
@@ -433,7 +422,6 @@ class RobotTaskmaster:
         self.ik_writer = IKDataWriter(self.dirname)
         self.lidar_proc.run()
         self.robot_data_proc.start()
-        self.teleop_thread.start()
 
         right_hand_angles = None
         left_hand_angles = None
@@ -493,8 +481,6 @@ class RobotTaskmaster:
             self.ik_writer.close()
         self.h1arm.shutdown()
         self.h1hand.shutdown()
-        teleop_queue.close()
-        teleop_queue.join_thread()
         print("Stopping all threads ended!")
 
     def merge_data(self):
@@ -522,7 +508,7 @@ if __name__ == "__main__":
     running = False
 
     # taskmaster = None
-    taskmaster = RobotTaskmaster(args.task_name)
+    taskmaster = RobotTaskmaster(args.task_name)  # h1arm twice
 
     def run_taskmaster():
         global running
@@ -532,7 +518,9 @@ if __name__ == "__main__":
     try:
         while True:
             user_input = input("> ")
-            if user_input.lower() == "s" and not running:
+            if (
+                user_input.lower() == "s" and not running
+            ):  # TODO: add start to arm/hand controller
                 print("Starting taskmaster...")
                 task_thread = threading.Thread(target=run_taskmaster)
                 task_thread.daemon = True

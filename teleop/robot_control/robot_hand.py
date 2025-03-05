@@ -9,6 +9,7 @@ from unitree_dds_wrapper.subscription import Subscription
 
 class H1HandController:
     def __init__(self):
+        self.stop_event = threading.Event()
         self.cmd = unitree_go.msg.dds_.MotorCmds_()
         self.state = unitree_go.msg.dds_.MotorStates_()
         self.labels = {
@@ -17,7 +18,6 @@ class H1HandController:
             "half": np.full(6, 0.5),
         }
         self.lock = threading.Lock()
-        self.stop_event = threading.Event()
         self.init_dds()
 
     def init_dds(self):
