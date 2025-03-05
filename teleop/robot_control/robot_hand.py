@@ -68,3 +68,10 @@ class H1HandController:
     def shutdown(self):
         self.stop_event.set()
         self.report_rpy_thread.join()
+
+     def reset(self):
+        if self.stop_event.is_set():
+            self.stop_event.clear()
+        self.report_rpy_thread = threading.Thread(target=self.subscribe_state)
+        self.report_rpy_thread.start()
+        print("H1HandController has been reset.")

@@ -11,10 +11,12 @@ import time
 import zlib
 from multiprocessing import Event, Lock, Process, Queue
 from queue import Empty, Full
+from turtle import color
 
 import cv2
 import numpy as np
 import zmq
+from casadi import ne
 
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
@@ -118,6 +120,7 @@ def get_robot_data(
         cv2.imwrite(color_filename, color_frame)
         cv2.imwrite(depth_filename, depth_frame)
 
+    print("got frame!", frame_count)
     armstate, _ = h1arm.GetMotorState()
     legstate, _ = h1arm.GetLegState()
     handstate = h1hand.get_hand_state()
@@ -141,7 +144,7 @@ def robot_data_worker(
     dirname, stop_event, start_time, h1arm, h1hand, teleop_lock, teleoperator
 ):
     robot_data_list = []
-    log_filename = os.path.join(dirname, "robot_data.txt")
+    log_filename = os.path.join(dirname, "robot_data.jsonl")
 
     is_first = True
 
@@ -159,14 +162,20 @@ def robot_data_worker(
                 resized_frame = cv2.resize(
                     color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
                 )
-                with teleop_lock:
-                    np.copyto(teleoperator.img_array, np.array(resized_frame))
+                if teleop_lock.acquire(blocking=False): # mitigate timer issue TODO: double buffering?
+                    try:
+                        np.copyto(teleoperator.img_array, np.array(resized_frame))
+                    finally:
+                        teleop_lock.release()
+                else:
+                    print("[worker thread] teleoperator in use. skipping...")
+                    pass
 
             time_curr = time.time()
-            if is_first is True:
+            if is_first:
                 is_first = False
                 sleep_until_mod33(time_curr)
-                next_capture_time = time.time()  # % 33
+                initial_capture_time = time.time()  # % 33
                 robot_data = get_robot_data(  # % 33
                     dirname,
                     frame_count,
@@ -178,17 +187,18 @@ def robot_data_worker(
                 )
                 robot_data_list.append(robot_data)
                 frame_count += 1
-                next_capture_time += DELAY
-                if len(robot_data_list) >= CHUNK_SIZE:
-                    with open(log_filename, "a") as f:
-                        for data in robot_data_list:
-                            json.dump(data, f)
-                            f.write("\n")
-                    robot_data_list = []
+                # if len(robot_data_list) >= CHUNK_SIZE:
+                #     with open(log_filename, "a") as f:
+                #         for data in robot_data_list:
+                #             json.dump(data, f)
+                #             f.write("\n")
+                #     robot_data_list = []
                 continue
 
+            next_capture_time = initial_capture_time + frame_count * DELAY
             time_curr = time.time()
-            if time_curr < next_capture_time:
+            print("[worker thread] time_curr vs next_capture tiem", time_curr, next_capture_time)
+            if time_curr <= next_capture_time:
                 time.sleep(next_capture_time - time_curr)
                 robot_data = get_robot_data(  # % 33
                     dirname,
@@ -201,13 +211,15 @@ def robot_data_worker(
                 )
                 robot_data_list.append(robot_data)
                 frame_count += 1
-                next_capture_time += DELAY
-                if len(robot_data_list) >= CHUNK_SIZE:
-                    with open(log_filename, "a") as f:
-                        for data in robot_data_list:
-                            json.dump(data, f)
-                            f.write("\n")
-                    robot_data_list = []
+                # if len(robot_data_list) >= CHUNK_SIZE:
+                #     with open(log_filename, "a") as f:
+                #         for data in robot_data_list:
+                #             json.dump(data, f)
+                #             f.write("\n")
+                #     robot_data_list = []
+            else:
+                print("[ERROR] worker thread: runner did not finish within 33ms")
+                exit(0)
 
     except KeyboardInterrupt as e:
         print(f"[INTR] keyboard interrupted: {e}")
@@ -328,9 +340,9 @@ class LidarProcess:
             print("Sending SIGINT to the lidar process...")
             self.proc.send_signal(signal.SIGINT)
             try:
-                self.proc.wait(timeout=5)
+                self.proc.wait(timeout=2)
             except subprocess.TimeoutExpired:
-                self.proc.kill()  # force kill if needed
+                self.proc.kill()  # force kill after timeout
 
 
 # Teleop and datacollector
@@ -338,8 +350,8 @@ class RobotTaskmaster:
     def __init__(self, task_name) -> None:
 
         self.task_name = task_name
-        self.stop_event = Event()
-        self.teleop_lock = Lock()
+        self.stop_event = threading.Event()
+        self.teleop_lock = threading.Lock()
         self.h1hand = H1HandController()
         self.h1arm = H1ArmController()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
@@ -348,6 +360,7 @@ class RobotTaskmaster:
         self.robot_data_proc = None
         self.lidar_proc = None
         self.ik_writer = None
+        self.running = False
 
     def safelySetMotor(
         self, ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
@@ -402,12 +415,13 @@ class RobotTaskmaster:
         return True
 
     def start(self):
+        self.running = True
         self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
         os.makedirs(self.dirname)
         os.makedirs(os.path.join(self.dirname, "color"))
         os.makedirs(os.path.join(self.dirname, "depth"))
         self.lidar_proc = LidarProcess(self.dirname)
-        self.robot_data_proc = Process(
+        self.robot_data_proc = threading.Thread(
             target=robot_data_worker,
             args=(
                 self.dirname,
@@ -418,6 +432,7 @@ class RobotTaskmaster:
                 self.teleop_lock,
                 self.teleoperator,
             ),
+            daemon=True,
         )
         self.ik_writer = IKDataWriter(self.dirname)
         self.lidar_proc.run()
@@ -427,22 +442,22 @@ class RobotTaskmaster:
         left_hand_angles = None
         last_sol_q = None
         while not self.stop_event.is_set():
-            prof_time = profile("mainloop started", 0)
+            # prof_time = profile("mainloop started", 0)
             # profile("Main loop started")
             armstate, armv = self.h1arm.GetMotorState()
             # profile("get arm finished")
             motor_time = time.time()
-            prof_time = profile("before teleop step", prof_time)
+            # prof_time = profile("before teleop step", prof_time)
             # TODO: maybe thread might be faster
             with self.teleop_lock:
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                     self.teleoperator.step()
                 )
-            prof_time = profile("teleop finished", prof_time)
+            # prof_time = profile("teleop finished", prof_time)
             sol_q, tau_ff, ik_flag = self.arm_ik.ik_fun(
                 left_pose, right_pose, armstate, armv
             )
-            prof_time = profile("ik finished", prof_time)
+            # prof_time = profile("ik finished", prof_time)
             ik_time = time.time()
             if self.safelySetMotor(
                 ik_flag,
@@ -471,10 +486,14 @@ class RobotTaskmaster:
             )
 
     def stop(self):
+        self.running = False
         self.stop_event.set()
         if self.robot_data_proc is not None and self.robot_data_proc.is_alive():
-            self.robot_data_proc.join(2)
-            self.robot_data_proc.terminate()
+            # self.robot_data_proc.join(2)
+            # self.robot_data_proc.terminate()
+            self.robot_data_proc.join(
+                timeout=30
+            )  # FIXME: times a very long time to write
         if self.lidar_proc is not None:
             self.lidar_proc.cleanup()
         if self.ik_writer is not None:
@@ -483,9 +502,19 @@ class RobotTaskmaster:
         self.h1hand.shutdown()
         print("Stopping all threads ended!")
 
+    def reset(self):
+        if self.running:
+            self.stop()
+        self.stop_event.clear()
+        self.h1hand.reset()
+        self.h1arm.reset()
+        self.first = True
+        self.running = False
+        print("RobotTaskmaster has been reset and is ready to start again.")
+
     def merge_data(self):
         ik_filepath = os.path.join(self.dirname, "ik_data.jsonl")
-        motor_filepath = os.path.join(self.dirname, "robot_data.txt")
+        motor_filepath = os.path.join(self.dirname, "robot_data.jsonl")
         output_filepath = os.path.join(self.dirname, "merged_data.jsonl")
         lidar_filepath = os.path.join(self.dirname, "lidar")
         merge_data_to_pkl(motor_filepath, ik_filepath, lidar_filepath, output_filepath)
@@ -505,40 +534,42 @@ if __name__ == "__main__":
     print(f"Robo master control (Task: {args.task_name}):")
     print("  Press 's' to start the taskmaster")
     print("  Press 'q' to stop and merge data")
-    running = False
 
-    # taskmaster = None
-    taskmaster = RobotTaskmaster(args.task_name)  # h1arm twice
-
+    task_thread = None
+    taskmaster = RobotTaskmaster(args.task_name) # this takes some time
     def run_taskmaster():
-        global running
-        running = True
         taskmaster.start()
-
     try:
         while True:
-            user_input = input("> ")
-            if (
-                user_input.lower() == "s" and not running
-            ):  # TODO: add start to arm/hand controller
+            user_input = input("> ").strip().lower()
+
+            if user_input == "s" and not taskmaster.running:
                 print("Starting taskmaster...")
                 task_thread = threading.Thread(target=run_taskmaster)
                 task_thread.daemon = True
                 task_thread.start()
-            elif user_input.lower() == "q" and running:
+
+            elif user_input == "q" and taskmaster.running:
                 print("Stopping taskmaster and merging data...")
-                running = False
-                if taskmaster:
-                    taskmaster.stop()
-                    taskmaster.merge_data()
-                task_thread.join(1)
-                print("Done! Press 's' to start again or Ctrl+C to exit")
-            else:
-                taskmaster.stop()
-                if running:
-                    task_thread.join(1)
-                running = False
+                taskmaster.merge_data()
+                if task_thread is not None:
+                    task_thread.join(timeout=1)
+                taskmaster.reset()
+                print("Done! Press 's' to start again or type 'exit' to quit.")
+
+            elif user_input == "exit":
                 print("Exiting...")
-                exit(0)
+                if taskmaster.running and task_thread is not None:
+                    taskmaster.stop()
+                    task_thread.join(timeout=1)
+                sys.exit(0)
+
+            else:
+                print("Invalid command. Use 's' to start, 'q' to stop/merge, or 'exit' to quit.")
+
     except KeyboardInterrupt:
-        print("\nExiting...")
+        print("\nKeyboardInterrupt detected. Exiting...")
+        if taskmaster.running and task_thread is not None:
+            taskmaster.stop()
+            task_thread.join(timeout=1)
+        sys.exit(0)

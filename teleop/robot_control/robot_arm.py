@@ -314,6 +314,16 @@ class H1ArmController:
         self.control_thread.join(timeout=1)
         self.command_writer_thread.join(timeout=1)
 
+    def reset(self):
+        self.stop_event.clear()
+        self.report_rpy_thread = threading.Thread(target=self.SubscribeState)
+        self.report_rpy_thread.start()
+        self.control_thread = threading.Thread(target=self.Control)
+        self.control_thread.start()
+        self.command_writer_thread = threading.Thread(target=self.LowCommandWriter)
+        self.command_writer_thread.start()
+        print("H1ArmController has been reset.")
+
 
 class JointArmIndex(IntEnum):
     # Left arm
