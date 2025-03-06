@@ -10,6 +10,15 @@ from unitree_dds_wrapper.publisher import Publisher
 from unitree_dds_wrapper.subscription import Subscription
 from unitree_dds_wrapper.utils.crc import crc32
 
+# --------------------- Debug Logger Setup ---------------------
+logger = logging.getLogger("robot_teleop")
+logger.setLevel(logging.INFO)  # Default level; will be updated if --debug is passed.
+ch = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+# --------------------------------------------------------------
+
 kTopicLowCommand = "rt/lowcmd"
 kTopicLowState = "rt/lowstate"
 kNumMotors = 35
@@ -135,8 +144,28 @@ class H1ArmController:
         self.RecordBaseState(low_state)
 
     def SetMotorPose(self, q_desList, q_tau_ff):
-        self.q_desList = q_desList
+        armstate, _ = self.GetMotorState()
         self.q_tau_ff = q_tau_ff
+        dynamic_thresholds = np.array(
+            [np.pi / 3] * 5  # left shoulder and elbow
+            + [np.pi / 1.5] * 2  # left wrists
+            + [np.pi / 3] * 5
+            + [np.pi / 1.5] * 2
+        )
+        if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
+            intermedia_armstate = np.array(armstate)
+
+            logger.error("[ERROR] slowing for large movement!")
+            while np.any(np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90):
+                step_sizes = (q_desList[13:27] - intermedia_armstate) / 50
+
+                intermedia_armstate += step_sizes
+                self.q_desList[13:27] = intermedia_armstate
+                time.sleep(0.01)  # Small delay for smooth motion
+            self.q_desList = q_desList
+        else:
+            self.q_desList = q_desList
+
 
     def __Trans(self, packData):
         calcData = []
