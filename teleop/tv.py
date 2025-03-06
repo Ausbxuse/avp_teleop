@@ -133,7 +133,7 @@ def recv_zmq_frame(socket, stop_event):
 
 
 def get_robot_data(
-    dirname, frame_count, color_frame, depth_frame, h1arm, h1hand, time_curr
+    dirname, frame_count, color_frame, depth_frame, h1_lock, h1_shm_array, time_curr
 ):
     color_filename = os.path.join(dirname, f"color/frame_{frame_count:06d}.jpg")
     depth_filename = os.path.join(dirname, f"depth/frame_{frame_count:06d}.jpg")
@@ -144,10 +144,12 @@ def get_robot_data(
             f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
         )
 
-    armstate, _ = h1arm.GetMotorState()
-    legstate, _ = h1arm.GetLegState()
-    handstate = h1hand.get_hand_state()
-    imustate = h1arm.GetIMUState()
+    with h1_lock:
+        h1_data = h1_shm_array.copy()
+    armstate = h1_data[0:14]
+    legstate = h1_data[14:27]
+    handstate = h1_data[27:39]
+    imustate = h1_data[39:45]
     robot_data = {
         "time": time_curr,
         "arm_state": armstate.tolist(),
@@ -155,8 +157,8 @@ def get_robot_data(
         "hand_state": handstate.tolist(),
         "image": f"color/frame_{frame_count:06d}.jpg",
         "depth": f"depth/frame_{frame_count:06d}.jpg",
-        "imu_omega": imustate.omega,
-        "imu_rpy": imustate.rpy,
+        "imu_omega": imustate[0:3].tolist(),
+        "imu_rpy": imustate[3:6].tolist(),
         "ik_data": None,
         "lidar": None,
     }
@@ -287,10 +289,6 @@ def teleop_update_thread(teleoperator, shm_name, stop_event):
     shm.close()
 
 def image_buffer_thread(teleoperator, image_queue, stop_event):
-    """
-    Continuously reads resized image frames from the image_queue and copies them
-    into the teleoperator's image buffer.
-    """
     while not stop_event.is_set():
         try:
             frame = image_queue.get(timeout=0.1)
@@ -298,13 +296,14 @@ def image_buffer_thread(teleoperator, image_queue, stop_event):
         except Empty:
             continue  # No image available yet, loop again
 
-def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm_queue):
+def robot_data_worker(dirname, stop_event, start_time, h1_shm_array, teleop_shm_queue):
     local_teleoperator = VuerTeleop("inspire_hand.yml")
-    shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
-    teleop_shm_queue.put(shm.name)
+    teleop_shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
+    teleop_shm_queue.put(teleop_shm.name)
     teleop_thread = threading.Thread(
-        target=teleop_update_thread, args=(local_teleoperator, shm.name, stop_event)
+        target=teleop_update_thread, args=(local_teleoperator, teleop_shm.name, stop_event)
     )
+
     teleop_thread.daemon = True
     teleop_thread.start()
 
@@ -326,6 +325,7 @@ def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm
     socket.setsockopt(zmq.RCVTIMEO, 200)
     socket.setsockopt(zmq.RCVHWM, 1)
     is_first = True
+    h1_lock = Lock()
 
     try:
         while not stop_event.is_set():
@@ -346,8 +346,8 @@ def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm
                     frame_count,
                     color_frame,
                     depth_frame,
-                    h1arm,
-                    h1hand,
+                    h1_lock,
+                    h1_shm_array,
                     time.time(),
                 )
                 robot_data_list.append(robot_data)
@@ -367,8 +367,8 @@ def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm
                     frame_count,
                     color_frame,
                     depth_frame,
-                    h1arm,
-                    h1hand,
+                    h1_lock,
+                    h1_shm_array,
                     time.time(),
                 )
                 robot_data_list.append(robot_data)
@@ -388,8 +388,8 @@ def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm
                         frame_count,
                         None,
                         None,
-                        h1arm,
-                        h1hand,
+                    h1_lock,
+                    h1_shm_array,
                         time.time(),
                     )
                     robot_data_list.append(robot_data)
@@ -412,8 +412,8 @@ def robot_data_worker(dirname, stop_event, start_time, h1arm, h1hand, teleop_shm
         logger.info("robot_data_worker process has exited.")
         stop_event.set()
         teleop_thread.join()
-        shm.close()
-        shm.unlink()
+        teleop_shm.close()
+        teleop_shm.unlink()
 
 
 # Teleop and datacollector
@@ -430,6 +430,13 @@ class RobotTaskmaster:
         self.lidar_proc = None
         self.ik_writer = None
         self.running = False
+        self.teleop_shm_queue = Queue()
+        self.h1_shm_queue = Queue()
+        self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
+        self.h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
+        self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
+        self.h1_lock = Lock()
+
 
     def safelySetMotor(
         self, ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
@@ -485,28 +492,14 @@ class RobotTaskmaster:
 
     def start(self):
         self.running = True
-        self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
         os.makedirs(self.dirname)
         os.makedirs(os.path.join(self.dirname, "color"))
         os.makedirs(os.path.join(self.dirname, "depth"))
         self.lidar_proc = LidarProcess(self.dirname)
-        teleop_shm_queue = Queue()
-        self.robot_data_proc = Process(
-            target=robot_data_worker,
-            args=(
-                self.dirname,
-                self.stop_event,
-                time.time(),
-                self.h1arm,
-                self.h1hand,
-                teleop_shm_queue,
-            ),
-        )
         self.ik_writer = IKDataWriter(self.dirname)
         self.lidar_proc.run()
-        self.robot_data_proc.start()
 
-        teleop_shm_name = teleop_shm_queue.get()
+        teleop_shm_name = self.teleop_shm_queue.get()
         self.teleop_shm = shared_memory.SharedMemory(name=teleop_shm_name)
         self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
 
@@ -520,6 +513,16 @@ class RobotTaskmaster:
                 time.sleep(1)
             # print("loop start",time.time())
             armstate, armv = self.h1arm.GetMotorState()
+            legstate, _ = self.h1arm.GetLegState()
+            handstate = self.h1hand.get_hand_state()
+            imustate = self.h1arm.GetIMUState()
+            with self.h1_lock:
+                self.h1_shm_array[0:14] = armstate
+                self.h1_shm_array[14:27] = legstate
+                self.h1_shm_array[27:39] = handstate
+                self.h1_shm_array[39:42] = imustate.omega
+                self.h1_shm_array[42:45] = imustate.rpy
+
             motor_time = time.time()
             with self.teleop_lock:
                 teleop_data = self.teleop_shm_array.copy()
@@ -620,6 +623,18 @@ if __name__ == "__main__":
     def run_taskmaster():
         taskmaster.start()
 
+    robot_data_proc = Process(
+        target=robot_data_worker,
+        args=(
+            taskmaster.dirname,
+            taskmaster.stop_event,
+            time.time(),
+            taskmaster.h1_shm_array,
+            taskmaster.teleop_shm_queue,
+        ),
+    )
+    robot_data_proc.start()
+
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -666,5 +681,6 @@ if __name__ == "__main__":
         logger.info("KeyboardInterrupt detected. Exiting...")
         if taskmaster.running and task_thread is not None:
             taskmaster.stop()
+            taskmaster.merge_data()
             task_thread.join(timeout=1)
         sys.exit(0)
