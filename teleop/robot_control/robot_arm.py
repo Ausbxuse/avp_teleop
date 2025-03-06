@@ -98,7 +98,7 @@ class H1ArmController:
         for id in JointIndex:
             self.msg.motor_cmd[id].q = self.lowstate_subscriber.msg.motor_state[id].q
             self.q_target.append(self.msg.motor_cmd[id].q)
-        print(f"Init q_pose is :{self.q_target}")
+        # print(f"Init q_pose is :{self.q_target}")
         duration = 1000
         init_q = np.array(
             [self.lowstate_subscriber.msg.motor_state[id].q for id in JointIndex]
