@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import gc
 import json
 import logging
 import os
@@ -93,17 +94,19 @@ class IKDataWriter:
 def sleep_until_mod33(time_curr):
     integer_part = int(time_curr)
     decimal_part = time_curr - integer_part
-    ms_part = int(decimal_part * 1000) % 1000
+    ms_part = int(decimal_part * 1000) % 100
 
-    next_ms_part = ((ms_part // 33) + 1) * 33 % 1000
+    print(time_curr)
+    next_ms_part = ((ms_part // 33) + 1) * 33 % 100
+    hundred_ms_part = int(decimal_part * 10 % 10)
+    if next_ms_part == 32:
+        hundred_ms_part += 1
+    print(next_ms_part, hundred_ms_part)
 
-    next_capture_time = integer_part + next_ms_part / 1000
-    logger.debug(
-        f"sleep_until_mod33: Sleeping until {next_capture_time} (current time: {time_curr})"
-    )
+    next_capture_time = integer_part + next_ms_part / 1000 + hundred_ms_part / 10
     if (next_capture_time - time_curr) < 0:
-        next_capture_time+=1
-    time.sleep(next_capture_time - time_curr)
+        next_capture_time += 1
+    time.sleep(next_capture_time- time_curr)
 
 
 def recv_zmq_frame(socket, stop_event):
@@ -293,10 +296,12 @@ def image_buffer_thread(teleoperator, image_queue, stop_event):
         try:
             frame = image_queue.get(timeout=0.1)
             np.copyto(teleoperator.img_array, frame)
+            logger.debug("image_buf_thread: copied frame")
         except Empty:
+            logger.debug("image_buf_thread: empty image")
             continue  # No image available yet, loop again
 
-def robot_data_worker(dirname, stop_event, start_time, h1_shm_array, teleop_shm_queue):
+def robot_data_worker(dirname, stop_event, start_event, h1_shm_array, teleop_shm_queue):
     local_teleoperator = VuerTeleop("inspire_hand.yml")
     teleop_shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
     teleop_shm_queue.put(teleop_shm.name)
@@ -327,6 +332,7 @@ def robot_data_worker(dirname, stop_event, start_time, h1_shm_array, teleop_shm_
     is_first = True
     h1_lock = Lock()
 
+    start_event.wait()
     try:
         while not stop_event.is_set():
             color_frame, depth_frame = recv_zmq_frame(socket, stop_event)
@@ -338,7 +344,7 @@ def robot_data_worker(dirname, stop_event, start_time, h1_shm_array, teleop_shm_
                 np.copyto(local_teleoperator.img_array, np.array(resized_frame))
             if is_first:
                 is_first = False
-                sleep_until_mod33(time_curr)
+                sleep_until_mod33(time.time())
                 initial_capture_time = time.time()
                 logger.debug(f"initial_capture_time is {initial_capture_time}")
                 robot_data = get_robot_data(
@@ -421,6 +427,7 @@ class RobotTaskmaster:
     def __init__(self, task_name):
         self.task_name = task_name
         self.stop_event = Event()
+        self.start_event = Event()
         self.teleop_lock = Lock()
         self.h1hand = H1HandController()
         self.h1arm = H1ArmController()
@@ -487,17 +494,18 @@ class RobotTaskmaster:
             left_hand_angles = [1.7 - left_qpos[i] for i in [4, 6, 2, 0]]
             left_hand_angles.append(1.2 - left_qpos[8])
             left_hand_angles.append(0.5 - left_qpos[9])
-            # self.h1hand.ctrl(right_hand_angles, left_hand_angles)
+            self.h1hand.ctrl(right_hand_angles, left_hand_angles)
         return True
 
     def start(self):
+        self.lidar_proc = LidarProcess(self.dirname)
+        self.lidar_proc.run()
+        self.start_event.set()
         self.running = True
         os.makedirs(self.dirname)
         os.makedirs(os.path.join(self.dirname, "color"))
         os.makedirs(os.path.join(self.dirname, "depth"))
-        self.lidar_proc = LidarProcess(self.dirname)
         self.ik_writer = IKDataWriter(self.dirname)
-        self.lidar_proc.run()
 
         teleop_shm_name = self.teleop_shm_queue.get()
         self.teleop_shm = shared_memory.SharedMemory(name=teleop_shm_name)
@@ -506,11 +514,7 @@ class RobotTaskmaster:
         right_hand_angles = None
         left_hand_angles = None
         last_sol_q = None
-        first = True
         while not self.stop_event.is_set():
-            if first:
-                first = False
-                time.sleep(1)
             # print("loop start",time.time())
             armstate, armv = self.h1arm.GetMotorState()
             legstate, _ = self.h1arm.GetLegState()
@@ -527,6 +531,9 @@ class RobotTaskmaster:
             with self.teleop_lock:
                 teleop_data = self.teleop_shm_array.copy()
             # print("tv finish",time.time())
+            if np.all(teleop_data) == 0:
+                logger.debug("Not receving data yet")
+                continue
             head_rmat = teleop_data[0:9].reshape(3, 3)
             left_pose = teleop_data[9:25].reshape(4, 4)
             right_pose = teleop_data[25:41].reshape(4, 4)
@@ -565,14 +572,26 @@ class RobotTaskmaster:
     def stop(self):
         self.running = False
         self.stop_event.set()
-        if self.robot_data_proc is not None and self.robot_data_proc.is_alive():
-            self.robot_data_proc.join(timeout=30)  # FIXME: times a very long time to write
         if self.lidar_proc is not None:
             self.lidar_proc.cleanup()
         if self.ik_writer is not None:
             self.ik_writer.close()
         self.h1arm.shutdown()
         self.h1hand.shutdown()
+        if self.h1_shm is not None:
+            try:
+                self.h1_shm.close()
+                self.h1_shm.unlink()
+            except Exception as e:
+                logger.error(f"Error cleaning up h1_shm: {e}")
+        
+        if hasattr(self, 'teleop_shm') and self.teleop_shm is not None:
+            try:
+                self.teleop_shm.close()
+                self.teleop_shm.unlink()
+            except Exception as e:
+                logger.error(f"Error cleaning up teleop_shm: {e}")
+                
         logger.info("Stopping all threads ended!")
 
     def reset(self):
@@ -628,7 +647,7 @@ if __name__ == "__main__":
         args=(
             taskmaster.dirname,
             taskmaster.stop_event,
-            time.time(),
+            taskmaster.start_event,
             taskmaster.h1_shm_array,
             taskmaster.teleop_shm_queue,
         ),
@@ -654,27 +673,29 @@ if __name__ == "__main__":
                     task_thread.join(timeout=1)
                 logger.info("Stopping taskmaster")
                 taskmaster.stop()
-                logger.info("merging data")
+                if robot_data_proc is not None and robot_data_proc.is_alive():
+                    robot_data_proc.join(timeout=5)
+                logger.info("Merging data")
                 taskmaster.merge_data()
                 print("Done! Press 's' to start again or type 'exit' to quit.")
-                logger.info("Done! Press 's' to start again or type 'exit' to quit.")
+                logger.info("Data merged")
+                gc.collect()
                 taskmaster = RobotTaskmaster(args.task_name)
+                robot_data_proc.start()
 
             elif user_input == "exit":
                 print("Exiting...")
                 logger.info("Exiting...")
                 if taskmaster.running and task_thread is not None:
                     taskmaster.stop()
+                    if robot_data_proc is not None and robot_data_proc.is_alive():
+                        robot_data_proc.join(timeout=5)
                     task_thread.join(timeout=1)
                 sys.exit(0)
 
             else:
-                print(
-                    "Invalid command. Use 's' to start, 'q' to stop/merge, or 'exit' to quit."
-                )
-                logger.info(
-                    "Invalid command. Use 's' to start, 'q' to stop/merge, or 'exit' to quit."
-                )
+                print("Invalid command. Use 's' to start, 'q' to stop/merge, 'exit' to quit.")
+                logger.info( "Invalid command.")
 
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt detected. Exiting...")

@@ -40,7 +40,7 @@ from multiprocessing import Semaphore, shared_memory
 import numpy as np
 
 if __name__ == "__main__":
-    merged_file_path = "./demos/default_task/20250304_191446/merged_data.jsonl"
+    merged_file_path = "./demos/default_task/20250305_202541/merged_data.jsonl"
     with open(merged_file_path, "r") as f:
         data_list = json.load(f)
 
@@ -73,9 +73,8 @@ if __name__ == "__main__":
         h1hand.ctrl(right_angles, left_angles)
 
         if i != len(data_list) - 1:
-            last_time = time.time()
             print(f"[DEBUG] {last_time}")
             time_interval = data_list[i + 1]["time"] - data_list[i]["time"]
+            last_time = time.time()
 
     print("Replay Complete!")
-

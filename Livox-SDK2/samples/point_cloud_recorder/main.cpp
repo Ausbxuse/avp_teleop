@@ -205,7 +205,7 @@ int main(int argc, const char* argv[]) {
     while (true) {
       auto now = std::chrono::system_clock::now();
       auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()) % 1000;
+        now.time_since_epoch()) % 100;
 
         if (ms.count() % 33 == 0) {
             std::cout << "starting at " << ms.count() << std::endl;
