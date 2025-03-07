@@ -395,6 +395,7 @@ class RobotDataWorker:
             create=True, size=65 * np.dtype(np.float64).itemsize
         )
         self.teleop_shm_queue.put(teleop_shm.name)
+
         teleop_thread = threading.Thread(
             target=self.teleop_update_thread,
             args=(teleop_shm.name,),
@@ -610,6 +611,8 @@ class RobotTaskmaster:
             )
             ik_time = time.time()
             # print("ik finish",time.time())
+
+
             if self.safelySetMotor(
                 ik_flag,
                 sol_q,
@@ -622,6 +625,8 @@ class RobotTaskmaster:
                 last_sol_q = sol_q
             else:
                 continue
+
+
 
             self.ik_writer.write_data(
                 right_hand_angles,

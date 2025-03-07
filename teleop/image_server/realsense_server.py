@@ -16,8 +16,22 @@ def start_server():
     config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
+
     # Start streaming
     pipeline.start(config)
+
+    profile = pipeline.get_active_profile()
+    depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
+    depth_intrinsics = depth_profile.get_intrinsics()
+    w, h = depth_intrinsics.width, depth_intrinsics.height
+
+    print(vars(depth_intrinsics))
+
+    print(f"Width: {depth_intrinsics.width}")
+    print(f"Height: {depth_intrinsics.height}")
+    print(f"Focal Length (fx, fy): ({depth_intrinsics.fx}, {depth_intrinsics.fy})")
+    print(f"Principal Point (cx, cy): ({depth_intrinsics.cx}, {depth_intrinsics.cy})")
+    print(f"Distortion Coefficients: {depth_intrinsics.coeffs}")
 
     # Set up ZeroMQ for sending data
     context = zmq.Context()
@@ -71,5 +85,3 @@ def start_server():
 
 if __name__ == "__main__":
     start_server()
-
-
