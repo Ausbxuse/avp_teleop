@@ -16,7 +16,6 @@ from multiprocessing import Event, Lock, Process, Queue, shared_memory
 import cv2
 import numpy as np
 import zmq
-
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
@@ -696,6 +695,41 @@ class RobotTaskmaster:
 
 
 if __name__ == "__main__":
+
+    # dirname_queue = Queue()
+    # stop_event = Event()
+    # start_event = Event()
+    # dirname_queue.put("heeehee")
+    # def run_dataworker(
+    #     dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
+    # ):
+    #     taskworker = RobotDataWorker(
+    #         dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
+    #     )
+    #     print("starting")
+    #     taskworker.start()
+    #
+    # teleop_shm_queue = Queue()
+    # h1_shm_queue = Queue()
+    #
+    # h1_shm = shared_memory.SharedMemory(
+    #     create=True, size=45 * np.dtype(np.float64).itemsize
+    # )
+    # h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
+    #
+    # proc =  Process(
+    #     target=run_dataworker,
+    #     args=(
+    #         dirname_queue,
+    #         stop_event,
+    #         start_event,
+    #         h1_shm_array,
+    #         teleop_shm_queue,
+    #     ),
+    # )
+    # proc.start()
+    # start_event.set()
+
     parser = argparse.ArgumentParser(description="Robot Teleoperation System")
     # TODO: cleanup empty demo dirs
     parser.add_argument(
@@ -748,6 +782,10 @@ if __name__ == "__main__":
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
 
+    # task_thread = threading.Thread(target=run_taskmaster)
+    # task_thread.daemon = True
+    # task_thread.start()
+    taskmaster.start()
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -757,9 +795,9 @@ if __name__ == "__main__":
             user_input = input("> ").lower()
 
             if user_input == "s" and not taskmaster.running:
-                task_thread = threading.Thread(target=run_taskmaster)
-                task_thread.daemon = True
-                task_thread.start()
+                # task_thread = threading.Thread(target=run_taskmaster)
+                # task_thread.daemon = True
+                # task_thread.start()
                 logger.info("Started taskmaster and dataworker")
 
             elif user_input == "q" and taskmaster.running:
