@@ -790,7 +790,7 @@ if __name__ == "__main__":
     # task_thread = threading.Thread(target=run_taskmaster)
     # task_thread.daemon = True
     # task_thread.start()
-    taskmaster.start()
+    # taskmaster.start()
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -800,9 +800,9 @@ if __name__ == "__main__":
             user_input = input("> ").lower()
 
             if user_input == "s" and not taskmaster.running:
-                # task_thread = threading.Thread(target=run_taskmaster)
-                # task_thread.daemon = True
-                # task_thread.start()
+                task_thread = threading.Thread(target=run_taskmaster)
+                task_thread.daemon = True
+                task_thread.start()
                 logger.info("Started taskmaster and dataworker")
 
             elif user_input == "q" and taskmaster.running:
