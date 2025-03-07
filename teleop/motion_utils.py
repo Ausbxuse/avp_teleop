@@ -1,7 +1,7 @@
 import numpy as np
 
 def mat_update(prev_mat, mat):
-    if np.linalg.det(mat) < 1e-6:
+    if np.linalg.det(mat) < 1e-6: 
         return prev_mat
     else:
         return mat
