@@ -787,10 +787,7 @@ if __name__ == "__main__":
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
 
-    # task_thread = threading.Thread(target=run_taskmaster)
-    # task_thread.daemon = True
-    # task_thread.start()
-    # taskmaster.start()
+    taskmaster_proc = Process(target=taskmaster.start)
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -801,16 +798,15 @@ if __name__ == "__main__":
             # user_input = await asyncio.to_thread(input, "> ")
 
             if user_input == "s" and not taskmaster.running:
-                task_thread = threading.Thread(target=run_taskmaster)
-                task_thread.daemon = True
-                task_thread.start()
+                # task_thread = threading.Thread(target=run_taskmaster)
+                # task_thread.daemon = True
+                taskmaster_proc.start()
                 logger.info("Started taskmaster and dataworker")
 
             elif user_input == "q" and taskmaster.running:
-                if task_thread is not None:
-                    task_thread.join(timeout=1)
-                logger.info("Stopping taskmaster")
                 taskmaster.stop()
+                taskmaster_proc.join(timeout=1)
+                logger.info("Stopping taskmaster")
                 if robot_data_proc is not None and robot_data_proc.is_alive():
                     robot_data_proc.join(timeout=5)
                 logger.info("Merging data...")
@@ -822,9 +818,9 @@ if __name__ == "__main__":
 
             elif user_input == "exit":
                 logger.info("Exiting...")
-                if taskmaster.running and task_thread is not None:
+                if taskmaster.running:
                     taskmaster.stop()
-                    task_thread.join(timeout=1)
+                    taskmaster_proc.join(timeout=1)
                 logger.debug("Terminating data proc...")
                 robot_data_proc.terminate()
                 if robot_data_proc is not None and robot_data_proc.is_alive():
@@ -843,6 +839,6 @@ if __name__ == "__main__":
         if taskmaster.running and task_thread is not None:
             taskmaster.stop()
             taskmaster.merge_data()
-            task_thread.join(timeout=1)
+            taskmaster_proc.join(timeout=1)
     finally:
         sys.exit(0)
