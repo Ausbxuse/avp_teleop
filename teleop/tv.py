@@ -1,4 +1,5 @@
 import argparse
+import gc
 import json
 import logging
 import os
@@ -410,7 +411,7 @@ class RobotDataWorker:
             args=(image_queue,),
         )
         image_thread.daemon = True
-        image_thread.start()
+        # image_thread.start()
 
         robot_data_list = []
         # log_filename = os.path.join(self.dirname, "robot_data.jsonl")
@@ -426,8 +427,8 @@ class RobotDataWorker:
                     resized_frame = cv2.resize(
                         color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
                     )
-                    # np.copyto(self.teleoperator.img_array, np.array(resized_frame))
-                    image_queue.put(resized_frame)
+                    np.copyto(self.teleoperator.img_array, np.array(resized_frame))
+                    # image_queue.put(resized_frame)
                 if is_first:
                     is_first = False
                     self._sleep_until_mod33(time.time())
@@ -536,9 +537,9 @@ class RobotTaskmaster:
         q_tau_ff[13:27] = tau_ff  # WARN: untested!
         dynamic_thresholds = np.array(
             [np.pi / 3] * 5  # left shoulder and elbow
-            + [np.pi / 1.5] * 2  # left wrists
+            + [np.pi ] * 2  # left wrists
             + [np.pi / 3] * 5
-            + [np.pi / 1.5] * 2
+            + [np.pi ] * 2
         )
         if last_sol_q is not None and np.any(
             np.abs(last_sol_q - sol_q) > dynamic_thresholds
@@ -551,22 +552,7 @@ class RobotTaskmaster:
             logger.error("ik flag false!")
             return False
 
-        if np.any(np.abs(armstate - sol_q) > dynamic_thresholds) and self.first:
-            self.first = False
-            intermedia_sol_q = np.array(armstate)
-
-            logger.error("slowing for large movement!")
-            while np.any(np.abs(sol_q - intermedia_sol_q) > np.pi / 90):
-                step_sizes = (sol_q - intermedia_sol_q) / 50
-
-                intermedia_sol_q += step_sizes
-                q_poseList[13:27] = intermedia_sol_q
-                self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
-                time.sleep(0.01)
-            q_poseList[13:27] = sol_q
-            self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
-        else:
-            self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
+        self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
         if right_qpos is not None and left_qpos is not None:
             right_hand_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
@@ -760,6 +746,7 @@ if __name__ == "__main__":
 
     robot_data_proc = create_robot_data_proc(taskmaster)
     robot_data_proc.start()
+    # TODO: fix inconsistent arm time (not strictly 33hz)
 
     try:
         while True:
@@ -793,13 +780,13 @@ if __name__ == "__main__":
                 logger.info("Exiting...")
                 if taskmaster.running and task_thread is not None:
                     taskmaster.stop()
-                    if robot_data_proc is not None and robot_data_proc.is_alive():
-                        robot_data_proc.join(timeout=5)
                     task_thread.join(timeout=1)
                 logger.debug("Terminating data proc...")
                 robot_data_proc.terminate()
-                robot_data_proc.join()
+                if robot_data_proc is not None and robot_data_proc.is_alive():
+                    robot_data_proc.join(timeout=5)
                 logger.debug("Data proc terminated")
+                gc.collect()
                 sys.exit(0)
 
             else:

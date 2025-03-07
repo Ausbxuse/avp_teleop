@@ -1,4 +1,5 @@
 import copy
+import logging
 import struct
 import threading
 import time
@@ -11,7 +12,7 @@ from unitree_dds_wrapper.subscription import Subscription
 from unitree_dds_wrapper.utils.crc import crc32
 
 # --------------------- Debug Logger Setup ---------------------
-logger = logging.getLogger("robot_teleop")
+logger = logging.getLogger("robot_arm")
 logger.setLevel(logging.INFO)  # Default level; will be updated if --debug is passed.
 ch = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -96,7 +97,7 @@ class H1ArmController:
         self.ankle_init_pos = -0.5
         self.shoulder_pitch_init_pos = -1.4
         self.time = 0.0
-        self.init_duration = 10.0
+        self.init_duration = 3.0
         self.report_dt = 0.1
         self.ratio = 0.0
         self.q_target = []
@@ -148,9 +149,9 @@ class H1ArmController:
         self.q_tau_ff = q_tau_ff
         dynamic_thresholds = np.array(
             [np.pi / 3] * 5  # left shoulder and elbow
-            + [np.pi / 1.5] * 2  # left wrists
+            + [np.pi] * 2  # left wrists
             + [np.pi / 3] * 5
-            + [np.pi / 1.5] * 2
+            + [np.pi] * 2
         )
         if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
             intermedia_armstate = np.array(armstate)
@@ -165,7 +166,6 @@ class H1ArmController:
             self.q_desList = q_desList
         else:
             self.q_desList = q_desList
-
 
     def __Trans(self, packData):
         calcData = []
@@ -344,6 +344,12 @@ class H1ArmController:
         self.command_writer_thread.join(timeout=1)
 
     def reset(self):
+        self.time = 0
+        self.q_desList = np.zeros(kNumMotors)
+        self.q_tau_ff = np.zeros(kNumMotors)
+        self.motor_state_buffer = DataBuffer()
+        self.motor_command_buffer = DataBuffer()
+        self.base_state_buffer = DataBuffer()
         self.stop_event.clear()
         self.report_rpy_thread = threading.Thread(target=self.SubscribeState)
         self.report_rpy_thread.start()
