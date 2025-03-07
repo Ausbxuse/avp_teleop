@@ -31,11 +31,12 @@ class VuerPreprocessor:
         right_wrist_mat = grd_yup2grd_zup @ self.vuer_right_wrist_mat @ fast_mat_inv(grd_yup2grd_zup)
         left_wrist_mat = grd_yup2grd_zup @ self.vuer_left_wrist_mat @ fast_mat_inv(grd_yup2grd_zup)
 
+        sensitivity = 1.5 #sensitvity factor for more sensitve hand movement. 
         rel_left_wrist_mat = left_wrist_mat @ hand2inspire_l_arm
-        rel_left_wrist_mat[0:3, 3] = rel_left_wrist_mat[0:3, 3] - head_mat[0:3, 3]
+        rel_left_wrist_mat[0:3, 3] = sensitivity * (rel_left_wrist_mat[0:3, 3] - head_mat[0:3, 3])
 
         rel_right_wrist_mat = right_wrist_mat @ hand2inspire_r_arm  # wTr = wTh @ hTr
-        rel_right_wrist_mat[0:3, 3] = rel_right_wrist_mat[0:3, 3] - head_mat[0:3, 3]
+        rel_right_wrist_mat[0:3, 3] = sensitivity * (rel_right_wrist_mat[0:3, 3] - head_mat[0:3, 3])
 
         # homogeneous
         left_fingers = np.concatenate([tv.left_landmarks.copy().T, np.ones((1, tv.left_landmarks.shape[0]))])
