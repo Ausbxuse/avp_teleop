@@ -515,13 +515,15 @@ class RobotDataWorker:
 
 # Teleop and datacollector
 class RobotTaskmaster:
-    def __init__(self, task_name, session_start_event, stop_event, kill_event):
+    def __init__(self, dirname_queue, h1_shm_array, teleop_shm_queue, task_name, session_start_event, kill_event):
         self.task_name = task_name
         self.kill_event = kill_event
         self.session_start_event = session_start_event
-        self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
-        self.dirname_queue = Queue()
-        self.dirname_queue.put(self.dirname)
+        self.dirname_queue = dirname_queue
+        self.dirname = dirname_queue.get()
+        self.h1_shm_array = h1_shm_array
+        self.teleop_shm_queue = teleop_shm_queue
+
         self.teleop_lock = Lock()
         self.h1hand = H1HandController()
         self.h1arm = H1ArmController()
@@ -530,15 +532,9 @@ class RobotTaskmaster:
         self.lidar_proc = None
         self.ik_writer = None
         self.running = False
-        self.teleop_shm_queue = Queue()
-        self.h1_shm_queue = Queue()
-        os.makedirs(self.dirname)
-        os.makedirs(os.path.join(self.dirname, "color"))
-        os.makedirs(os.path.join(self.dirname, "depth"))
-        self.h1_shm = shared_memory.SharedMemory(
-            create=True, size=45 * np.dtype(np.float64).itemsize
-        )
-        self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
+        # os.makedirs(self.dirname)
+        # os.makedirs(os.path.join(self.dirname, "color"))
+        # os.makedirs(os.path.join(self.dirname, "depth"))
         self.h1_lock = Lock()
 
     def safelySetMotor(
@@ -805,17 +801,27 @@ if __name__ == "__main__":
 
     # Although a teleoperator is passed here for API compatibility, it is now unused in the main process.
     session_start_event = Event()
-    session_stop_event = Event()
     kill_event = Event()
     task_thread = None
-    taskmaster = RobotTaskmaster(args.task_name, session_start_event, session_stop_event, kill_event)
+
+    dirname = time.strftime(f"demos/{args.task_name}/%Y%m%d_%H%M%S")
+    dirname_queue = Queue()
+    dirname_queue.put(dirname)
+    dirname_queue.put(dirname)
+    teleop_shm_queue = Queue()
+    h1_shm_queue = Queue()
+    h1_shm = shared_memory.SharedMemory(
+        create=True, size=45 * np.dtype(np.float64).itemsize
+    )
+    h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
 
     def run_taskmaster():
+        taskmaster = RobotTaskmaster(dirname_queue, h1_shm_array, teleop_shm_queue, args.task_name, session_start_event, kill_event)
         taskmaster.start()
 
     def run_dataworker():
         taskworker = RobotDataWorker(
-                taskmaster.dirname_queue, kill_event, session_start_event, taskmaster.h1_shm_array, taskmaster.teleop_shm_queue
+                dirname_queue, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
             )
         taskworker.start()
 
@@ -823,11 +829,10 @@ if __name__ == "__main__":
     # session_start_event.set()
     # taskworker.start()
 
-    session_start_event.set()
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
 
-    taskmaster_proc = Process(target=taskmaster.start)
+    taskmaster_proc = Process(target=run_taskmaster)
     taskmaster_proc.start()
     try:
         while True:
@@ -867,9 +872,9 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt detected. Exiting...")
-        if taskmaster.running and task_thread is not None:
-            taskmaster.stop()
-            taskmaster.merge_data()
-            taskmaster_proc.join(timeout=1)
+        robot_data_proc.terminate()
+        robot_data_proc.join(timeout=1)
+        taskmaster_proc.terminate()
+        taskmaster_proc.join(timeout=1)
     finally:
         sys.exit(0)
