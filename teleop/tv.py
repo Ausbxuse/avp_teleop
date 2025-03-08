@@ -593,6 +593,10 @@ class RobotTaskmaster:
             logger.info("Master: finished")
 
     def run_session(self):
+        os.makedirs(self.dirname, exist_ok=True)
+        os.makedirs(os.path.join(self.dirname, "color"), exist_ok=True)
+        os.makedirs(os.path.join(self.dirname, "depth"), exist_ok=True)
+
         self.lidar_proc = LidarProcess(self.dirname)
         self.lidar_proc.run()
         logger.debug("Master: lidar process started")
@@ -726,10 +730,6 @@ class RobotTaskmaster:
 
         self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
         self.dirname_queue.put(self.dirname)
-        os.makedirs(self.dirname, exist_ok=True)
-        os.makedirs(os.path.join(self.dirname, "color"), exist_ok=True)
-        os.makedirs(os.path.join(self.dirname, "depth"), exist_ok=True)
-
         self.ik_writer = IKDataWriter(self.dirname)
 
         logger.info("RobotTaskmaster has been reset and is ready to start again.")
@@ -805,7 +805,7 @@ if __name__ == "__main__":
     task_thread = None
 
     dirname = time.strftime(f"demos/{args.task_name}/%Y%m%d_%H%M%S")
-    dirname_queue = Queue()
+    dirname_queue = Queue() # FIXME: dirname put 2
     dirname_queue.put(dirname)
     dirname_queue.put(dirname)
     teleop_shm_queue = Queue()
