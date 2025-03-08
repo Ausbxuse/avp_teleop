@@ -41,12 +41,12 @@ sys.path.append(parent_dir)
 class AsyncImageWriter:
     def __init__(self):
         self.queue = queue.Queue()
-        self.stop_event = threading.Event()
+        self.kill_event = threading.Event()
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
 
     def _run(self):
-        while not self.stop_event.is_set() or not self.queue.empty():
+        while not self.kill_event.is_set() or not self.queue.empty():
             try:
                 filename, image = self.queue.get(timeout=0.5)
                 cv2.imwrite(filename, image)
@@ -57,20 +57,20 @@ class AsyncImageWriter:
         self.queue.put((filename, image))
 
     def close(self):
-        self.stop_event.set()
+        self.kill_event.set()
         self.thread.join()
 
 class AsyncWriter:
     def __init__(self, filepath):
         self.filepath = filepath
         self.queue = queue.Queue()
-        self.stop_event = threading.Event()
+        self.kill_event = threading.Event()
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
 
     def _run(self):
         with open(self.filepath, "a") as f:
-            while not self.stop_event.is_set() or not self.queue.empty():
+            while not self.kill_event.is_set() or not self.queue.empty():
                 try:
                     item = self.queue.get(timeout=0.5)
                     # logger.debug(f"async writer: writing elements {item}")
@@ -84,7 +84,7 @@ class AsyncWriter:
         self.queue.put(item)
 
     def close(self):
-        self.stop_event.set()
+        self.kill_event.set()
         self.thread.join()
 
 class IKDataWriter:
@@ -154,7 +154,7 @@ class DataMerger:
             time_parts = lidar_file_name.split(".")[0:2]
             lidar_time_list.append(float(time_parts[0] + "." + time_parts[1]))
 
-        logger.info("loading robot and IK data for merging.") # NOTE: stuck here when exit
+        logger.info("loading robot and IK data for merging.")
         robot_data_json_list = []
         with open(self.robot_data_path, "r") as f:
             for line in f:
@@ -233,11 +233,11 @@ class LidarProcess:
 
 class RobotDataWorker:
     def __init__(
-        self, dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
+        self, dirname_queue, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
     ):
         self.dirname_queue = dirname_queue
-        self.stop_event = stop_event
-        self.start_event = start_event
+        self.kill_event = kill_event
+        self.session_start_event = session_start_event
         self.h1_shm_array = h1_shm_array
         self.teleop_shm_queue = teleop_shm_queue
         self.h1_lock = Lock()
@@ -272,9 +272,10 @@ class RobotDataWorker:
 
     def _recv_zmq_frame(self):
         compressed_data = b""
-        while not self.stop_event.is_set():  # TODO: verify correctness
+        while not self.kill_event.is_set():  # TODO: verify correctness
             chunk = self.socket.recv()
             compressed_data += chunk
+            logger.debug(f"receiving parts of frame!")
             if len(chunk) < 120000:  # Check for last chunk
                 break
 
@@ -291,6 +292,7 @@ class RobotDataWorker:
             logger.error("Failed to decode frame!")
             return None, None
 
+        logger.debug(f"got data!")
         color_frame = frame[:, : frame.shape[1] // 2]
         depth_frame = frame[:, frame.shape[1] // 2 :]
         return color_frame, depth_frame
@@ -298,7 +300,7 @@ class RobotDataWorker:
     def teleop_update_thread(self, shm_name):
         shm = shared_memory.SharedMemory(name=shm_name)
         teleop_array = np.ndarray((65,), dtype=np.float64, buffer=shm.buf)
-        while not self.stop_event.is_set():
+        while not self.kill_event.is_set():
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.teleoperator.step()
             )
@@ -312,14 +314,15 @@ class RobotDataWorker:
         shm.close()
 
     def image_buffer_thread(self, image_queue):
-        while not self.stop_event.is_set():
+        while not self.kill_event.is_set():
             try:
                 frame = image_queue.get(timeout=0.1)
                 np.copyto(self.teleoperator.img_array, frame)
-                logger.debug("image_buf_thread: copied frame")
+                # logger.debug("image_buf_thread: copied frame")
             except queue.Empty:
                 logger.debug("image_buf_thread: empty image")
                 continue  # No image available yet, loop again
+        logger.debug("Worker's image thread: recvd killevent")
 
     def get_robot_data(self, color_frame, depth_frame, time_curr):
         logger.debug(f"worker: starting to get robot data")
@@ -356,7 +359,7 @@ class RobotDataWorker:
             "ik_data": None,
             "lidar": None,
         }
-        logger.debug(f"worker: finish getting robot data")
+        # logger.debug(f"worker: finish getting robot data")
         return robot_data
 
     def update_dirname(self, dirname):
@@ -369,6 +372,9 @@ class RobotDataWorker:
     def start(self):
         try:
             while True:
+                logger.info("Worker: waiting for new session start (session_start_event).")
+                self.session_start_event.wait()
+                logger.info("Worker: starting new session.")
                 self.run_session()
         finally:
             self.context.term()
@@ -382,10 +388,6 @@ class RobotDataWorker:
             pass
 
 
-        logger.info("RobotDataWorker waiting for new session start (start_event).")
-        self.start_event.wait()
-        self.start_event.clear()
-        logger.info("RobotDataWorker starting new session.")
 
         self.robot_data_writer = AsyncWriter(
             os.path.join(self.dirname, "robot_data.jsonl")
@@ -419,7 +421,8 @@ class RobotDataWorker:
         is_first = True
 
         try:
-            while not self.stop_event.is_set():
+            while not self.kill_event.is_set():
+                logger.debug("Worker: entering main loop")
                 color_frame, depth_frame = self._recv_zmq_frame()
                 logger.debug("got frame")
                 time_curr = time.time()
@@ -429,11 +432,13 @@ class RobotDataWorker:
                     )
                     np.copyto(self.teleoperator.img_array, np.array(resized_frame))
                     # image_queue.put(resized_frame)
+
+                logger.debug(f"Worker: got image")
                 if is_first:
                     is_first = False
                     self._sleep_until_mod33(time.time())
                     initial_capture_time = time.time()
-                    logger.debug(f"initial_capture_time is {initial_capture_time}")
+                    logger.debug(f"Worker: initial_capture_time is {initial_capture_time}")
                     robot_data = self.get_robot_data(
                         color_frame, depth_frame, time.time()
                     )
@@ -443,6 +448,7 @@ class RobotDataWorker:
                     self.frame_idx += 1
                     continue
 
+                logger.debug(f"Worker: got image {initial_capture_time}")
                 next_capture_time = initial_capture_time + self.frame_idx * DELAY
                 time_curr = time.time()
                 logger.debug(
@@ -476,7 +482,7 @@ class RobotDataWorker:
         except KeyboardInterrupt as e:
             logger.info(f"[INTR] keyboard interrupted: {e}")
         except Exception as e:
-            logger.error(f"[ERROR] robot_data_worker encountered an error: {e}")
+            logger.error(f"robot_data_worker encountered an error: {e}")
 
         finally:
             # if robot_data_list:
@@ -486,14 +492,23 @@ class RobotDataWorker:
             #             f.write("\n")
             #     logger.debug(f"Flushed remaining robot data to {log_filename}")
             # # self.context.term()
-            logger.info("robot_data_worker process has exited.")
-            self.stop_event.set()
-            teleop_thread.join()
-            image_thread.join()
+
+            logger.info("Worker process has exited.")
+            # self.context.term()
+            # self.socket = self.context.socket(zmq.PULL)
+            # self.socket.connect("tcp://192.168.123.162:5556") # TODO: adrrs reuse issue?
+            # self.socket.setsockopt(zmq.RCVTIMEO, 200)
+            # self.socket.setsockopt(zmq.RCVHWM, 1)
+            teleop_thread.join(1)
+            logger.info("Worker: teleop thread joined.")
+            # image_thread.join(1)
+            # logger.info("Worker: image thread joined.")
             self.robot_data_writer.close()
+            logger.info("Worker: writer closed.")
             # teleop_shm.close()
             # teleop_shm.unlink()
             self.reset()
+            logger.info("Worker process has exited.")
 
     def reset(self):
         # TODO: finish rest
@@ -502,10 +517,10 @@ class RobotDataWorker:
 
 # Teleop and datacollector
 class RobotTaskmaster:
-    def __init__(self, task_name):
+    def __init__(self, task_name, session_start_event, stop_event, kill_event):
         self.task_name = task_name
-        self.stop_event = Event()
-        self.start_event = Event()
+        self.kill_event = kill_event
+        self.session_start_event = session_start_event
         self.dirname_queue = Queue()
         self.teleop_lock = Lock()
         self.h1hand = H1HandController()
@@ -544,12 +559,12 @@ class RobotTaskmaster:
         if last_sol_q is not None and np.any(
             np.abs(last_sol_q - sol_q) > dynamic_thresholds
         ):
-            logger.error("ik movement too large!")
+            logger.error("Master: ik movement too large!")
             return False
         if not ik_flag:
             q_poseList[13:27] = armstate
             q_tau_ff = np.zeros(35)
-            logger.error("ik flag false!")
+            logger.error("Master: ik flag false!")
             return False
 
         self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
@@ -566,13 +581,37 @@ class RobotTaskmaster:
         return True
 
     def start(self):
+        try:
+            while True:
+                logger.info("Master: waiting to start")
+                self.session_start_event.wait()
+                self.session_start_event.clear() 
+                logger.info("Master: start event recvd. clearing start event. starting session")
+                self.run_session()
+                logger.info("Master: merging data...")
+                self.merge_data() # TODO: maybe a separate thread?
+                logger.info("Master: merge finished. Preparing for a new run...")
+                self.reset()
+                logger.info("Master: reset finished")
+        finally:
+            logger.info("Master: finished")
+
+    def run_session(self):
         self.lidar_proc = LidarProcess(self.dirname)
         self.lidar_proc.run()
-        self.start_event.set()
+        logger.debug("Master: lidar process started")
         self.running = True
         self.ik_writer = IKDataWriter(self.dirname)
 
-        teleop_shm_name = self.teleop_shm_queue.get()
+        teleop_shm_name = None
+
+        logger.debug("Master: getting teleop shm name")
+        while not self.kill_event.is_set() and teleop_shm_name is None:
+            try:
+                teleop_shm_name = self.teleop_shm_queue.get(timeout=0.1)
+            except queue.Empty:
+                pass
+
         self.teleop_shm = shared_memory.SharedMemory(name=teleop_shm_name)
         self.teleop_shm_array = np.ndarray(
             (65,), dtype=np.float64, buffer=self.teleop_shm.buf
@@ -581,7 +620,9 @@ class RobotTaskmaster:
         right_hand_angles = None
         left_hand_angles = None
         last_sol_q = None
-        while not self.stop_event.is_set():
+        logger.debug("Master: waiting for kill event")
+        while not self.kill_event.is_set():
+            logger.debug("Master: entered kill event")
             # print("loop start",time.time())
             armstate, armv = self.h1arm.GetMotorState()
             legstate, _ = self.h1arm.GetLegState()
@@ -594,12 +635,12 @@ class RobotTaskmaster:
                 self.h1_shm_array[39:42] = imustate.omega
                 self.h1_shm_array[42:45] = imustate.rpy
 
-            logger.debug("robot_master: loop start")
+            logger.debug("Master: looping")
             motor_time = time.time()
             with self.teleop_lock:
                 teleop_data = self.teleop_shm_array.copy()
             if np.all(teleop_data == 0):
-                logger.debug(f"robot_master: not receving data yet: {teleop_data}")
+                logger.debug(f"Master: not receving data yet: {teleop_data}")
                 continue
             head_rmat = teleop_data[0:9].reshape(3, 3)
             left_pose = teleop_data[9:25].reshape(4, 4)
@@ -642,13 +683,14 @@ class RobotTaskmaster:
 
     def stop(self):
         self.running = False
-        self.stop_event.set()
+        self.kill_event.set()
         if self.lidar_proc is not None:
             self.lidar_proc.cleanup()
-        if self.ik_writer is not None:
-            self.ik_writer.close()
+        logger.debug("Master: shutting down h1 contorllers...")
         self.h1arm.shutdown()
         self.h1hand.shutdown()
+        logger.debug("Master: h1 controlleers shutdown")
+        logger.info("Master: Stopping all threads ended!")
 
         # if self.h1_shm is not None:
         #     try:
@@ -663,13 +705,13 @@ class RobotTaskmaster:
         #     except Exception as e:
         #         logger.error(f"Error cleaning up teleop_shm: {e}")
 
-        logger.info("Stopping all threads ended!")
 
     def reset(self):
-        logger.info("Resetting RobotTaskmaster...")
+        logger.info("Master: Resetting RobotTaskmaster...")
         if self.running:
             self.stop()
-        self.stop_event.clear()  # TODO: create a new one?
+        logger.info("Master: Clearing stop event...")
+        # self.kill_event.clear()  # TODO: create a new one?
 
         self.h1hand.reset()
         self.h1arm.reset()
@@ -695,6 +737,8 @@ class RobotTaskmaster:
         logger.info("RobotTaskmaster has been reset and is ready to start again.")
 
     def merge_data(self):
+        if self.ik_writer is not None:
+            self.ik_writer.close()
         merger = DataMerger(self.dirname)
         merger.merge_json()
 
@@ -702,14 +746,14 @@ class RobotTaskmaster:
 if __name__ == "__main__":
 
     # dirname_queue = Queue()
-    # stop_event = Event()
-    # start_event = Event()
+    # kill_event = Event()
+    # session_start_event = Event()
     # dirname_queue.put("heeehee")
     # def run_dataworker(
-    #     dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
+    #     dirname_queue, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
     # ):
     #     taskworker = RobotDataWorker(
-    #         dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
+    #         dirname_queue, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
     #     )
     #     print("starting")
     #     taskworker.start()
@@ -726,14 +770,14 @@ if __name__ == "__main__":
     #     target=run_dataworker,
     #     args=(
     #         dirname_queue,
-    #         stop_event,
-    #         start_event,
+    #         kill_event,
+    #         session_start_event,
     #         h1_shm_array,
     #         teleop_shm_queue,
     #     ),
     # )
     # proc.start()
-    # start_event.set()
+    # session_start_event.set()
 
     parser = argparse.ArgumentParser(description="Robot Teleoperation System")
     # TODO: cleanup empty demo dirs
@@ -757,37 +801,27 @@ if __name__ == "__main__":
     logger.info("  Press 'q' to stop and merge data")
 
     # Although a teleoperator is passed here for API compatibility, it is now unused in the main process.
+    session_start_event = Event()
+    session_stop_event = Event()
+    kill_event = Event()
     task_thread = None
-    taskmaster = RobotTaskmaster(args.task_name)
+    taskmaster = RobotTaskmaster(args.task_name, session_start_event, session_stop_event, kill_event)
 
+    taskworker = RobotDataWorker(
+            taskmaster.dirname_queue, taskmaster.kill_event, taskmaster.session_start_event, taskmaster.h1_shm_array, taskmaster.teleop_shm_queue
+        )
     def run_taskmaster():
         taskmaster.start()
 
-    def run_dataworker(
-        dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
-    ):
-        taskworker = RobotDataWorker(
-            dirname_queue, stop_event, start_event, h1_shm_array, teleop_shm_queue
-        )
+    def run_dataworker():
         taskworker.start()
 
-    def create_robot_data_proc(taskmaster):
-        return Process(
-            target=run_dataworker,
-            args=(
-                taskmaster.dirname_queue,
-                taskmaster.stop_event,
-                taskmaster.start_event,
-                taskmaster.h1_shm_array,
-                taskmaster.teleop_shm_queue,
-            ),
-        )
-
-    robot_data_proc = create_robot_data_proc(taskmaster)
+    robot_data_proc = Process(target=taskworker.start)
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
 
     taskmaster_proc = Process(target=taskmaster.start)
+    taskmaster_proc.start()
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -797,34 +831,24 @@ if __name__ == "__main__":
             user_input = input("> ").lower()
             # user_input = await asyncio.to_thread(input, "> ")
 
-            if user_input == "s" and not taskmaster.running:
-                # task_thread = threading.Thread(target=run_taskmaster)
-                # task_thread.daemon = True
-                taskmaster_proc.start()
+            if user_input == "s":
+                kill_event.clear()
+                session_start_event.set()
                 logger.info("Started taskmaster and dataworker")
 
-            elif user_input == "q" and taskmaster.running:
-                taskmaster.stop()
-                taskmaster_proc.join(timeout=1)
-                logger.info("Stopping taskmaster")
-                if robot_data_proc is not None and robot_data_proc.is_alive():
-                    robot_data_proc.join(timeout=5)
-                logger.info("Merging data...")
-                taskmaster.merge_data()
-                logger.info("Merge finished. Preparing for a new run...")
-                # taskmaster = RobotTaskmaster(args.task_name)  # TODO: reset instead
-                taskmaster.reset()
+            elif user_input == "q":
+                logger.info("Clearing session start event and setting stop event")
+                kill_event.set()
                 logger.info("Ready to rerun!")
 
             elif user_input == "exit":
                 logger.info("Exiting...")
-                if taskmaster.running:
-                    taskmaster.stop()
-                    taskmaster_proc.join(timeout=1)
+                logger.debug("Terminating master proc...")
+                taskmaster_proc.terminate()
+                taskmaster_proc.join(timeout=5)
                 logger.debug("Terminating data proc...")
                 robot_data_proc.terminate()
-                if robot_data_proc is not None and robot_data_proc.is_alive():
-                    robot_data_proc.join(timeout=5)
+                robot_data_proc.join(timeout=5)
                 logger.debug("Data proc terminated")
                 gc.collect()
                 sys.exit(0)
