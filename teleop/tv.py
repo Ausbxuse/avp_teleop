@@ -258,12 +258,10 @@ class RobotDataWorker:
         decimal_part = time_curr - integer_part
         ms_part = int(decimal_part * 1000) % 100
 
-        print(time_curr)
         next_ms_part = ((ms_part // 33) + 1) * 33 % 100
         hundred_ms_part = int(decimal_part * 10 % 10)
         if next_ms_part == 32:
             hundred_ms_part += 1
-        print(next_ms_part, hundred_ms_part)
 
         next_capture_time = integer_part + next_ms_part / 1000 + hundred_ms_part / 10
         if (next_capture_time - time_curr) < 0:
@@ -273,6 +271,7 @@ class RobotDataWorker:
     def _recv_zmq_frame(self):
         compressed_data = b""
         while not self.kill_event.is_set():  # TODO: verify correctness
+            logger.debug(f"start receving!")
             chunk = self.socket.recv()
             compressed_data += chunk
             logger.debug(f"receiving parts of frame!")
@@ -292,7 +291,7 @@ class RobotDataWorker:
             logger.error("Failed to decode frame!")
             return None, None
 
-        logger.debug(f"got data!")
+        # logger.debug(f"got data!")
         color_frame = frame[:, : frame.shape[1] // 2]
         depth_frame = frame[:, frame.shape[1] // 2 :]
         return color_frame, depth_frame
@@ -424,7 +423,7 @@ class RobotDataWorker:
             while not self.kill_event.is_set():
                 logger.debug("Worker: entering main loop")
                 color_frame, depth_frame = self._recv_zmq_frame()
-                logger.debug("got frame")
+                # logger.debug("got frame")
                 time_curr = time.time()
                 if color_frame is not None:
                     resized_frame = cv2.resize(
@@ -433,7 +432,7 @@ class RobotDataWorker:
                     np.copyto(self.teleoperator.img_array, np.array(resized_frame))
                     # image_queue.put(resized_frame)
 
-                logger.debug(f"Worker: got image")
+                # logger.debug(f"Worker: got image")
                 if is_first:
                     is_first = False
                     self._sleep_until_mod33(time.time())
@@ -448,7 +447,6 @@ class RobotDataWorker:
                     self.frame_idx += 1
                     continue
 
-                logger.debug(f"Worker: got image {initial_capture_time}")
                 next_capture_time = initial_capture_time + self.frame_idx * DELAY
                 time_curr = time.time()
                 logger.debug(
@@ -521,7 +519,9 @@ class RobotTaskmaster:
         self.task_name = task_name
         self.kill_event = kill_event
         self.session_start_event = session_start_event
+        self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
         self.dirname_queue = Queue()
+        self.dirname_queue.put(self.dirname)
         self.teleop_lock = Lock()
         self.h1hand = H1HandController()
         self.h1arm = H1ArmController()
@@ -532,8 +532,6 @@ class RobotTaskmaster:
         self.running = False
         self.teleop_shm_queue = Queue()
         self.h1_shm_queue = Queue()
-        self.dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
-        self.dirname_queue.put(self.dirname)
         os.makedirs(self.dirname)
         os.makedirs(os.path.join(self.dirname, "color"))
         os.makedirs(os.path.join(self.dirname, "depth"))
@@ -567,7 +565,9 @@ class RobotTaskmaster:
             logger.error("Master: ik flag false!")
             return False
 
+        logger.debug("Master: preparing to set motor")
         self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
+        logger.debug("Master: motor set")
 
         if right_qpos is not None and left_qpos is not None:
             right_hand_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
@@ -622,23 +622,24 @@ class RobotTaskmaster:
         last_sol_q = None
         logger.debug("Master: waiting for kill event")
         while not self.kill_event.is_set():
-            logger.debug("Master: entered kill event")
+            logger.debug("Master: looping")
             # print("loop start",time.time())
             armstate, armv = self.h1arm.GetMotorState()
             legstate, _ = self.h1arm.GetLegState()
             handstate = self.h1hand.get_hand_state()
             imustate = self.h1arm.GetIMUState()
             with self.h1_lock:
+                logger.debug("Master: h1 locking")
                 self.h1_shm_array[0:14] = armstate
                 self.h1_shm_array[14:27] = legstate
                 self.h1_shm_array[27:39] = handstate
                 self.h1_shm_array[39:42] = imustate.omega
                 self.h1_shm_array[42:45] = imustate.rpy
 
-            logger.debug("Master: looping")
             motor_time = time.time()
             with self.teleop_lock:
                 teleop_data = self.teleop_shm_array.copy()
+            # logger.debug(f"Master: receving data : {teleop_data}")
             if np.all(teleop_data == 0):
                 logger.debug(f"Master: not receving data yet: {teleop_data}")
                 continue
@@ -654,6 +655,7 @@ class RobotTaskmaster:
             # print("ik finish",time.time())
 
 
+            logger.debug(f"Master: moving motor{sol_q}")
             if self.safelySetMotor(
                 ik_flag,
                 sol_q,
@@ -669,6 +671,7 @@ class RobotTaskmaster:
 
 
 
+            logger.debug("Master: wriiting data")
             self.ik_writer.write_data(
                 right_hand_angles,
                 left_hand_angles,
@@ -683,7 +686,6 @@ class RobotTaskmaster:
 
     def stop(self):
         self.running = False
-        self.kill_event.set()
         if self.lidar_proc is not None:
             self.lidar_proc.cleanup()
         logger.debug("Master: shutting down h1 contorllers...")
@@ -744,6 +746,7 @@ class RobotTaskmaster:
 
 
 if __name__ == "__main__":
+
 
     # dirname_queue = Queue()
     # kill_event = Event()
@@ -807,16 +810,20 @@ if __name__ == "__main__":
     task_thread = None
     taskmaster = RobotTaskmaster(args.task_name, session_start_event, session_stop_event, kill_event)
 
-    taskworker = RobotDataWorker(
-            taskmaster.dirname_queue, taskmaster.kill_event, taskmaster.session_start_event, taskmaster.h1_shm_array, taskmaster.teleop_shm_queue
-        )
     def run_taskmaster():
         taskmaster.start()
 
     def run_dataworker():
+        taskworker = RobotDataWorker(
+                taskmaster.dirname_queue, kill_event, session_start_event, taskmaster.h1_shm_array, taskmaster.teleop_shm_queue
+            )
         taskworker.start()
 
-    robot_data_proc = Process(target=taskworker.start)
+    robot_data_proc = Process(target=run_dataworker)
+    # session_start_event.set()
+    # taskworker.start()
+
+    session_start_event.set()
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
 

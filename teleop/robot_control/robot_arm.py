@@ -145,7 +145,9 @@ class H1ArmController:
         self.RecordBaseState(low_state)
 
     def SetMotorPose(self, q_desList, q_tau_ff):
+        logger.info("Robot Arm Controller: setting motor")
         armstate, _ = self.GetMotorState()
+        logger.info(f"Robot Arm Controller: armstate/q_deslist: {armstate} {q_desList}")
         self.q_tau_ff = q_tau_ff
         dynamic_thresholds = np.array(
             [np.pi / 3] * 5  # left shoulder and elbow
@@ -156,7 +158,7 @@ class H1ArmController:
         if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
             intermedia_armstate = np.array(armstate)
 
-            logger.error("[ERROR] slowing for large movement!")
+            logger.error("slowing for large movement!")
             while np.any(np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90):
                 step_sizes = (q_desList[13:27] - intermedia_armstate) / 50
 
@@ -166,6 +168,7 @@ class H1ArmController:
             self.q_desList = q_desList
         else:
             self.q_desList = q_desList
+        logger.info(f"Robot Arm Controller: fnisih settin q deslist: {self.q_desList}")
 
     def __Trans(self, packData):
         calcData = []
