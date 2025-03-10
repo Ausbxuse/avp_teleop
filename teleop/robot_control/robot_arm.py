@@ -97,7 +97,7 @@ class H1ArmController:
         self.ankle_init_pos = -0.5
         self.shoulder_pitch_init_pos = -1.4
         self.time = 0.0
-        self.init_duration = 3.0
+        self.init_duration = 5.0
         self.report_dt = 0.1
         self.ratio = 0.0
         self.q_target = []
@@ -145,9 +145,9 @@ class H1ArmController:
         self.RecordBaseState(low_state)
 
     def SetMotorPose(self, q_desList, q_tau_ff):
-        logger.info("Robot Arm Controller: setting motor")
+        # logger.info("Robot Arm Controller: setting motor")
         armstate, _ = self.GetMotorState()
-        logger.info(f"Robot Arm Controller: armstate/q_deslist: {armstate} {q_desList}")
+        # logger.info(f"Robot Arm Controller: armstate/q_deslist: {armstate} {q_desList}")
         self.q_tau_ff = q_tau_ff
         dynamic_thresholds = np.array(
             [np.pi / 3] * 5  # left shoulder and elbow
@@ -168,7 +168,7 @@ class H1ArmController:
             self.q_desList = q_desList
         else:
             self.q_desList = q_desList
-        logger.info(f"Robot Arm Controller: fnisih settin q deslist: {self.q_desList}")
+        # logger.info(f"Robot Arm Controller: fnisih settin q deslist: {self.q_desList}")
 
     def __Trans(self, packData):
         calcData = []

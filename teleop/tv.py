@@ -13,12 +13,43 @@ import zlib
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
 
 import cv2
+import msgpack
 import numpy as np
 import zmq
+
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
 from utilities import VuerTeleop
+
+
+def timed(func):
+   def wrapper(*args, **kwargs):
+       start = time.time()
+       result = func(*args, **kwargs)
+       elapsed = time.time() - start
+       logger.debug(f"{func.__name__} took {elapsed*1000:.2f}ms")
+       return result
+   return wrapper
+
+def run_with_retries(func, default_return=None, max_retries=3):
+   """Execute a function with retry logic"""
+   for attempt in range(max_retries):
+       try:
+           return func()
+       except Exception as e:
+           logger.warning(f"Error in {func.__name__}: {e} (attempt {attempt+1}/{max_retries})")
+           time.sleep(0.1 * (2**attempt))  # Exponential backoff
+   
+   logger.error(f"Function {func.__name__} failed after {max_retries} attempts")
+   return default_return
+
+def monitor_resources():
+   import psutil
+   process = psutil.Process()
+   memory = process.memory_info()
+   cpu_percent = process.cpu_percent(interval=0.1)
+   logger.debug(f"Memory: {memory.rss/1024/1024:.1f}MB, CPU: {cpu_percent}%")
 
 # --------------------- Debug Logger Setup ---------------------
 logger = logging.getLogger("robot_teleop")
@@ -27,6 +58,11 @@ ch = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+os.makedirs('logs', exist_ok=True)
+fh = logging.FileHandler(f"logs/robot_teleop_{time.strftime('%Y%m%d_%H%M%S')}.log")
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 # --------------------------------------------------------------
 
 FREQ = 30
@@ -219,29 +255,30 @@ class LidarProcess:
     def cleanup(self):
         if self.proc is None:
             return
-        if self.proc.poll() is None:  # if the process is still running
-            logger.info("Sending SIGINT to the lidar process...")
-            self.proc.send_signal(signal.SIGINT)
-            try:
-                self.proc.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.proc.kill()  # force kill after timeout
-                logger.info("Lidar process killed after timeout.")
+        try:
+            if self.proc.poll() is None:  # if the process is still running
+                logger.info("Sending SIGINT to the lidar process...")
+                self.proc.send_signal(signal.SIGINT)
+                try:
+                    self.proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    self.proc.kill()  # force kill after timeout
+                    logger.info("Lidar process killed after timeout.")
+        except Exception as e:
+            logger.error(f"Error cleaning up lidar process: {e}")
 
 
 class RobotDataWorker:
     def __init__(
-        self, shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
+        self, shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array
     ):
         self.shared_data = shared_data
         self.kill_event = kill_event
         self.session_start_event = session_start_event
         self.h1_shm_array = h1_shm_array
-        self.teleop_shm_queue = teleop_shm_queue
+        self.teleop_shm_array = teleop_shm_array
         self.h1_lock = Lock()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
-        logger.debug("started vuer")
-
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PULL)
         self.socket.connect("tcp://192.168.123.162:5556")
@@ -253,6 +290,23 @@ class RobotDataWorker:
         self.frame_idx = 0
         self.last_robot_data = None
         self.robot_data_writer = None
+
+
+    def dump_state(self, filename=None):
+       """Dump current system state for debugging"""
+       if filename is None:
+           filename = f"debug_dump_{time.strftime('%Y%m%d_%H%M%S')}.pkl"
+       
+       state = {
+           "h1_data": self.h1_shm_array.copy(),
+           "teleop_data": self.teleop_shm_array.copy(),
+           "frame_idx": self.frame_idx if hasattr(self, 'frame_idx') else None,
+           "timestamp": time.time()
+       }
+       
+       with open(filename, 'wb') as f:
+           pickle.dump(state, f)
+       logger.info(f"State dumped to {filename}")
 
     def _sleep_until_mod33(self, time_curr):
         integer_part = int(time_curr)
@@ -282,6 +336,7 @@ class RobotDataWorker:
         try:
             data = zlib.decompress(compressed_data)
             frame_data = pickle.loads(data)
+            # frame_data = msgpack.unpackb(data)
         except Exception as e:
             logger.error(f"Failed decompressing or unpickling frame data: {e}")
             return None, None
@@ -297,21 +352,18 @@ class RobotDataWorker:
         depth_frame = frame[:, frame.shape[1] // 2 :]
         return color_frame, depth_frame
 
-    def teleop_update_thread(self, shm_name):
-        shm = shared_memory.SharedMemory(name=shm_name)
-        teleop_array = np.ndarray((65,), dtype=np.float64, buffer=shm.buf)
+    def teleop_update_thread(self):
         while not self.kill_event.is_set():
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.teleoperator.step()
             )
             # logger.debug(f"teleop step thread: {head_rmat}, {left_pose}, {right_pose}")
-            teleop_array[0:9] = head_rmat.flatten()
-            teleop_array[9:25] = left_pose.flatten()
-            teleop_array[25:41] = right_pose.flatten()
-            teleop_array[41:53] = np.array(left_qpos).flatten()
-            teleop_array[53:65] = np.array(right_qpos).flatten()
+            self.teleop_shm_array[0:9] = head_rmat.flatten()
+            self.teleop_shm_array[9:25] = left_pose.flatten()
+            self.teleop_shm_array[25:41] = right_pose.flatten()
+            self.teleop_shm_array[41:53] = np.array(left_qpos).flatten()
+            self.teleop_shm_array[53:65] = np.array(right_qpos).flatten()
             time.sleep(1.0 / FREQ)
-        shm.close()
 
     def image_buffer_thread(self, image_queue):
         while not self.kill_event.is_set():
@@ -321,7 +373,7 @@ class RobotDataWorker:
                 # logger.debug("image_buf_thread: copied frame")
             except queue.Empty:
                 logger.debug("image_buf_thread: empty image")
-                continue  # No image available yet, loop again
+                continue  
         logger.debug("Worker's image thread: recvd killevent")
 
     def get_robot_data(self, color_frame, depth_frame, time_curr):
@@ -397,15 +449,7 @@ class RobotDataWorker:
             os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
         )
 
-        teleop_shm = shared_memory.SharedMemory(
-            create=True, size=65 * np.dtype(np.float64).itemsize
-        )
-        self.teleop_shm_queue.put(teleop_shm.name)
-
-        self.teleop_thread = threading.Thread(
-            target=self.teleop_update_thread,
-            args=(teleop_shm.name,),
-        )
+        self.teleop_thread = threading.Thread(target=self.teleop_update_thread)
         self.teleop_thread.daemon = True
         self.teleop_thread.start()
         logger.info("RobotDataworker: teleop step started")
@@ -421,12 +465,12 @@ class RobotDataWorker:
         if self.is_first:
             self.is_first = False
             self._sleep_until_mod33(time.time())
-            initial_capture_time = time.time()
-            logger.debug(f"Worker: initial_capture_time is {initial_capture_time}")
+            self.initial_capture_time = time.time()  # Store it as instance variable
+            logger.debug(f"Worker: initial_capture_time is {self.initial_capture_time}")
             self._write_robot_data(color_frame, depth_frame)
             return
 
-        next_capture_time = initial_capture_time + self.frame_idx * DELAY
+        next_capture_time = self.initial_capture_time + self.frame_idx * DELAY
         time_curr = time.time()
         logger.debug(
             f"[worker process] next_capture_time - time_curr: {next_capture_time - time_curr}"
@@ -466,22 +510,26 @@ class RobotDataWorker:
             self.robot_data_writer.close()
             logger.info("Worker: writer closed.")
             self.reset()
+            logger.info("Worker: closing async image writer.")
+            if hasattr(self, 'async_image_writer'):
+                self.async_image_writer.close()
             logger.info("Worker process has exited.")
 
     def reset(self):
         # TODO: finish rest
         self.frame_idx = 0
+        self.initial_capture_time = None
 
 
 # Teleop and datacollector
 class RobotTaskmaster:
-    def __init__(self, shared_data, h1_shm_array, teleop_shm_queue, task_name, session_start_event, kill_event):
+    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event):
         self.task_name = task_name
         self.kill_event = kill_event
         self.session_start_event = session_start_event
         self.shared_data = shared_data
         self.h1_shm_array = h1_shm_array
-        self.teleop_shm_queue = teleop_shm_queue
+        self.teleop_shm_array = teleop_shm_array
 
         self.teleop_lock = Lock()
         self.h1hand = H1HandController()
@@ -546,27 +594,6 @@ class RobotTaskmaster:
                 logger.info("Master: reset finished")
         finally:
             logger.info("Master: finished")
-    
-    def _session_init(self):
-        self.lidar_proc = LidarProcess(self.shared_data["dirname"])
-        self.lidar_proc.run()
-        logger.debug("Master: lidar process started")
-        self.running = True
-        self.ik_writer = IKDataWriter(self.shared_data["dirname"])
-
-        teleop_shm_name = None
-
-        logger.debug("Master: getting teleop shm name")
-        while not self.kill_event.is_set() and teleop_shm_name is None:
-            try:
-                teleop_shm_name = self.teleop_shm_queue.get(timeout=0.1)
-            except queue.Empty:
-                pass
-
-        self.teleop_shm = shared_memory.SharedMemory(name=teleop_shm_name)
-        self.teleop_shm_array = np.ndarray(
-            (65,), dtype=np.float64, buffer=self.teleop_shm.buf
-        )
 
     def get_h1_data(self):
         armstate, armv = self.h1arm.GetMotorState()
@@ -597,6 +624,15 @@ class RobotTaskmaster:
         left_qpos = teleop_data[41:53]
         right_qpos = teleop_data[53:65]
         return True, head_rmat, left_pose, right_pose, left_qpos, right_qpos
+
+    
+    def _session_init(self):
+        self.lidar_proc = LidarProcess(self.shared_data["dirname"])
+        self.lidar_proc.run()
+        logger.debug("Master: lidar process started")
+        self.running = True
+        self.ik_writer = IKDataWriter(self.shared_data["dirname"])
+        logger.debug("Master: getting teleop shm name")
 
     def run_session(self):
         self._session_init()
@@ -650,6 +686,7 @@ class RobotTaskmaster:
         self.running = False
 
         self.h1_shm_array[:] = 0
+
         self.ik_writer = IKDataWriter(self.shared_data["dirname"])
 
         logger.info("RobotTaskmaster has been reset and is ready to start again.")
@@ -691,23 +728,20 @@ def setup_processes():
     session_start_event = Event()
     kill_event = Event()
     manager = Manager()
-
     shared_data = manager.dict()
 
-    teleop_shm_queue = Queue()
-    h1_shm = shared_memory.SharedMemory(
-        create=True, size=45 * np.dtype(np.float64).itemsize
-    )
+    h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
     h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
 
+    teleop_shm = shared_memory.SharedMemory( create=True, size=65 * np.dtype(np.float64).itemsize)
+    teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
+
     def run_taskmaster():
-        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_queue, task_name, session_start_event, kill_event)
+        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event)
         taskmaster.start()
 
     def run_dataworker():
-        taskworker = RobotDataWorker(
-                shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_queue
-            )
+        taskworker = RobotDataWorker(shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array)
         taskworker.start()
 
     robot_data_proc = Process(target=run_dataworker)
@@ -716,19 +750,31 @@ def setup_processes():
     taskmaster_proc = Process(target=run_taskmaster)
     taskmaster_proc.start()
 
-    return task_name, kill_event, shared_data, session_start_event, taskmaster_proc, robot_data_proc
+    return task_name, kill_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
-def cleanup_processes(taskmaster_proc, robot_data_proc):
-    logger.debug("Terminating master proc...")
-    taskmaster_proc.terminate()
-    taskmaster_proc.join(timeout=5)
-    logger.debug("Terminating data proc...")
-    robot_data_proc.terminate()
-    robot_data_proc.join(timeout=5)
+def cleanup_processes(kill_event, taskmaster_proc, robot_data_proc):
+    kill_event.set()
+    logger.debug("Signaling processes to terminate...")
+    
+    logger.debug("Waiting for master process to terminate...")
+    taskmaster_proc.join(timeout=3)
+    
+    logger.debug("Waiting for data process to terminate...")
+    robot_data_proc.join(timeout=3)
+    
+    if taskmaster_proc.is_alive():
+        logger.warning("Forcing termination of master process...")
+        taskmaster_proc.terminate()
+        taskmaster_proc.join(timeout=2)
+    
+    if robot_data_proc.is_alive():
+        logger.warning("Forcing termination of data process...")
+        robot_data_proc.terminate()
+        robot_data_proc.join(timeout=2)
 
 def main():
     # TODO: cleanup empty demo dirs
-    task_name, kill_event, shared_data,  session_start_event, taskmaster_proc, robot_data_proc = setup_processes()
+    task_name, kill_event, session_start_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
     logger.info("  Press 's' to start the taskmaster")
     logger.info("  Press 'q' to stop and merge data")
     try:
@@ -753,7 +799,7 @@ def main():
 
             elif user_input == "exit":
                 logger.info("Exiting...")
-                cleanup_processes(taskmaster_proc, robot_data_proc)
+                cleanup_processes(kill_event, taskmaster_proc, robot_data_proc)
                 logger.debug("Data proc terminated")
                 sys.exit(0)
 
@@ -764,8 +810,12 @@ def main():
 
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt detected. Exiting...")
-        cleanup_processes(taskmaster_proc, robot_data_proc)
+        cleanup_processes(kill_event, taskmaster_proc, robot_data_proc)
     finally:
+        h1_shm.close()
+        h1_shm.unlink()
+        teleop_shm.close()
+        teleop_shm.unlink()
         sys.exit(0)
 
 
