@@ -275,7 +275,7 @@ class RobotDataWorker:
         while not self.stop_event.is_set():  # TODO: verify correctness
             chunk = self.socket.recv()
             compressed_data += chunk
-            if len(chunk) < 120000:  # Check for last chunk
+            if len(chunk) < 240000:  # Check for last chunk
                 break
 
         try:
@@ -286,14 +286,19 @@ class RobotDataWorker:
             return None, None
 
         frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)  # np: (height, width)
+        print(frame.shape)
 
         if frame is None:
             logger.error("Failed to decode frame!")
             return None, None
+        
+        width_each = frame.shape[1] // 4
 
-        color_frame = frame[:, : frame.shape[1] // 2]
-        depth_frame = frame[:, frame.shape[1] // 2 :]
-        return color_frame, depth_frame
+        color_frame = frame[:, 0:width_each]
+        depth_frame = frame[:, width_each:2*width_each]
+        ir_left_frame = frame[:, 2*width_each:3*width_each]
+        ir_right_frame = frame[:, 3*width_each:]
+        return color_frame, depth_frame, ir_left_frame, ir_right_frame
 
     def teleop_update_thread(self, shm_name):
         shm = shared_memory.SharedMemory(name=shm_name)
@@ -420,15 +425,24 @@ class RobotDataWorker:
 
         try:
             while not self.stop_event.is_set():
-                color_frame, depth_frame = self._recv_zmq_frame()
+                color_frame, depth_frame, ir_left_frame, ir_right_frame = self._recv_zmq_frame()
                 logger.debug("got frame")
                 time_curr = time.time()
-                if color_frame is not None:
+                # if color_frame is not None:
+                #     resized_frame = cv2.resize(
+                #         color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
+                #     )
+                #     np.copyto(self.teleoperator.img_array, np.array(resized_frame))
+                    # image_queue.put(resized_frame)
+
+                if ir_left_frame is not None and ir_right_frame is not None:
+                    combined_ir_frame = np.hstack((ir_left_frame, ir_right_frame))
+                    print(combined_ir_frame.shape)
                     resized_frame = cv2.resize(
-                        color_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
+                        combined_ir_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
                     )
                     np.copyto(self.teleoperator.img_array, np.array(resized_frame))
-                    # image_queue.put(resized_frame)
+
                 if is_first:
                     is_first = False
                     self._sleep_until_mod33(time.time())
