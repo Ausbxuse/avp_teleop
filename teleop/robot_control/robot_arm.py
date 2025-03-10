@@ -97,7 +97,7 @@ class H1ArmController:
         self.ankle_init_pos = -0.5
         self.shoulder_pitch_init_pos = -1.4
         self.time = 0.0
-        self.init_duration = 5.0
+        self.init_duration = 10.0
         self.report_dt = 0.1
         self.ratio = 0.0
         self.q_target = []

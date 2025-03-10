@@ -59,10 +59,10 @@ formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-os.makedirs('logs', exist_ok=True)
-fh = logging.FileHandler(f"logs/robot_teleop_{time.strftime('%Y%m%d_%H%M%S')}.log")
-fh.setFormatter(formatter)
-logger.addHandler(fh)
+# os.makedirs('logs', exist_ok=True)
+# fh = logging.FileHandler(f"logs/robot_teleop_{time.strftime('%Y%m%d_%H%M%S')}.log")
+# fh.setFormatter(formatter)
+# logger.addHandler(fh)
 # --------------------------------------------------------------
 
 FREQ = 30
@@ -818,7 +818,30 @@ def main():
         teleop_shm.unlink()
         sys.exit(0)
 
+def test_data_worker_main():
+    session_start_event = Event()
+    kill_event = Event()
+    manager = Manager()
+    shared_data = manager.dict()
+
+    h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
+    h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
+
+    teleop_shm = shared_memory.SharedMemory( create=True, size=65 * np.dtype(np.float64).itemsize)
+    teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
+
+    def run_dataworker():
+        taskworker = RobotDataWorker(shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array)
+        taskworker.start()
+
+    robot_data_proc = Process(target=run_dataworker)
+    kill_event.clear()
+    session_start_event.set()
+
+    robot_data_proc.start()
+
 
 if __name__ == "__main__":
     main()
+    # test_data_worker_main()
     # TODO: dirname use shared dic
