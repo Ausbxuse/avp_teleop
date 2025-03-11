@@ -341,7 +341,7 @@ class RobotDataWorker:
             return None, None
 
         frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)  # np: (height, width)
-        print(frame.shape)
+        # print(frame.shape)
 
         if frame is None:
             logger.error("Failed to decode frame!")
@@ -420,6 +420,8 @@ class RobotDataWorker:
     def start(self):
         try:
             while True:
+                self.async_image_writer.close()
+                self.async_image_writer = AsyncImageWriter()
                 logger.info("Worker: waiting for new session start (session_start_event).")
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
@@ -444,7 +446,7 @@ class RobotDataWorker:
     def _send_image_to_teleoperator(self, ir_left_frame, ir_right_frame):
         if ir_left_frame is not None and ir_right_frame is not None:
             combined_ir_frame = np.hstack((ir_left_frame, ir_right_frame))
-            print(combined_ir_frame.shape)
+            # print(combined_ir_frame.shape)
             resized_frame = cv2.resize(
                 combined_ir_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
             )
@@ -519,6 +521,7 @@ class RobotDataWorker:
             logger.info("Worker: closing async image writer.")
             if hasattr(self, 'async_image_writer'):
                 self.async_image_writer.close()
+                logger.info("Worker: async image writer closed.")
             logger.info("Worker process has exited.")
 
     def reset(self):
@@ -758,24 +761,25 @@ def setup_processes():
 
     return task_name, kill_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
-def cleanup_processes(kill_event, taskmaster_proc, robot_data_proc):
+def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc):
     kill_event.set()
+    session_start_event.clear() 
     logger.debug("Signaling processes to terminate...")
     
     logger.debug("Waiting for master process to terminate...")
-    taskmaster_proc.join(timeout=3)
+    taskmaster_proc.join(timeout=1)
     
     logger.debug("Waiting for data process to terminate...")
-    robot_data_proc.join(timeout=3)
+    robot_data_proc.join(timeout=1)
     
     if taskmaster_proc.is_alive():
         logger.warning("Forcing termination of master process...")
-        taskmaster_proc.terminate()
+        taskmaster_proc.kill()
         taskmaster_proc.join(timeout=2)
     
     if robot_data_proc.is_alive():
         logger.warning("Forcing termination of data process...")
-        robot_data_proc.terminate()
+        robot_data_proc.kill()
         robot_data_proc.join(timeout=2)
 
 def main():
@@ -805,7 +809,7 @@ def main():
 
             elif user_input == "exit":
                 logger.info("Exiting...")
-                cleanup_processes(kill_event, taskmaster_proc, robot_data_proc)
+                cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
                 logger.debug("Data proc terminated")
                 sys.exit(0)
 
@@ -816,7 +820,7 @@ def main():
 
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt detected. Exiting...")
-        cleanup_processes(kill_event, taskmaster_proc, robot_data_proc)
+        cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
     finally:
         h1_shm.close()
         h1_shm.unlink()
@@ -849,5 +853,3 @@ def test_data_worker_main():
 
 if __name__ == "__main__":
     main()
-    # test_data_worker_main()
-    # TODO: dirname use shared dic
