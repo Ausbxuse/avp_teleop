@@ -280,10 +280,11 @@ class RobotDataWorker:
         self.h1_lock = Lock()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PULL)
+        self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.123.162:5556")
-        self.socket.setsockopt(zmq.RCVTIMEO, 200)
-        self.socket.setsockopt(zmq.RCVHWM, 1)
+        # self.socket.setsockopt(zmq.RCVTIMEO, 200)
+        # self.socket.setsockopt(zmq.RCVHWM, 1)
+        # self.socket.setsockopt(zmq.CONFLATE, 1)
         self.async_image_writer = AsyncImageWriter()
 
         # resetable vars
@@ -324,19 +325,25 @@ class RobotDataWorker:
         time.sleep(next_capture_time - time_curr)
 
     def _recv_zmq_frame(self):
-        compressed_data = b""
-        while not self.kill_event.is_set():  # TODO: verify correctness
-            logger.debug(f"start receving!")
-            chunk = self.socket.recv()
-            compressed_data += chunk
-            if len(chunk) < 240000:  # Check for last chunk
-                break
+
+        self.socket.send(b"get_frame")
+        # compressed_data = b""
+        chunks = self.socket.recv_multipart()
+        compressed_data = b"".join(chunks)
+        # while not self.kill_event.is_set():  # TODO: verify correctness
+        #     # logger.debug(f"start receving!")
+        #
+        #     compressed_data += chunk
+        #     if len(chunk) < 60000:  # Check for last chunk
+        #         break
 
         try:
             data = zlib.decompress(compressed_data)
             frame_data = pickle.loads(data)
             # frame_data = msgpack.unpackb(data)
         except Exception as e:
+            logger.debug(f"Total compressed data length: {len(compressed_data)}")
+            logger.debug(f"Data header bytes: {compressed_data[:10]}")
             logger.error(f"Failed decompressing or unpickling frame data: {e}")
             return None, None
 
@@ -427,6 +434,7 @@ class RobotDataWorker:
                 logger.info("Worker: starting new session.")
                 self.run_session()
         finally:
+            self.socket.close()
             self.context.term()
 
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
@@ -532,9 +540,10 @@ class RobotDataWorker:
 
 # Teleop and datacollector
 class RobotTaskmaster:
-    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event):
+    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event):
         self.task_name = task_name
         self.kill_event = kill_event
+        self.failure_event = failure_event
         self.session_start_event = session_start_event
         self.shared_data = shared_data
         self.h1_shm_array = h1_shm_array
@@ -563,6 +572,10 @@ class RobotTaskmaster:
             + [np.pi / 3] * 5
             + [np.pi ] * 2
         )
+        if last_sol_q is None:
+            self.h1arm.SetMotorPose(q_poseList, q_tau_ff, True)
+            return True
+
         if last_sol_q is not None and np.any(
             np.abs(last_sol_q - sol_q) > dynamic_thresholds
         ):
@@ -597,8 +610,12 @@ class RobotTaskmaster:
                 logger.info("Master: start event recvd. clearing start event. starting session")
                 self.run_session()
                 logger.info("Master: merging data...")
-                self.merge_data() # TODO: maybe a separate thread?
-                logger.info("Master: merge finished. Preparing for a new run...")
+                if self.success_event.is_set():
+                    self.merge_data() # TODO: maybe a separate thread?
+                    logger.info("Master: merge finished. Preparing for a new run...")
+                else:
+                    self.delete_last_data()
+                    logger.info("Master: delete finished. Preparing for a new run...")
                 self.reset()
                 logger.info("Master: reset finished")
         finally:
@@ -736,6 +753,7 @@ def setup_processes():
     task_name = parse_arguments()
     session_start_event = Event()
     kill_event = Event()
+    failure_event = Event()
     manager = Manager()
     shared_data = manager.dict()
 
@@ -746,7 +764,7 @@ def setup_processes():
     teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
 
     def run_taskmaster():
-        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event)
+        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event)
         taskmaster.start()
 
     def run_dataworker():
@@ -759,7 +777,7 @@ def setup_processes():
     taskmaster_proc = Process(target=run_taskmaster)
     taskmaster_proc.start()
 
-    return task_name, kill_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
+    return task_name, kill_event, failure_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
 def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc):
     kill_event.set()
@@ -784,7 +802,7 @@ def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_da
 
 def main():
     # TODO: cleanup empty demo dirs
-    task_name, kill_event, session_start_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
+    task_name, kill_event, failure_event, session_start_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
     logger.info("  Press 's' to start the taskmaster")
     logger.info("  Press 'q' to stop and merge data")
     try:
@@ -797,12 +815,20 @@ def main():
 
             if user_input == "s":
                 update_dir(shared_data, task_name)
+                failure_event.clear()
                 kill_event.clear()
                 session_start_event.set()
                 logger.info("Started taskmaster and dataworker")
 
             elif user_input == "q":
                 logger.info("Clearing session start event and setting stop event")
+                kill_event.set()
+                session_start_event.clear() 
+                logger.info("Ready to rerun!")
+
+            elif user_input == "d":
+                logger.info("Clearing session start event and setting stop event")
+                failure_event.set()
                 kill_event.set()
                 session_start_event.clear() 
                 logger.info("Ready to rerun!")

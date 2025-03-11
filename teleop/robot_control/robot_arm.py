@@ -69,6 +69,8 @@ class H1ArmController:
         self.stop_event = threading.Event()
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
+        self.q_desList[1] = 0.7
+        self.q_desList[1 + 7] = -0.7
         self.msg = unitree_hg.msg.dds_.LowCmd_()
         self.__packFmtHGLowCmd = "<2B2x" + "B3x5fI" * 35 + "5I"
 
@@ -144,7 +146,7 @@ class H1ArmController:
         self.RecordMotorState(low_state)
         self.RecordBaseState(low_state)
 
-    def SetMotorPose(self, q_desList, q_tau_ff):
+    def SetMotorPose(self, q_desList, q_tau_ff, isFirst=False):
         # logger.info("Robot Arm Controller: setting motor")
         armstate, _ = self.GetMotorState()
         # logger.info(f"Robot Arm Controller: armstate/q_deslist: {armstate} {q_desList}")
@@ -155,18 +157,32 @@ class H1ArmController:
             + [np.pi / 3] * 5
             + [np.pi] * 2
         )
-        if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
+        if not isFirst:
+            if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
+                intermedia_armstate = np.array(armstate)
+
+                logger.error("slowing for large movement!")
+                while np.any(
+                    np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90
+                ):
+                    step_sizes = (q_desList[13:27] - intermedia_armstate) / 50
+
+                    intermedia_armstate += step_sizes
+                    self.q_desList[13:27] = intermedia_armstate
+                    time.sleep(0.01)  # Small delay for smooth motion
+                self.q_desList = q_desList
+            else:
+                self.q_desList = q_desList
+        else:
             intermedia_armstate = np.array(armstate)
 
-            logger.error("slowing for large movement!")
+            logger.error("slowing for the first movement!")
             while np.any(np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90):
                 step_sizes = (q_desList[13:27] - intermedia_armstate) / 50
 
                 intermedia_armstate += step_sizes
                 self.q_desList[13:27] = intermedia_armstate
                 time.sleep(0.01)  # Small delay for smooth motion
-            self.q_desList = q_desList
-        else:
             self.q_desList = q_desList
         # logger.info(f"Robot Arm Controller: fnisih settin q deslist: {self.q_desList}")
 
@@ -350,6 +366,8 @@ class H1ArmController:
         self.time = 0
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
+        self.q_desList[1] = 0.7
+        self.q_desList[1 + 7] = -0.7
         self.motor_state_buffer = DataBuffer()
         self.motor_command_buffer = DataBuffer()
         self.base_state_buffer = DataBuffer()
