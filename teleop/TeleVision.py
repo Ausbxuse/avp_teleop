@@ -204,7 +204,9 @@ class OpenTeleVision:
                 [
                     ImageBackground(
                         # Can scale the images down.
-                        display_image[:, : 2*self.img_width],
+
+                        # display_image[:, : 2*self.img_width],
+                        display_image[::2, :self.img_width],
                         # display_image[:self.img_height:2, ::2],
                         # 'jpg' encoding is significantly faster than 'png'.
                         format="jpeg",
@@ -222,7 +224,8 @@ class OpenTeleVision:
                     ),
                     ImageBackground(
                         # Can scale the images down.
-                        display_image[:, : 2*self.img_width],
+                        # display_image[:, : 2*self.img_width],
+                        display_image[::2, self.img_width:],
                         # display_image[self.img_height::2, ::2],
                         # 'jpg' encoding is significantly faster than 'png'.
                         format="jpeg",

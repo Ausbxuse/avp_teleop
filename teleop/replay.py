@@ -40,7 +40,7 @@ from multiprocessing import Semaphore, shared_memory
 import numpy as np
 
 if __name__ == "__main__":
-    merged_file_path = "./demos/default_task/20250305_202541/merged_data.jsonl"
+    merged_file_path = "./demos/default_task/20250307_153041/merged_data.jsonl"
     with open(merged_file_path, "r") as f:
         data_list = json.load(f)
 
