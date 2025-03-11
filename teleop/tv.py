@@ -368,16 +368,16 @@ class RobotDataWorker:
             self.teleop_shm_array[53:65] = np.array(right_qpos).flatten()
             time.sleep(1.0 / FREQ)
 
-    def image_buffer_thread(self, image_queue):
-        while not self.kill_event.is_set():
-            try:
-                frame = image_queue.get(timeout=0.1)
-                np.copyto(self.teleoperator.img_array, frame)
-                # logger.debug("image_buf_thread: copied frame")
-            except queue.Empty:
-                logger.debug("image_buf_thread: empty image")
-                continue  
-        logger.debug("Worker's image thread: recvd killevent")
+    # def image_buffer_thread(self, image_queue):
+    #     while not self.kill_event.is_set():
+    #         try:
+    #             frame = image_queue.get(timeout=0.1)
+    #             np.copyto(self.teleoperator.img_array, frame)
+    #             # logger.debug("image_buf_thread: copied frame")
+    #         except queue.Empty:
+    #             logger.debug("image_buf_thread: empty image")
+    #             continue  
+    #     logger.debug("Worker's image thread: recvd killevent")
 
     def get_robot_data(self, color_frame, depth_frame, time_curr):
         logger.debug(f"worker: starting to get robot data")
@@ -428,6 +428,7 @@ class RobotDataWorker:
             self.context.term()
 
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
+        logger.debug("Worker: writing robot data")
         robot_data = self.get_robot_data(
             color_frame, depth_frame, time.time()
         )
@@ -440,10 +441,12 @@ class RobotDataWorker:
         self.last_robot_data = robot_data
         self.frame_idx += 1
 
-    def _send_image_to_teleoperator(self, color_frame):
-        if color_frame is not None:
+    def _send_image_to_teleoperator(self, ir_left_frame, ir_right_frame):
+        if ir_left_frame is not None and ir_right_frame is not None:
+            combined_ir_frame = np.hstack((ir_left_frame, ir_right_frame))
+            print(combined_ir_frame.shape)
             resized_frame = cv2.resize(
-                cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB), (1280, 720), interpolation=cv2.INTER_LINEAR
+                combined_ir_frame, (1280, 720), interpolation=cv2.INTER_LINEAR
             )
             np.copyto(self.teleoperator.img_array, np.array(resized_frame))
 
@@ -459,10 +462,10 @@ class RobotDataWorker:
 
     def process_data(self):
 
-        color_frame, depth_frame = self._recv_zmq_frame()
+        color_frame, depth_frame, ir_left_frame, ir_right_frame = self._recv_zmq_frame()
         # logger.debug("got frame")
         time_curr = time.time()
-        self._send_image_to_teleoperator(color_frame)
+        self._send_image_to_teleoperator(ir_left_frame, ir_right_frame)
 
         # logger.debug(f"Worker: got image")
         if self.is_first:
