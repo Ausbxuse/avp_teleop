@@ -376,34 +376,8 @@ class RobotDataWorker:
             self.teleop_shm_array[53:65] = np.array(right_qpos).flatten()
             time.sleep(1.0 / FREQ)
 
-    # def image_buffer_thread(self, image_queue):
-    #     while not self.kill_event.is_set():
-    #         try:
-    #             frame = image_queue.get(timeout=0.1)
-    #             np.copyto(self.teleoperator.img_array, frame)
-    #             # logger.debug("image_buf_thread: copied frame")
-    #         except queue.Empty:
-    #             logger.debug("image_buf_thread: empty image")
-    #             continue  
-    #     logger.debug("Worker's image thread: recvd killevent")
-
-    def get_robot_data(self, color_frame, depth_frame, time_curr):
+    def get_robot_data(self, time_curr):
         logger.debug(f"worker: starting to get robot data")
-        color_filename = os.path.join(
-            self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
-        )
-        depth_filename = os.path.join(
-            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.jpg"
-        )
-        if color_frame is not None and depth_frame is not None:
-            self.async_image_writer.write_image(color_filename, color_frame)
-            self.async_image_writer.write_image(depth_filename, depth_frame)
-            logger.debug(
-                f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
-            )
-        else:
-            logger.error(f"failed to save image {self.frame_idx}")
-
         with self.h1_lock:
             h1_data = self.h1_shm_array.copy()
         armstate = h1_data[0:14]
@@ -438,11 +412,30 @@ class RobotDataWorker:
             self.socket.close()
             self.context.term()
 
-    def _write_robot_data(self, color_frame, depth_frame, reuse=False):
+    def _write_image_data(self, color_frame, depth_frame):
         logger.debug("Worker: writing robot data")
-        robot_data = self.get_robot_data(
-            color_frame, depth_frame, time.time()
+
+        color_filename = os.path.join(
+            self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
         )
+        depth_filename = os.path.join(
+            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.jpg"
+        )
+
+        if color_frame is not None and depth_frame is not None:
+            self.async_image_writer.write_image(color_filename, color_frame)
+            self.async_image_writer.write_image(depth_filename, depth_frame)
+            logger.debug(
+                f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
+            )
+        else:
+            logger.error(f"failed to save image {self.frame_idx}")
+
+    def _write_robot_data(self, color_frame, depth_frame, reuse=False):
+        self._write_image_data(color_frame,depth_frame)
+
+        robot_data = self.get_robot_data(time.time())
+
         if reuse:
             self.last_robot_data["time"] = time.time()
             self.robot_data_writer.write(json.dumps(robot_data))
@@ -466,8 +459,7 @@ class RobotDataWorker:
             os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
         )
 
-        self.teleop_thread = threading.Thread(target=self.teleop_update_thread)
-        self.teleop_thread.daemon = True
+        self.teleop_thread = threading.Thread(target=self.teleop_update_thread, daemon=True)
         self.teleop_thread.start()
         logger.info("RobotDataworker: teleop step started")
 
@@ -787,7 +779,7 @@ def setup_processes():
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
     taskmaster_proc = Process(target=run_taskmaster)
-    taskmaster_proc.start()
+    # taskmaster_proc.start()
 
     return task_name, kill_event, failure_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
@@ -865,29 +857,6 @@ def main():
         teleop_shm.close()
         teleop_shm.unlink()
         sys.exit(0)
-
-def test_data_worker_main():
-    session_start_event = Event()
-    kill_event = Event()
-    manager = Manager()
-    shared_data = manager.dict()
-
-    h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
-    h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
-
-    teleop_shm = shared_memory.SharedMemory( create=True, size=65 * np.dtype(np.float64).itemsize)
-    teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
-
-    def run_dataworker():
-        taskworker = RobotDataWorker(shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array)
-        taskworker.start()
-
-    robot_data_proc = Process(target=run_dataworker)
-    kill_event.clear()
-    session_start_event.set()
-
-    robot_data_proc.start()
-
 
 if __name__ == "__main__":
     main()

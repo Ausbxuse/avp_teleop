@@ -10,6 +10,11 @@
 #include <sstream>
 #include <mutex>
 #include <filesystem>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/compression/octree_pointcloud_compression.h>
+#include <zlib.h>
 
 #include "livox_lidar_api.h"
 #include "livox_lidar_def.h"
@@ -89,6 +94,43 @@ void SavePointsToPCD(const std::vector<Point>& points, const std::string& filepa
     }
     ofs.close();
     /*std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;*/
+}
+
+void SavePointsToBin(const std::vector<Point>& points, const std::string& filepath) {
+    fs::path dir = fs::path(filepath).parent_path();
+
+    if (!fs::exists(dir)) {
+        if (!fs::create_directories(dir)) {
+            std::cerr << "Failed to create directory: " << dir << std::endl;
+            return;
+        }
+    }
+
+    std::ofstream ofs(filepath);
+    if (!ofs.is_open()) {
+        std::cerr << "Failed to open file: " << filepath << std::endl;
+        return;
+    }
+    // Create a PCL point cloud.
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZ>);
+    cloud_out->width = static_cast<uint32_t>(points.size());
+    cloud_out->height = 1;
+    cloud_out->is_dense = true;
+    cloud_out->points.resize(points.size());
+
+    // Copy data from your vector into the PCL cloud.
+    for (size_t i = 0; i < points.size(); ++i) {
+        cloud_out->points[i].x = points[i].x;
+        cloud_out->points[i].y = points[i].y;
+        cloud_out->points[i].z = points[i].z;
+    }
+
+    // Save the cloud in binary format.
+    if (pcl::io::savePCDFileBinary(filepath, *cloud_out) == -1) {
+        std::cerr << "Error saving PCD file: " << filepath << std::endl;
+    } else {
+        std::cout << "Saved " << points.size() << " points to " << filepath << std::endl;
+    }
 }
 
 void PointCloudCallback(const uint32_t handle, const uint8_t dev_type, 
@@ -228,7 +270,7 @@ int main(int argc, const char* argv[]) {
         }
       }
       if (!points_to_save.empty()) {
-        SavePointsToPCD(points_to_save, filepath);
+        SavePointsToBin(points_to_save, filepath);
       }
 
       std::this_thread::sleep_until(next_tick);

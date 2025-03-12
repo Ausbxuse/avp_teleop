@@ -11,7 +11,15 @@ latest_frame_bytes = None
 frame_lock = threading.Lock()
 
 
-def frame_capture_thread(pipeline):
+def frame_capture_thread():
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+    config.enable_stream(rs.stream.infrared, 1, 640, 480, rs.format.y8, 30)
+    config.enable_stream(rs.stream.infrared, 2, 640, 480, rs.format.y8, 30)
+    pipeline.start(config)
+
     global latest_frame_bytes
     while True:
         frames = pipeline.wait_for_frames()
@@ -30,7 +38,10 @@ def frame_capture_thread(pipeline):
         ir_right_image = np.asanyarray(ir_right_frame.get_data())
 
         # Convert single-channel images to 3-channel images for consistency
+        alpha = 255.0 / 4500.0
+        depth_image = cv2.convertScaleAbs(depth_image, alpha=alpha)
         depth_image = cv2.cvtColor(depth_image, cv2.COLOR_GRAY2BGR)
+
         ir_left_image = cv2.cvtColor(ir_left_image, cv2.COLOR_GRAY2BGR)
         ir_right_image = cv2.cvtColor(ir_right_image, cv2.COLOR_GRAY2BGR)
 
@@ -51,18 +62,8 @@ def frame_capture_thread(pipeline):
 
 def start_server():
     # Initialize RealSense pipeline and configure streams
-    pipeline = rs.pipeline()
-    config = rs.config()
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    config.enable_stream(rs.stream.infrared, 1, 640, 480, rs.format.y8, 30)
-    config.enable_stream(rs.stream.infrared, 2, 640, 480, rs.format.y8, 30)
-    pipeline.start(config)
-
     # Start the background frame capture thread
-    capture_thread = threading.Thread(
-        target=frame_capture_thread, args=(pipeline,), daemon=True
-    )
+    capture_thread = threading.Thread(target=frame_capture_thread, daemon=True)
     capture_thread.start()
 
     # Initialize ZeroMQ server
