@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 import queue
+import shutil
 import signal
 import subprocess
 import sys
@@ -328,26 +329,26 @@ class RobotDataWorker:
 
         self.socket.send(b"get_frame")
         # compressed_data = b""
-        chunks = self.socket.recv_multipart()
-        compressed_data = b"".join(chunks)
-        # while not self.kill_event.is_set():  # TODO: verify correctness
-        #     # logger.debug(f"start receving!")
+        # chunks = self.socket.recv_multipart()
+        # compressed_data = b"".join(chunks)
+
+        frame_bytes = self.socket.recv()
+        
+        # Convert the received bytes to a NumPy array and decode the image
+        np_arr = np.frombuffer(frame_bytes, np.uint8)
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+        # try:
+        #     data = zlib.decompress(compressed_data)
+        #     frame_data = pickle.loads(data)
+        #     # frame_data = msgpack.unpackb(data)
+        # except Exception as e:
+        #     logger.debug(f"Total compressed data length: {len(compressed_data)}")
+        #     logger.debug(f"Data header bytes: {compressed_data[:10]}")
+        #     logger.error(f"Failed decompressing or unpickling frame data: {e}")
+        #     return None, None
         #
-        #     compressed_data += chunk
-        #     if len(chunk) < 60000:  # Check for last chunk
-        #         break
-
-        try:
-            data = zlib.decompress(compressed_data)
-            frame_data = pickle.loads(data)
-            # frame_data = msgpack.unpackb(data)
-        except Exception as e:
-            logger.debug(f"Total compressed data length: {len(compressed_data)}")
-            logger.debug(f"Data header bytes: {compressed_data[:10]}")
-            logger.error(f"Failed decompressing or unpickling frame data: {e}")
-            return None, None
-
-        frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)  # np: (height, width)
+        # frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)  # np: (height, width)
         # print(frame.shape)
 
         if frame is None:
@@ -427,12 +428,12 @@ class RobotDataWorker:
     def start(self):
         try:
             while True:
-                self.async_image_writer.close()
-                self.async_image_writer = AsyncImageWriter()
                 logger.info("Worker: waiting for new session start (session_start_event).")
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
                 self.run_session()
+                self.async_image_writer.close()
+                self.async_image_writer = AsyncImageWriter()
         finally:
             self.socket.close()
             self.context.term()
@@ -472,18 +473,19 @@ class RobotDataWorker:
 
     def process_data(self):
 
+        logger.debug("request frame")
         color_frame, depth_frame, ir_left_frame, ir_right_frame = self._recv_zmq_frame()
-        # logger.debug("got frame")
-        time_curr = time.time()
+        logger.debug("got frame")
         self._send_image_to_teleoperator(ir_left_frame, ir_right_frame)
+        time_curr = time.time()
 
         # logger.debug(f"Worker: got image")
         if self.is_first:
             self.is_first = False
             self._sleep_until_mod33(time.time())
             self.initial_capture_time = time.time()  # Store it as instance variable
-            logger.debug(f"Worker: initial_capture_time is {self.initial_capture_time}")
             self._write_robot_data(color_frame, depth_frame)
+            logger.debug(f"Worker: initial_capture_time is {self.initial_capture_time}")
             return
 
         next_capture_time = self.initial_capture_time + self.frame_idx * DELAY
@@ -514,6 +516,11 @@ class RobotDataWorker:
             while not self.kill_event.is_set():
                 logger.debug("Worker: entering main loop")
                 self.process_data()
+                self.robot_data_writer.close()
+                self.robot_data_writer = AsyncWriter(
+                    os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
+                )
+
 
         except Exception as e:
             logger.error(f"robot_data_worker encountered an error: {e}")
@@ -610,7 +617,7 @@ class RobotTaskmaster:
                 logger.info("Master: start event recvd. clearing start event. starting session")
                 self.run_session()
                 logger.info("Master: merging data...")
-                if self.success_event.is_set():
+                if not self.failure_event.is_set():
                     self.merge_data() # TODO: maybe a separate thread?
                     logger.info("Master: merge finished. Preparing for a new run...")
                 else:
@@ -722,6 +729,11 @@ class RobotTaskmaster:
             self.ik_writer.close()
         merger = DataMerger(self.shared_data["dirname"])
         merger.merge_json()
+
+    def delete_last_data(self):
+        # TODO: auto delete
+        with open(self.shared_data["dirname"] + "/failed", "w"):
+            pass
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Robot Teleoperation System")
