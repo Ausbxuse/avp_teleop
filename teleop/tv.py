@@ -779,7 +779,7 @@ def setup_processes():
     robot_data_proc.start()
     # TODO: fix inconsistent arm time (not strictly 33hz)
     taskmaster_proc = Process(target=run_taskmaster)
-    # taskmaster_proc.start()
+    taskmaster_proc.start()
 
     return task_name, kill_event, failure_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
