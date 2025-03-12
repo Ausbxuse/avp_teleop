@@ -809,6 +809,7 @@ def main():
     task_name, kill_event, failure_event, session_start_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
     logger.info("  Press 's' to start the taskmaster")
     logger.info("  Press 'q' to stop and merge data")
+    finished = 0
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -818,6 +819,7 @@ def main():
             user_input = input("> ").lower()
 
             if user_input == "s":
+                logger.info(f"##################### {finished} #######################")
                 update_dir(shared_data, task_name)
                 failure_event.clear()
                 kill_event.clear()
@@ -829,6 +831,7 @@ def main():
                 kill_event.set()
                 session_start_event.clear() 
                 logger.info("Ready to rerun!")
+                finished+=1
 
             elif user_input == "d":
                 logger.info("Clearing session start event and setting stop event")

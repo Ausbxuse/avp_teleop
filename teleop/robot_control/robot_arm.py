@@ -65,7 +65,7 @@ np.set_printoptions(linewidth=240)
 
 class H1ArmController:
     def __init__(self):
-        print("Initialize H1ArmController...")
+        logger.info("Arm Controller: initializing...")
         self.stop_event = threading.Event()
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
@@ -104,7 +104,7 @@ class H1ArmController:
         self.ratio = 0.0
         self.q_target = []
         while not self.lowstate_subscriber.msg:
-            print("lowstate_subscriber is not ok! Please check dds.")
+            logger.info("Arm Controller: lowstate_subscriber is not ok! Please check dds.")
             time.sleep(0.01)
 
         for id in JointIndex:
@@ -115,7 +115,8 @@ class H1ArmController:
         init_q = np.array(
             [self.lowstate_subscriber.msg.motor_state[id].q for id in JointIndex]
         )
-        print("Lock Leg...")
+
+        logger.info("Arm Controller: Lock Leg...")
         for i in range(duration):
             time.sleep(0.001)
             q_t = init_q + (self.q_target - init_q) * i / duration
@@ -128,7 +129,7 @@ class H1ArmController:
             self.pre_communication()
             self.lowcmd_publisher.msg = self.msg
             self.lowcmd_publisher.write()
-        print("Lock Leg OK!")
+        logger.info("Arm Controller: Lock Leg OK!")
 
         self.report_rpy_thread = threading.Thread(target=self.SubscribeState)
         self.report_rpy_thread.start()
@@ -139,7 +140,7 @@ class H1ArmController:
         self.command_writer_thread = threading.Thread(target=self.LowCommandWriter)
         self.command_writer_thread.start()
 
-        print("Initialize H1ArmController OK!")
+        logger.info("Arm Controller: Initialize H1ArmController OK!")
 
     def LowStateHandler(self, message):
         low_state = message
@@ -161,7 +162,7 @@ class H1ArmController:
             if np.any(np.abs(armstate - q_desList[13:27]) > dynamic_thresholds):
                 intermedia_armstate = np.array(armstate)
 
-                logger.error("slowing for large movement!")
+                logger.error("Arm Controller: slowing for large movement!")
                 while np.any(
                     np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90
                 ):
@@ -176,7 +177,7 @@ class H1ArmController:
         else:
             intermedia_armstate = np.array(armstate)
 
-            logger.error("slowing for the first movement!")
+            logger.info("Arm Controller: slowing for the first movement.")
             while np.any(np.abs(q_desList[13:27] - intermedia_armstate) > np.pi / 90):
                 step_sizes = (q_desList[13:27] - intermedia_armstate) / 50
 
@@ -378,7 +379,7 @@ class H1ArmController:
         self.control_thread.start()
         self.command_writer_thread = threading.Thread(target=self.LowCommandWriter)
         self.command_writer_thread.start()
-        print("H1ArmController has been reset.")
+        logger.info("Arm Controller: H1ArmController has been reset.")
 
 
 class JointArmIndex(IntEnum):
