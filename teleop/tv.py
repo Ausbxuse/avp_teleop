@@ -12,6 +12,7 @@ import threading
 import time
 import zlib
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
+from typing import Any, Dict, Optional, Tuple
 
 import cv2
 import msgpack
@@ -123,11 +124,10 @@ class AsyncWriter:
         self.thread.join()
 
 class IKDataWriter:
-    def __init__(self, dirname, buffer_size=100):
+    def __init__(self, dirname):
         self.buffer = []
         self.filepath = os.path.join(dirname, "ik_data.jsonl")
         self.async_writer = AsyncWriter(os.path.join(dirname, "ik_data.jsonl"))
-        self.buffer_size = buffer_size  # Buffer size is no longer used here.
 
     def write_data(
         self,
@@ -268,7 +268,7 @@ class LidarProcess:
         except Exception as e:
             logger.error(f"Error cleaning up lidar process: {e}")
 
-
+# create a tv.step() thread and request image 
 class RobotDataWorker:
     def __init__(
         self, shared_data, h1_shm_array, teleop_shm_array, kill_event, session_start_event, end_event
@@ -326,22 +326,17 @@ class RobotDataWorker:
             next_capture_time += 1
         time.sleep(next_capture_time - time_curr)
 
-    def _recv_zmq_frame(self):
+    def _recv_zmq_frame(self) -> Tuple[Any, Any, Any, Any]:
 
         self.socket.send(b"get_frame")
-        # compressed_data = b""
-        # chunks = self.socket.recv_multipart()
-        # compressed_data = b"".join(chunks)
-
         frame_bytes = self.socket.recv()
         
-        # Convert the received bytes to a NumPy array and decode the image
         np_arr = np.frombuffer(frame_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
         if frame is None:
             logger.error("Failed to decode frame!")
-            return None, None
+            return None, None, None, None
         
         width_each = frame.shape[1] // 4
 
@@ -463,7 +458,7 @@ class RobotDataWorker:
         if self.is_first:
             self.is_first = False
             self._sleep_until_mod33(time.time())
-            self.initial_capture_time = time.time()  # Store it as instance variable
+            self.initial_capture_time = time.time()
             self._write_robot_data(color_frame, depth_frame)
             logger.debug(f"Worker: initial_capture_time is {self.initial_capture_time}")
             return
@@ -526,8 +521,9 @@ class RobotDataWorker:
 
 
 # Teleop and datacollector
+# Starts lidar process and robot arm/hand controllers
 class RobotTaskmaster:
-    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event, end_event):
+    def __init__(self, task_name, shared_data, h1_shm_array, teleop_shm_array,  session_start_event, kill_event, failure_event, end_event):
         self.task_name = task_name
         self.kill_event = kill_event
         self.failure_event = failure_event
@@ -615,7 +611,6 @@ class RobotTaskmaster:
         handstate = self.h1hand.get_hand_state()
         imustate = self.h1arm.GetIMUState()
 
-        # Also send data to worker through shared buffer
         with self.h1_lock:
             logger.debug("Master: h1 locking")
             self.h1_shm_array[0:14] = armstate
@@ -740,10 +735,10 @@ class TeleopManager:
 
         def run_taskmaster():
             taskmaster = RobotTaskmaster(
+                self.task_name,
                 self.shared_data,
                 self.h1_shm_array,
                 self.teleop_shm_array,
-                self.task_name,
                 self.session_start_event,
                 self.kill_event,
                 self.failure_event,
