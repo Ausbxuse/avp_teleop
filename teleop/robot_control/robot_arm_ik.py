@@ -214,7 +214,7 @@ class Arm_IK:
         }
         self.opti.solver("ipopt", opts)
 
-    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.55, robot_arm_length=0.75):
+    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.55, robot_arm_length=0.90):
         scale_factor = robot_arm_length / human_arm_length
         robot_left_pose = human_left_pose.copy()
         robot_right_pose = human_right_pose.copy()
