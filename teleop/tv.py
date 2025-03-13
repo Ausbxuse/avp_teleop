@@ -654,7 +654,6 @@ class RobotTaskmaster:
         logger.debug("Master: waiting for kill event")
         while not self.kill_event.is_set():
             logger.debug("Master: looping")
-            # print("loop start",time.time())
             armstate, armv = self.get_h1_data()
             motor_time = time.time() # TODO: might be late here/ consider puting it before getmotorstate
 
@@ -666,7 +665,6 @@ class RobotTaskmaster:
             sol_q, tau_ff, ik_flag = self.arm_ik.ik_fun(left_pose, right_pose, armstate, armv)
 
             ik_time = time.time()
-            # print("ik finish",time.time())
 
             logger.debug(f"Master: moving motor {sol_q}")
             if self.safelySetMotor(ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos):
@@ -716,146 +714,144 @@ class RobotTaskmaster:
         with open(self.shared_data["dirname"] + "/failed", "w"):
             pass
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Robot Teleoperation System")
-    parser.add_argument(
-        "--task_name",
-        type=str,
-        default="default_task",
-        help="Name of the task for data collection (default: default_task)",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Enable debug logging output"
-    )
-    args = parser.parse_args()
+class TeleopManager:
+    def __init__(self, task_name="default_task", debug=False):
+        self.task_name = task_name
+        logger.info(f"#### (Task: {self.task_name}):")
+        if debug:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
 
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-        logger.debug("Debug mode enabled.")
+        self.session_start_event = Event()
+        self.kill_event = Event()
+        self.failure_event = Event()
+        self.end_event = Event()
 
-    logger.info(f"#### (Task: {args.task_name}):")
-    return args.task_name
 
-def update_dir(shared_data, task_name):
-    shared_data["dirname"] = time.strftime(f"demos/{task_name}/%Y%m%d_%H%M%S")
-    os.makedirs(shared_data["dirname"], exist_ok=True)
-    os.makedirs(os.path.join(shared_data["dirname"], "color"), exist_ok=True)
-    os.makedirs(os.path.join(shared_data["dirname"], "depth"), exist_ok=True)
+        self.manager = Manager()
+        self.shared_data = self.manager.dict()
 
-def setup_processes():
-    task_name = parse_arguments()
-    session_start_event = Event()
-    kill_event = Event()
-    failure_event = Event()
-    end_event = Event()
-    manager = Manager()
-    shared_data = manager.dict()
+        self.h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
+        self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
 
-    h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
-    h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=h1_shm.buf)
+        self.teleop_shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
+        self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
 
-    teleop_shm = shared_memory.SharedMemory( create=True, size=65 * np.dtype(np.float64).itemsize)
-    teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
+        def run_taskmaster():
+            taskmaster = RobotTaskmaster(
+                self.shared_data,
+                self.h1_shm_array,
+                self.teleop_shm_array,
+                self.task_name,
+                self.session_start_event,
+                self.kill_event,
+                self.failure_event,
+                self.end_event,
+            )
+            taskmaster.start()
 
-    def run_taskmaster():
-        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event, end_event)
-        taskmaster.start()
+        def run_dataworker():
+            taskworker = RobotDataWorker(
+                self.shared_data,
+                self.h1_shm_array,
+                self.teleop_shm_array,
+                self.kill_event,
+                self.session_start_event,
+                self.end_event,
+            )
+            taskworker.start()
 
-    def run_dataworker():
-        taskworker = RobotDataWorker(shared_data, h1_shm_array, teleop_shm_array, kill_event, session_start_event, end_event)
-        taskworker.start()
+        self.taskmaster_proc = Process(target=run_taskmaster)
+        self.dataworker_proc = Process(target=run_dataworker)
 
-    robot_data_proc = Process(target=run_dataworker)
-    robot_data_proc.start()
-    # TODO: fix inconsistent arm time (not strictly 33hz)
-    taskmaster_proc = Process(target=run_taskmaster)
-    taskmaster_proc.start()
+    def start_processes(self):
+        logger.info("Starting taskmaster and dataworker processes.")
+        self.taskmaster_proc.start()
+        self.dataworker_proc.start()
 
-    return task_name, kill_event, failure_event, session_start_event, end_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
+    def update_directory(self):
+        dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
+        self.shared_data["dirname"] = dirname
+        os.makedirs(dirname, exist_ok=True)
+        os.makedirs(os.path.join(dirname, "color"), exist_ok=True)
+        os.makedirs(os.path.join(dirname, "depth"), exist_ok=True)
+        logger.info(f"Data directory set to: {dirname}")
 
-def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc):
-    kill_event.set()
-    session_start_event.clear() 
-    logger.debug("Signaling processes to terminate...")
-    
-    logger.debug("Waiting for master process to terminate...")
-    taskmaster_proc.join(timeout=1)
-    
-    logger.debug("Waiting for data process to terminate...")
-    robot_data_proc.join(timeout=1)
-    
-    if taskmaster_proc.is_alive():
-        logger.warning("Forcing termination of master process...")
-        taskmaster_proc.kill()
-        taskmaster_proc.join(timeout=2)
-    
-    if robot_data_proc.is_alive():
-        logger.warning("Forcing termination of data process...")
-        robot_data_proc.kill()
-        robot_data_proc.join(timeout=2)
+    def start_session(self):
+        self.update_directory()
+        self.failure_event.clear()
+        self.kill_event.clear()
+        self.session_start_event.set()
+        logger.info("Session started.")
 
-def main():
-    # TODO: cleanup empty demo dirs
-    task_name, kill_event, failure_event, session_start_event, end_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
-    logger.info("  Press 's' to start the taskmaster")
-    logger.info("  Press 'q' to stop and merge data")
-    finished = 0
-    failed = 0
-    try:
-        while True:
-            if sys.stdin.closed:  # TODO: why???
-                logger.error("Standard input is closed. Continuing...")
-                sys.stdin = open("/dev/tty")
-                continue
-            user_input = input("> ").lower()
+    def stop_session(self):
+        self.kill_event.set()
+        self.session_start_event.clear()
+        logger.info("Session stopped.")
 
-            if user_input == "s" and last_cmd != "s":
-                logger.info(f"##################### finished: {finished}, failed: {failed} #######################")
-                update_dir(shared_data, task_name)
-                failure_event.clear()
-                kill_event.clear()
-                session_start_event.set()
-                logger.info("Started taskmaster and dataworker")
-                last_cmd = user_input
+    def cleanup(self):
+        logger.info("Cleaning up processes and shared resources...")
+        self.end_event.set()
+        self.kill_event.set()
+        self.session_start_event.clear()
 
-            elif user_input == "q":
-                logger.info("Clearing session start event and setting stop event")
-                kill_event.set()
-                session_start_event.clear() 
-                logger.info("Ready to rerun!")
-                finished+=1
+        self.taskmaster_proc.join(timeout=1)
+        self.dataworker_proc.join(timeout=1)
 
-            elif user_input == "d":
-                logger.info("Clearing session start event and setting stop event")
-                failure_event.set()
-                kill_event.set()
-                session_start_event.clear() 
-                logger.info("Ready to rerun!")
-                failed+=1
+        if self.taskmaster_proc.is_alive():
+            logger.warning("Forcing termination of taskmaster process.")
+            self.taskmaster_proc.kill()
+            self.taskmaster_proc.join(timeout=2)
 
-            elif user_input == "exit":
-                logger.info("Exiting...")
-                kill_event.set()
-                session_start_event.clear() 
-                end_event.set()
+        if self.dataworker_proc.is_alive():
+            logger.warning("Forcing termination of dataworker process.")
+            self.dataworker_proc.kill()
+            self.dataworker_proc.join(timeout=2)
 
-                h1_shm.close()
-                h1_shm.unlink()
-                teleop_shm.close()
-                teleop_shm.unlink()
+        self.h1_shm.close()
+        self.h1_shm.unlink()
+        self.teleop_shm.close()
+        self.teleop_shm.unlink()
+        logger.info("Cleanup complete.")
 
-                cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
-                logger.debug("Data proc terminated")
-                sys.exit(0)
-
-            else:
-                logger.info("Invalid. Use 's' to start, 'q' to stop/merge, 'exit' to quit.")
-
-    except KeyboardInterrupt:
-        logger.info("Keyboard interrupt detected. Exiting...")
-        cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
-    finally:
-        sys.exit(0)
+    def run_command_loop(self):
+        last_cmd = None
+        finished = 0
+        failed = 0
+        logger.info("Press 's' to start, 'q' to stop/merge, 'd' for a failure case, 'exit' to quit.")
+        try:
+            while True:
+                user_input = input("> ").lower()
+                if user_input == "s" and last_cmd != "s":
+                    logger.info(f"Session count - Finished: {finished}, Failed: {failed}")
+                    self.start_session()
+                    last_cmd = "s"
+                elif user_input == "q":
+                    self.stop_session()
+                    finished += 1
+                    last_cmd = "q"
+                elif user_input == "d":
+                    self.failure_event.set()
+                    self.stop_session()
+                    failed += 1
+                    last_cmd = "d"
+                elif user_input == "exit":
+                    self.cleanup()
+                    sys.exit(0)
+                else:
+                    logger.info("Invalid command. Use 's' to start, 'q' to stop/merge, 'exit' to quit.")
+        except KeyboardInterrupt:
+            logger.info("Keyboard interrupt detected. Exiting...")
+            self.cleanup()
+            sys.exit(0)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Robot Teleoperation Data Collector")
+    parser.add_argument("--task_name", type=str, default="default_task", help="Name of the task")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    args = parser.parse_args()
+
+    manager = TeleopManager(task_name=args.task_name, debug=args.debug)
+    manager.start_processes()
+    manager.run_command_loop()
