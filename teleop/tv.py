@@ -800,6 +800,7 @@ def main():
     logger.info("  Press 's' to start the taskmaster")
     logger.info("  Press 'q' to stop and merge data")
     finished = 0
+    failed = 0
     try:
         while True:
             if sys.stdin.closed:  # TODO: why???
@@ -808,13 +809,14 @@ def main():
                 continue
             user_input = input("> ").lower()
 
-            if user_input == "s":
-                logger.info(f"##################### {finished} #######################")
+            if user_input == "s" and last_cmd != "s":
+                logger.info(f"##################### finished: {finished}, failed: {failed} #######################")
                 update_dir(shared_data, task_name)
                 failure_event.clear()
                 kill_event.clear()
                 session_start_event.set()
                 logger.info("Started taskmaster and dataworker")
+                last_cmd = user_input
 
             elif user_input == "q":
                 logger.info("Clearing session start event and setting stop event")
@@ -829,9 +831,12 @@ def main():
                 kill_event.set()
                 session_start_event.clear() 
                 logger.info("Ready to rerun!")
+                failed+=1
 
             elif user_input == "exit":
                 logger.info("Exiting...")
+                kill_event.set()
+                session_start_event.clear() 
                 end_event.set()
 
                 h1_shm.close()
@@ -844,9 +849,7 @@ def main():
                 sys.exit(0)
 
             else:
-                logger.info(
-                    "Invalid. Use 's' to start, 'q' to stop/merge, 'exit' to quit."
-                )
+                logger.info("Invalid. Use 's' to start, 'q' to stop/merge, 'exit' to quit.")
 
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt detected. Exiting...")

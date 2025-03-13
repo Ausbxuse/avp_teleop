@@ -1,7 +1,4 @@
 
-# Video Demo
-<img src="./img/1.webp" autoplay loop="loop" style="width: 49%" controls></img><img src="./img/2.webp" autoplay loop="loop" style="width: 49%" controls></img>
-
 # Introduction
 This repository implements teleoperation of the humanoid robot Unitree H1_2 using Apple Vision Pro.
 
