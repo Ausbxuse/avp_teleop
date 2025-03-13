@@ -338,19 +338,6 @@ class RobotDataWorker:
         np_arr = np.frombuffer(frame_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        # try:
-        #     data = zlib.decompress(compressed_data)
-        #     frame_data = pickle.loads(data)
-        #     # frame_data = msgpack.unpackb(data)
-        # except Exception as e:
-        #     logger.debug(f"Total compressed data length: {len(compressed_data)}")
-        #     logger.debug(f"Data header bytes: {compressed_data[:10]}")
-        #     logger.error(f"Failed decompressing or unpickling frame data: {e}")
-        #     return None, None
-        #
-        # frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)  # np: (height, width)
-        # print(frame.shape)
-
         if frame is None:
             logger.error("Failed to decode frame!")
             return None, None
@@ -842,6 +829,12 @@ def main():
 
             elif user_input == "exit":
                 logger.info("Exiting...")
+
+                h1_shm.close()
+                h1_shm.unlink()
+                teleop_shm.close()
+                teleop_shm.unlink()
+
                 cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
                 logger.debug("Data proc terminated")
                 sys.exit(0)
@@ -855,10 +848,6 @@ def main():
         logger.info("Keyboard interrupt detected. Exiting...")
         cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc)
     finally:
-        h1_shm.close()
-        h1_shm.unlink()
-        teleop_shm.close()
-        teleop_shm.unlink()
         sys.exit(0)
 
 if __name__ == "__main__":
