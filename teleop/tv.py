@@ -271,7 +271,7 @@ class LidarProcess:
 
 class RobotDataWorker:
     def __init__(
-        self, shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array
+        self, shared_data, h1_shm_array, teleop_shm_array, kill_event, session_start_event, end_event
     ):
         self.shared_data = shared_data
         self.kill_event = kill_event
@@ -283,6 +283,7 @@ class RobotDataWorker:
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.123.162:5556")
+        self.end_event = end_event
         # self.socket.setsockopt(zmq.RCVTIMEO, 200)
         # self.socket.setsockopt(zmq.RCVHWM, 1)
         # self.socket.setsockopt(zmq.CONFLATE, 1)
@@ -388,7 +389,7 @@ class RobotDataWorker:
 
     def start(self):
         try:
-            while True:
+            while not self.end_event.is_set():
                 logger.info("Worker: waiting for new session start (session_start_event).")
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
@@ -526,11 +527,12 @@ class RobotDataWorker:
 
 # Teleop and datacollector
 class RobotTaskmaster:
-    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event):
+    def __init__(self, shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event, end_event):
         self.task_name = task_name
         self.kill_event = kill_event
         self.failure_event = failure_event
         self.session_start_event = session_start_event
+        self.end_event = end_event
         self.shared_data = shared_data
         self.h1_shm_array = h1_shm_array
         self.teleop_shm_array = teleop_shm_array
@@ -590,7 +592,7 @@ class RobotTaskmaster:
 
     def start(self):
         try:
-            while True:
+            while not self.end_event.is_set():
                 logger.info("Master: waiting to start")
                 self.session_start_event.wait()
                 logger.info("Master: start event recvd. clearing start event. starting session")
@@ -745,6 +747,7 @@ def setup_processes():
     session_start_event = Event()
     kill_event = Event()
     failure_event = Event()
+    end_event = Event()
     manager = Manager()
     shared_data = manager.dict()
 
@@ -755,11 +758,11 @@ def setup_processes():
     teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=teleop_shm.buf)
 
     def run_taskmaster():
-        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event)
+        taskmaster = RobotTaskmaster(shared_data, h1_shm_array, teleop_shm_array, task_name, session_start_event, kill_event, failure_event, end_event)
         taskmaster.start()
 
     def run_dataworker():
-        taskworker = RobotDataWorker(shared_data, kill_event, session_start_event, h1_shm_array, teleop_shm_array)
+        taskworker = RobotDataWorker(shared_data, h1_shm_array, teleop_shm_array, kill_event, session_start_event, end_event)
         taskworker.start()
 
     robot_data_proc = Process(target=run_dataworker)
@@ -768,7 +771,7 @@ def setup_processes():
     taskmaster_proc = Process(target=run_taskmaster)
     taskmaster_proc.start()
 
-    return task_name, kill_event, failure_event, session_start_event,shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
+    return task_name, kill_event, failure_event, session_start_event, end_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc
 
 def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_data_proc):
     kill_event.set()
@@ -793,7 +796,7 @@ def cleanup_processes(kill_event, session_start_event, taskmaster_proc, robot_da
 
 def main():
     # TODO: cleanup empty demo dirs
-    task_name, kill_event, failure_event, session_start_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
+    task_name, kill_event, failure_event, session_start_event, end_event, shared_data, h1_shm, teleop_shm, taskmaster_proc, robot_data_proc = setup_processes()
     logger.info("  Press 's' to start the taskmaster")
     logger.info("  Press 'q' to stop and merge data")
     finished = 0
@@ -829,6 +832,7 @@ def main():
 
             elif user_input == "exit":
                 logger.info("Exiting...")
+                end_event.set()
 
                 h1_shm.close()
                 h1_shm.unlink()
