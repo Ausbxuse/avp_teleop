@@ -290,20 +290,18 @@ class LidarProcess:
 
 # create a tv.step() thread and request image 
 class RobotDataWorker:
-    def __init__(
-        self, shared_data, h1_shm_array, teleop_shm_array, kill_event, session_start_event, end_event
-    ):
+    def __init__(self, shared_data):
         self.shared_data = shared_data
-        self.kill_event = kill_event
-        self.session_start_event = session_start_event
-        self.h1_shm_array = h1_shm_array
-        self.teleop_shm_array = teleop_shm_array
+        self.kill_event = shared_data["kill_event"]
+        self.session_start_event = shared_data["session_start_event"]
+        self.h1_shm_array = shared_data["h1_shm_array"]
+        self.teleop_shm_array = shared_data["teleop_shm_array"]
+        self.end_event = shared_data["end_event"] # TODO: redundent
         self.h1_lock = Lock()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.123.162:5556")
-        self.end_event = end_event
         # self.socket.setsockopt(zmq.RCVTIMEO, 200)
         # self.socket.setsockopt(zmq.RCVHWM, 1)
         # self.socket.setsockopt(zmq.CONFLATE, 1)
@@ -378,7 +376,7 @@ class RobotDataWorker:
             self.teleop_shm_array[25:41] = right_pose.flatten()
             self.teleop_shm_array[41:53] = np.array(left_qpos).flatten()
             self.teleop_shm_array[53:65] = np.array(right_qpos).flatten()
-            time.sleep(1.0 / FREQ)
+            time.sleep(DELAY)
 
     def get_robot_data(self, time_curr):
         logger.debug(f"worker: starting to get robot data")
@@ -539,7 +537,6 @@ class RobotDataWorker:
             logger.info("Worker process has exited.")
 
     def reset(self):
-        # TODO: finish rest
         self.frame_idx = 0
         self.initial_capture_time = None
 
@@ -547,15 +544,16 @@ class RobotDataWorker:
 # Teleop and datacollector
 # Starts lidar process and robot arm/hand controllers
 class RobotTaskmaster:
-    def __init__(self, task_name, shared_data, h1_shm_array, teleop_shm_array,  session_start_event, kill_event, failure_event, end_event):
+    def __init__(self, task_name, shared_data):
         self.task_name = task_name
-        self.kill_event = kill_event
-        self.failure_event = failure_event
-        self.session_start_event = session_start_event
-        self.end_event = end_event
+
         self.shared_data = shared_data
-        self.h1_shm_array = h1_shm_array
-        self.teleop_shm_array = teleop_shm_array
+        self.kill_event = shared_data["kill_event"]
+        self.session_start_event = shared_data["session_start_event"]
+        self.h1_shm_array = shared_data["h1_shm_array"]
+        self.teleop_shm_array = shared_data["teleop_shm_array"]
+        self.failure_event = shared_data["failure_event"] # TODO: redundent
+        self.end_event = shared_data["end_event"] # TODO: redundent
 
         self.teleop_lock = Lock()
         try:
@@ -747,14 +745,23 @@ class TeleopManager:
         else:
             logger.setLevel(logging.INFO)
 
-        self.session_start_event = Event()
-        self.kill_event = Event()
-        self.failure_event = Event()
-        self.end_event = Event()
 
 
         self.manager = Manager()
         self.shared_data = self.manager.dict()
+
+        self.shared_data["kill_event"] = self.manager.Event()
+        self.shared_data["session_start_event"] = self.manager.Event()
+        self.shared_data["h1_shm_array"] = self.manager.Event()
+        self.shared_data["teleop_shm_array"] = self.manager.Event()
+        self.shared_data["failure_event"] = self.manager.Event()
+        self.shared_data["end_event"] = self.manager.Event()# TODO: redundent
+        self.kill_event = self.shared_data["kill_event"]
+        self.session_start_event = self.shared_data["session_start_event"]
+        self.end_event = self.shared_data["end_event"]
+        self.failure_event = self.shared_data["failure_event"]
+        self.h1_shm_array = self.shared_data["h1_shm_array"]
+        self.teleop_shm_array = self.shared_data["teleop_shm_array"]
 
         self.h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
         self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
@@ -763,27 +770,11 @@ class TeleopManager:
         self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
 
         def run_taskmaster():
-            taskmaster = RobotTaskmaster(
-                self.task_name,
-                self.shared_data,
-                self.h1_shm_array,
-                self.teleop_shm_array,
-                self.session_start_event,
-                self.kill_event,
-                self.failure_event,
-                self.end_event,
-            )
+            taskmaster = RobotTaskmaster(self.task_name, self.shared_data)
             taskmaster.start()
 
         def run_dataworker():
-            taskworker = RobotDataWorker(
-                self.shared_data,
-                self.h1_shm_array,
-                self.teleop_shm_array,
-                self.kill_event,
-                self.session_start_event,
-                self.end_event,
-            )
+            taskworker = RobotDataWorker(self.shared_data)
             taskworker.start()
 
         self.taskmaster_proc = Process(target=run_taskmaster)
@@ -885,3 +876,4 @@ if __name__ == "__main__":
     manager = TeleopManager(task_name=args.task_name, debug=args.debug)
     manager.start_processes()
     manager.run_command_loop()
+    # TODO: run in two separate terminals for debuggnig
