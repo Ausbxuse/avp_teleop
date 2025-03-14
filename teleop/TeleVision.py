@@ -1,4 +1,6 @@
 import asyncio
+import atexit
+import signal
 import time
 from multiprocessing import (
     Array,
@@ -23,6 +25,13 @@ from vuer.schemas import (
 )
 
 from webrtc.zed_server import *
+
+# logger = logging.getLogger("robot_teleop")
+# logger.setLevel(logging.INFO)
+# ch = logging.StreamHandler()
+# formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+# ch.setFormatter(formatter)
+# logger.addHandler(ch)
 
 
 class OpenTeleVision:
@@ -110,6 +119,7 @@ class OpenTeleVision:
                 args=(app,),
                 kwargs={"host": "0.0.0.0", "port": 8080, "ssl_context": ssl_context},
             )
+            # print(f"###########webrtc pid: {self.webrtc_process.pid}")
             self.webrtc_process.daemon = True
             self.webrtc_process.start()
             # web.run_app(app, host="0.0.0.0", port=8080, ssl_context=ssl_context)
@@ -117,11 +127,37 @@ class OpenTeleVision:
         self.process = Process(target=self.run)
         self.process.daemon = True
         self.process.start()
+        # print(f"###########opentv pid: {self.process.pid}")
 
     def run(self):
         self.app.run()
 
-    async def on_cam_move(self, event, session, fps=60):
+    def shutdown(self):
+        # logger.info("OpenTeleVision: Shutting down process...")
+
+        if hasattr(self, "process") and self.process is not None:
+            self.process.terminate()
+            self.process.join(timeout=2)
+
+            if self.process.is_alive():
+                # logger.info("OpenTeleVision: Process still running, forcing kill.")
+                os.kill(self.process.pid, signal.SIGKILL)  # Force kill if still running
+                self.process.join(timeout=2)
+
+        if hasattr(self, "webrtc_process") and self.webrtc_process is not None:
+            self.webrtc_process.terminate()
+            self.webrtc_process.join(timeout=2)
+
+            if self.webrtc_process.is_alive():
+                # logger.info(
+                #     "OpenTeleVision: WebRTC process still running, forcing kill."
+                # )
+                os.kill(
+                    self.webrtc_process.pid, signal.SIGKILL
+                )  # Force kill if still running
+                self.webrtc_process.join(timeout=2)
+
+    async def on_cam_move(self, event, session, fps=30):
         # only intercept the ego camera.
         # if event.key != "ego":
         #     return
@@ -138,7 +174,7 @@ class OpenTeleVision:
         # print(np.array(event.value["camera"]["matrix"]).reshape(4, 4, order="F"))
         # print("camera moved", event.value["matrix"].shape, event.value["matrix"])
 
-    async def on_hand_move(self, event, session, fps=60):
+    async def on_hand_move(self, event, session, fps=30):
         try:
             # with self.left_hand_shared.get_lock():  # Use the lock to ensure thread-safe updates
             #     self.left_hand_shared[:] = event.value["leftHand"]
@@ -159,7 +195,7 @@ class OpenTeleVision:
         except:
             pass
 
-    async def main_webrtc(self, session, fps=60):
+    async def main_webrtc(self, session, fps=30):
         session.set @ DefaultScene(frameloop="always")
         session.upsert @ Hands(
             fps=fps, stream=True, key="hands", showLeft=False, showRight=False
@@ -174,7 +210,7 @@ class OpenTeleVision:
         while True:
             await asyncio.sleep(1)
 
-    async def main_image(self, session, fps=60):
+    async def main_image(self, session, fps=30):
         session.upsert @ Hands(
             fps=fps, stream=True, key="hands", showLeft=False, showRight=False
         )
@@ -204,9 +240,8 @@ class OpenTeleVision:
                 [
                     ImageBackground(
                         # Can scale the images down.
-
                         # display_image[:, : 2*self.img_width],
-                        display_image[::2, :self.img_width],
+                        display_image[::2, : self.img_width],
                         # display_image[:self.img_height:2, ::2],
                         # 'jpg' encoding is significantly faster than 'png'.
                         format="jpeg",
@@ -225,7 +260,7 @@ class OpenTeleVision:
                     ImageBackground(
                         # Can scale the images down.
                         # display_image[:, : 2*self.img_width],
-                        display_image[::2, self.img_width:],
+                        display_image[::2, self.img_width :],
                         # display_image[self.img_height::2, ::2],
                         # 'jpg' encoding is significantly faster than 'png'.
                         format="jpeg",

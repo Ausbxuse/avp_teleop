@@ -127,3 +127,8 @@ class VuerTeleop:
         ]
 
         return head_rmat, left_wrist_mat, right_wrist_mat, left_qpos, right_qpos
+
+    def shutdown(self):
+        self.shm.close()
+        self.shm.unlink()
+        self.tv.shutdown()

@@ -11,12 +11,14 @@ import sys
 import threading
 import time
 import zlib
+from calendar import c
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
 from typing import Any, Dict, Optional, Tuple
 
 import cv2
 import msgpack
 import numpy as np
+import psutil
 import zmq
 
 from robot_control.robot_arm import H1ArmController
@@ -348,6 +350,7 @@ class RobotDataWorker:
 
     def teleop_update_thread(self):
         while not self.kill_event.is_set():
+            logger.info("Worker: tp_thread: stepping!")
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.teleoperator.step()
             )
@@ -383,8 +386,9 @@ class RobotDataWorker:
         return robot_data
 
     def start(self):
+        logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
         try:
-            while not self.end_event.is_set():
+            while True:
                 logger.info("Worker: waiting for new session start (session_start_event).")
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
@@ -392,8 +396,10 @@ class RobotDataWorker:
                 self.async_image_writer.close()
                 self.async_image_writer = AsyncImageWriter()
         finally:
+            logger.info("worker: ending")
             self.socket.close()
             self.context.term()
+            self.teleoperator.shutdown()
 
     def _write_image_data(self, color_frame, depth_frame):
         logger.debug("Worker: writing robot data")
@@ -534,8 +540,12 @@ class RobotTaskmaster:
         self.teleop_shm_array = teleop_shm_array
 
         self.teleop_lock = Lock()
-        self.h1hand = H1HandController()
-        self.h1arm = H1ArmController()
+        try:
+            self.h1hand = H1HandController()
+            self.h1arm = H1ArmController()
+        except Exception as e:
+            logger.error(f"Master: failed initalizing h1 controllers: {e}")
+        
         self.arm_ik = Arm_IK()
         self.first = True
         self.lidar_proc = None
@@ -587,6 +597,7 @@ class RobotTaskmaster:
         return True
 
     def start(self):
+        logger.debug(f"Master: Process ID (PID) {os.getpid()}")
         try:
             while not self.end_event.is_set():
                 logger.info("Master: waiting to start")
@@ -789,10 +800,16 @@ class TeleopManager:
         logger.info("Cleaning up processes and shared resources...")
         self.end_event.set()
         self.kill_event.set()
-        self.session_start_event.clear()
+        self.session_start_event.set()
+        self.manager.shutdown()
+        self.taskmaster_proc.terminate()
+        self.dataworker_proc.terminate()
 
-        self.taskmaster_proc.join(timeout=1)
-        self.dataworker_proc.join(timeout=1)
+        self.taskmaster_proc.kill()
+        self.dataworker_proc.kill()
+
+        self.taskmaster_proc.join(timeout=2)
+        self.dataworker_proc.join(timeout=2)
 
         if self.taskmaster_proc.is_alive():
             logger.warning("Forcing termination of taskmaster process.")
