@@ -77,7 +77,7 @@ class ColorFormatter(logging.Formatter):
 logger = logging.getLogger("robot_teleop")
 logger.setLevel(logging.INFO)
 ch = logging.StreamHandler()
-formatter = ColorFormatter("%(asctime)s - %(levelname)s - %(message)s")
+formatter = ColorFormatter("[%(asctime)s] [%(levelname)s] %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -402,7 +402,7 @@ class RobotDataWorker:
         return robot_data
 
     def start(self):
-        logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
+        # logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
         try:
             while True:
                 logger.info("Worker: waiting for new session start (session_start_event).")
@@ -460,6 +460,9 @@ class RobotDataWorker:
             np.copyto(self.teleoperator.img_array, np.array(resized_frame))
 
     def _session_init(self):
+        if "dirname" not in self.shared_data:
+            logger.error("Worker: failed to get dirname")
+            exit(-1)
         self.robot_data_writer = AsyncWriter(
             os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
         )
@@ -613,7 +616,7 @@ class RobotTaskmaster:
         return True
 
     def start(self):
-        logger.debug(f"Master: Process ID (PID) {os.getpid()}")
+        # logger.debug(f"Master: Process ID (PID) {os.getpid()}")
         try:
             while not self.end_event.is_set():
                 logger.info("Master: waiting to start")
@@ -663,6 +666,9 @@ class RobotTaskmaster:
 
     
     def _session_init(self):
+        if "dirname" not in self.shared_data:
+            logger.error("Master: failed to get dirname")
+            exit(-1)
         self.lidar_proc = LidarProcess(self.shared_data["dirname"])
         self.lidar_proc.run()
         logger.debug("Master: lidar process started")
