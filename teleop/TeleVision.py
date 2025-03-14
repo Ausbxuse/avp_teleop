@@ -140,7 +140,7 @@ class OpenTeleVision:
             self.process.join(timeout=2)
 
             if self.process.is_alive():
-                # logger.info("OpenTeleVision: Process still running, forcing kill.")
+                print("OpenTeleVision: Process still running, forcing kill.")
                 os.kill(self.process.pid, signal.SIGKILL)  # Force kill if still running
                 self.process.join(timeout=2)
 
@@ -149,9 +149,6 @@ class OpenTeleVision:
             self.webrtc_process.join(timeout=2)
 
             if self.webrtc_process.is_alive():
-                # logger.info(
-                #     "OpenTeleVision: WebRTC process still running, forcing kill."
-                # )
                 os.kill(
                     self.webrtc_process.pid, signal.SIGKILL
                 )  # Force kill if still running
