@@ -301,6 +301,7 @@ class RobotDataWorker:
             )
         else:
             logger.error(f"failed to save image {self.frame_idx}")
+
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
         self._write_image_data(color_frame,depth_frame)
 
@@ -316,6 +317,8 @@ class RobotDataWorker:
         self.frame_idx += 1
 
     def _send_image_to_teleoperator(self, ir_left_frame, ir_right_frame):
+        ir_left_frame = cv2.cvtColor(ir_left_frame, cv2.COLOR_GRAY2BGR)
+        ir_right_frame = cv2.cvtColor(ir_right_frame, cv2.COLOR_GRAY2BGR)
         if ir_left_frame is not None and ir_right_frame is not None:
             combined_ir_frame = np.hstack((ir_left_frame, ir_right_frame))
             # print(combined_ir_frame.shape)
