@@ -19,7 +19,6 @@ import msgpack
 import numpy as np
 import psutil
 import zmq
-
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
@@ -187,21 +186,38 @@ class RobotDataWorker:
         ir_size = 480 * 640
 
         self.socket.send(b"get_frame")
-        frame_bytes = self.socket.recv()
-        combined_image = pickle.loads(zlib.decompress(frame_bytes))
-        expected_size = color_size + depth_size + (ir_size * 2)
-        if combined_image.size != expected_size:
-            logger.error("Failed to decode frame!")
+        # frame_bytes = self.socket.recv()
+        parts = self.socket.recv_multipart()
+        if len(parts) < 2:
+            logger.error("Incomplete frame data received.")
             return None, None, None, None
-        color_flat = combined_image[:color_size]
-        depth_flat = combined_image[color_size:color_size + depth_size]
-        ir_left_flat = combined_image[color_size + depth_size:color_size + depth_size + ir_size]
-        ir_right_flat = combined_image[color_size + depth_size + ir_size:]
-        
-        color_image = color_flat.reshape((480, 640, 3))
-        depth_image = depth_flat.reshape((480, 640))
-        ir_left_image = ir_left_flat.reshape((480, 640))
-        ir_right_image = ir_right_flat.reshape((480, 640))
+
+        jpg_bytes = parts[0]
+        depth_bytes = parts[1]
+
+        jpg_array = np.frombuffer(jpg_bytes, dtype=np.uint8)
+        combined_img = cv2.imdecode(jpg_array, cv2.IMREAD_COLOR)
+        if combined_img is not None:
+            cv2.imshow("Combined Color and IR", combined_img)
+        else:
+            logger.error("Failed to decode JPEG frame.")
+
+        try:
+            depth_image = pickle.loads(zlib.decompress(depth_bytes))
+        except Exception:
+            logger.error("Worker: zmq depth pickled fail")
+
+        height, width, channels = combined_img.shape
+
+        if width % 3 != 0:
+            logger.error("Unexpected combined image width:", width)
+            return None, None, None, None
+
+        single_width = width // 3
+
+        color_image = combined_img[:, :single_width, :]
+        ir_left_image  = combined_img[:, single_width:2*single_width, :]
+        ir_right_image = combined_img[:, 2*single_width:, :]
         
         return color_image, depth_image, ir_left_image, ir_right_image
 
