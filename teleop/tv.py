@@ -290,18 +290,19 @@ class LidarProcess:
 
 # create a tv.step() thread and request image 
 class RobotDataWorker:
-    def __init__(self, shared_data):
+    def __init__(self, shared_data, h1_shm_array, teleop_shm_array):
         self.shared_data = shared_data
         self.kill_event = shared_data["kill_event"]
         self.session_start_event = shared_data["session_start_event"]
-        self.h1_shm_array = shared_data["h1_shm_array"]
-        self.teleop_shm_array = shared_data["teleop_shm_array"]
         self.end_event = shared_data["end_event"] # TODO: redundent
         self.h1_lock = Lock()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.123.162:5556")
+
+        self.h1_shm_array = h1_shm_array
+        self.teleop_shm_array = teleop_shm_array
         # self.socket.setsockopt(zmq.RCVTIMEO, 200)
         # self.socket.setsockopt(zmq.RCVHWM, 1)
         # self.socket.setsockopt(zmq.CONFLATE, 1)
@@ -366,7 +367,7 @@ class RobotDataWorker:
 
     def teleop_update_thread(self):
         while not self.kill_event.is_set():
-            logger.info("Worker: tp_thread: stepping!")
+            # logger.info("Worker: tp_thread: stepping!")
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.teleoperator.step()
             )
@@ -437,6 +438,7 @@ class RobotDataWorker:
             logger.error(f"failed to save image {self.frame_idx}")
 
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
+        logger.debug(f"Worker: writing robot data")
         self._write_image_data(color_frame,depth_frame)
 
         robot_data = self.get_robot_data(time.time())
@@ -494,7 +496,7 @@ class RobotDataWorker:
             f"[worker process] next_capture_time - time_curr: {next_capture_time - time_curr}"
         )
 
-        if time_curr <= next_capture_time:
+        if  next_capture_time - time_curr >= 0:
             time.sleep(next_capture_time - time_curr)
             self._write_robot_data(color_frame, depth_frame)
         else:
@@ -547,16 +549,17 @@ class RobotDataWorker:
 # Teleop and datacollector
 # Starts lidar process and robot arm/hand controllers
 class RobotTaskmaster:
-    def __init__(self, task_name, shared_data):
+    def __init__(self, task_name, shared_data, h1_shm_array, teleop_shm_array):
         self.task_name = task_name
 
         self.shared_data = shared_data
         self.kill_event = shared_data["kill_event"]
         self.session_start_event = shared_data["session_start_event"]
-        self.h1_shm_array = shared_data["h1_shm_array"]
-        self.teleop_shm_array = shared_data["teleop_shm_array"]
         self.failure_event = shared_data["failure_event"] # TODO: redundent
         self.end_event = shared_data["end_event"] # TODO: redundent
+
+        self.h1_shm_array = h1_shm_array
+        self.teleop_shm_array = teleop_shm_array
 
         self.teleop_lock = Lock()
         try:
@@ -754,20 +757,12 @@ class TeleopManager:
 
 
         self.manager = Manager()
-        self.shared_data = self.manager.dict()
+        self.shared_dict = self.manager.dict()
 
-        self.shared_data["kill_event"] = self.manager.Event()
-        self.shared_data["session_start_event"] = self.manager.Event()
-        self.shared_data["h1_shm_array"] = self.manager.Event()
-        self.shared_data["teleop_shm_array"] = self.manager.Event()
-        self.shared_data["failure_event"] = self.manager.Event()
-        self.shared_data["end_event"] = self.manager.Event()# TODO: redundent
-        self.kill_event = self.shared_data["kill_event"]
-        self.session_start_event = self.shared_data["session_start_event"]
-        self.end_event = self.shared_data["end_event"]
-        self.failure_event = self.shared_data["failure_event"]
-        self.h1_shm_array = self.shared_data["h1_shm_array"]
-        self.teleop_shm_array = self.shared_data["teleop_shm_array"]
+        self.shared_dict["kill_event"] = self.manager.Event()
+        self.shared_dict["session_start_event"] = self.manager.Event()
+        self.shared_dict["failure_event"] = self.manager.Event()
+        self.shared_dict["end_event"] = self.manager.Event()# TODO: redundent
 
         self.h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
         self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
@@ -776,11 +771,11 @@ class TeleopManager:
         self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
 
         def run_taskmaster():
-            taskmaster = RobotTaskmaster(self.task_name, self.shared_data)
+            taskmaster = RobotTaskmaster(self.task_name, self.shared_dict, self.h1_shm_array, self.teleop_shm_array)
             taskmaster.start()
 
         def run_dataworker():
-            taskworker = RobotDataWorker(self.shared_data)
+            taskworker = RobotDataWorker(self.shared_dict, self.h1_shm_array, self.teleop_shm_array)
             taskworker.start()
 
         self.taskmaster_proc = Process(target=run_taskmaster)
@@ -793,7 +788,7 @@ class TeleopManager:
 
     def update_directory(self):
         dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
-        self.shared_data["dirname"] = dirname
+        self.shared_dict["dirname"] = dirname
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(os.path.join(dirname, "color"), exist_ok=True)
         os.makedirs(os.path.join(dirname, "depth"), exist_ok=True)
@@ -801,30 +796,30 @@ class TeleopManager:
 
     def start_session(self):
         self.update_directory()
-        self.failure_event.clear()
-        self.kill_event.clear()
-        self.session_start_event.set()
+        self.shared_dict["failure_event"].clear()
+        self.shared_dict["kill_event"].clear()
+        self.shared_dict["session_start_event"].set()
         logger.info("Session started.")
 
     def stop_session(self):
-        self.kill_event.set()
-        self.session_start_event.clear()
+        self.shared_dict["kill_event"].set()
+        self.shared_dict["session_start_event"].clear()
         logger.info("Session stopped.")
 
     def cleanup(self):
         logger.info("Cleaning up processes and shared resources...")
-        self.end_event.set()
-        self.kill_event.set()
-        self.session_start_event.set()
+        self.shared_dict["end_event"].set()
+        self.shared_dict["kill_event"].set()
+        self.shared_dict["session_start_event"].set()
         self.manager.shutdown()
         self.taskmaster_proc.terminate()
         self.dataworker_proc.terminate()
 
-        self.taskmaster_proc.kill()
-        self.dataworker_proc.kill()
+        # self.taskmaster_proc.kill()
+        # self.dataworker_proc.kill()
 
-        self.taskmaster_proc.join(timeout=2)
-        self.dataworker_proc.join(timeout=2)
+        self.taskmaster_proc.join(timeout=5)
+        self.dataworker_proc.join(timeout=5)
 
         if self.taskmaster_proc.is_alive():
             logger.warning("Forcing termination of taskmaster process.")
@@ -859,7 +854,7 @@ class TeleopManager:
                     finished += 1
                     last_cmd = "q"
                 elif user_input == "d":
-                    self.failure_event.set()
+                    self.shared_dict["failure_event"].set()
                     self.stop_session()
                     failed += 1
                     last_cmd = "d"
