@@ -629,12 +629,9 @@ class TeleopManager:
         self.session_start_event = self.shared_data["session_start_event"]
         self.end_event = self.shared_data["end_event"]
         self.failure_event = self.shared_data["failure_event"]
-        self.h1_shm_array = self.shared_data["h1_shm_array"]
-        self.teleop_shm_array = self.shared_data["teleop_shm_array"]
 
         self.h1_shm = shared_memory.SharedMemory(create=True, size=45 * np.dtype(np.float64).itemsize)
         self.h1_shm_array = np.ndarray((45,), dtype=np.float64, buffer=self.h1_shm.buf)
-
         self.teleop_shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
         self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
 
