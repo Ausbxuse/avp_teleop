@@ -181,10 +181,6 @@ class RobotDataWorker:
         time.sleep(next_capture_time - time_curr)
 
     def _recv_zmq_frame(self) -> Tuple[Any, Any, Any, Any]:
-        color_size = 480 * 640 * 3
-        depth_size = 480 * 640
-        ir_size = 480 * 640
-
         self.socket.send(b"get_frame")
         # frame_bytes = self.socket.recv()
         parts = self.socket.recv_multipart()
