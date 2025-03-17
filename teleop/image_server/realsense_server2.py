@@ -1,5 +1,7 @@
 import datetime
+import pickle
 import threading
+import zlib
 
 import cv2
 import numpy as np
@@ -37,27 +39,19 @@ def frame_capture_thread():
         ir_left_image = np.asanyarray(ir_left_frame.get_data())
         ir_right_image = np.asanyarray(ir_right_frame.get_data())
 
-        # Convert single-channel images to 3-channel images for consistency
-        alpha = 255.0 / 4500.0
-        depth_image = cv2.convertScaleAbs(depth_image, alpha=alpha)
-        depth_image = cv2.cvtColor(depth_image, cv2.COLOR_GRAY2BGR)
-
-        ir_left_image = cv2.cvtColor(ir_left_image, cv2.COLOR_GRAY2BGR)
-        ir_right_image = cv2.cvtColor(ir_right_image, cv2.COLOR_GRAY2BGR)
-
-        # Combine the images horizontally
-        combined_image = np.hstack(
-            (color_image, depth_image, ir_left_image, ir_right_image)
+        combined_image = np.concatenate(
+            [
+                color_image.flatten(),
+                depth_image.flatten(),
+                ir_left_image.flatten(),
+                ir_right_image.flatten(),
+            ]
         )
+        compressed_data = zlib.compress(pickle.dumps(combined_image))
 
-        # JPEG encode the combined image (JPEG compression is fast)
-        # encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
-        # ret, encoded_image = cv2.imencode(".jpg", combined_image, encode_param)
-        ret, encoded_image = cv2.imencode(".jpg", combined_image)
-        if ret:
-            frame_bytes = encoded_image.tobytes()
-            with frame_lock:
-                latest_frame_bytes = frame_bytes
+        frame_bytes = compressed_data
+        with frame_lock:
+            latest_frame_bytes = frame_bytes
 
 
 def start_server():

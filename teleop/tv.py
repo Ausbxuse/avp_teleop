@@ -11,7 +11,6 @@ import sys
 import threading
 import time
 import zlib
-from calendar import c
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
 from typing import Any, Dict, Optional, Tuple
 
@@ -24,7 +23,8 @@ import zmq
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
-from utilities import VuerTeleop
+from utilities import (AsyncImageWriter, AsyncWriter, DataMerger, IKDataWriter,
+                       VuerTeleop)
 
 
 def timed(func):
@@ -94,169 +94,6 @@ CHUNK_SIZE = 100
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-
-class AsyncImageWriter:
-    def __init__(self):
-        self.queue = queue.Queue()
-        self.kill_event = threading.Event()
-        self.thread = threading.Thread(target=self._run, daemon=True)
-        self.thread.start()
-
-    def _run(self):
-        while not self.kill_event.is_set() or not self.queue.empty():
-            try:
-                filename, image = self.queue.get(timeout=0.5)
-                cv2.imwrite(filename, image)
-            except queue.Empty:
-                continue
-
-    def write_image(self, filename, image):
-        self.queue.put((filename, image))
-
-    def close(self):
-        self.kill_event.set()
-        self.thread.join()
-
-class AsyncWriter:
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.queue = queue.Queue()
-        self.kill_event = threading.Event()
-        self.thread = threading.Thread(target=self._run, daemon=True)
-        self.thread.start()
-
-    def _run(self):
-        with open(self.filepath, "a") as f:
-            while not self.kill_event.is_set() or not self.queue.empty():
-                try:
-                    item = self.queue.get(timeout=0.5)
-                    # logger.debug(f"async writer: writing elements {item}")
-                    f.write(item + "\n")
-                    # f.flush()
-                except queue.Empty:
-                    continue
-
-    def write(self, item):
-        self.queue.put(item)
-
-    def close(self):
-        self.kill_event.set()
-        self.thread.join()
-
-class IKDataWriter:
-    def __init__(self, dirname):
-        self.buffer = []
-        self.filepath = os.path.join(dirname, "ik_data.jsonl")
-        self.async_writer = AsyncWriter(os.path.join(dirname, "ik_data.jsonl"))
-
-    def write_data(
-        self,
-        # right_angles,
-        # left_angles,
-        arm_time,
-        ik_time,
-        sol_q,
-        tau_ff,
-        head_rmat,
-        left_pose,
-        right_pose,
-    ):
-        entry = {
-            # "right_angles": right_angles,
-            # "left_angles": left_angles,
-            "armtime": arm_time,
-            "iktime": ik_time,
-            "sol_q": sol_q.tolist(),
-            "tau_ff": tau_ff.tolist(),
-            "head_rmat": head_rmat.tolist(),
-            "left_pose": left_pose.tolist(),
-            "right_pose": right_pose.tolist(),
-        }
-        self.async_writer.write(json.dumps(entry))
-    def close(self):
-        self.async_writer.close()
-
-
-class DataMerger:
-    def __init__(self, dirname) -> None:
-        self.robot_data_path = os.path.join(dirname, "robot_data.jsonl")
-        self.ik_data_path = os.path.join(dirname, "ik_data.jsonl")
-        self.lidar_data_path = os.path.join(dirname, "lidar")
-        self.output_path = os.path.join(dirname, "merged_data.jsonl")
-
-    def _ik_is_ready(self, ik_data_list, time_key):
-        closest_ik_entry = min(ik_data_list, key=lambda x: abs(x["armtime"] - time_key))
-        if abs(closest_ik_entry["armtime"] - time_key) > DELAY / 2:
-            return False, None
-        return True, closest_ik_entry
-
-    def _lidar_is_ready(self, lidar_time_list, time_key):
-        closest_lidar_entry = min(lidar_time_list, key=lambda x: abs(x - time_key))
-        if abs(closest_lidar_entry - time_key) > DELAY / 2:
-            return False, None
-        return True, closest_lidar_entry
-
-    def merge_json(self):  # TODO: merge to pkl
-        lidar_time_list = []
-
-        lidar_files = [
-            f
-            for f in os.listdir(self.lidar_data_path)
-            if os.path.isfile(os.path.join(self.lidar_data_path, f))
-        ]
-
-        for lidar_file_name in lidar_files:
-            time_parts = lidar_file_name.split(".")[0:2]
-            lidar_time_list.append(float(time_parts[0] + "." + time_parts[1]))
-
-        logger.info("loading robot and IK data for merging.")
-        robot_data_json_list = []
-        with open(self.robot_data_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    robot_data_json_list.append(json.loads(line))
-
-        ik_data_list = []
-        with open(self.ik_data_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    ik_data_list.append(json.loads(line))
-
-        ik_data_dict = {entry["armtime"]: entry for entry in ik_data_list}
-        robot_data_dict = {entry["time"]: entry for entry in robot_data_json_list}
-
-        if ik_data_list[0]["armtime"] > robot_data_json_list[0]["time"]:
-            last_robot_data = None
-        else:
-            last_robot_data = ik_data_list[0]
-
-        for motor_entry in robot_data_json_list:
-            time_key = motor_entry["time"]
-            ik_ready_flag, closest_ik_entry = self._ik_is_ready(ik_data_list, time_key)
-            if ik_ready_flag and closest_ik_entry is not None:
-                robot_data_dict[time_key]["ik_data"] = ik_data_dict[
-                    closest_ik_entry["armtime"]
-                ]
-                last_robot_data = robot_data_dict[time_key]["ik_data"]
-            else:
-                robot_data_dict[time_key]["ik_data"] = last_robot_data
-
-            # merge lidar path
-            lidar_ready_flag, closest_lidar_time = self._lidar_is_ready(
-                lidar_time_list, time_key
-            )
-            if lidar_ready_flag:
-                robot_data_dict[time_key]["lidar"] = os.path.join(
-                    "lidar", f"{closest_lidar_time}.pcd"
-                )
-
-        with open(self.output_path, "w") as f:
-            json.dump(robot_data_json_list, f, indent=4)
-
-        logger.info(f"Mergefile saved to {self.output_path}")
-
 
 class LidarProcess:
     def __init__(self, dirname) -> None:
@@ -345,28 +182,32 @@ class RobotDataWorker:
         time.sleep(next_capture_time - time_curr)
 
     def _recv_zmq_frame(self) -> Tuple[Any, Any, Any, Any]:
+        color_size = 480 * 640 * 3
+        depth_size = 480 * 640
+        ir_size = 480 * 640
 
         self.socket.send(b"get_frame")
         frame_bytes = self.socket.recv()
-        
-        np_arr = np.frombuffer(frame_bytes, np.uint8)
-        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        if frame is None:
+        combined_image = pickle.loads(zlib.decompress(frame_bytes))
+        expected_size = color_size + depth_size + (ir_size * 2)
+        if combined_image.size != expected_size:
             logger.error("Failed to decode frame!")
             return None, None, None, None
+        color_flat = combined_image[:color_size]
+        depth_flat = combined_image[color_size:color_size + depth_size]
+        ir_left_flat = combined_image[color_size + depth_size:color_size + depth_size + ir_size]
+        ir_right_flat = combined_image[color_size + depth_size + ir_size:]
         
-        width_each = frame.shape[1] // 4
-
-        color_frame = frame[:, 0:width_each]
-        depth_frame = frame[:, width_each:2*width_each]
-        ir_left_frame = frame[:, 2*width_each:3*width_each]
-        ir_right_frame = frame[:, 3*width_each:]
-        return color_frame, depth_frame, ir_left_frame, ir_right_frame
+        color_image = color_flat.reshape((480, 640, 3))
+        depth_image = depth_flat.reshape((480, 640))
+        ir_left_image = ir_left_flat.reshape((480, 640))
+        ir_right_image = ir_right_flat.reshape((480, 640))
+        
+        return color_image, depth_image, ir_left_image, ir_right_image
 
     def teleop_update_thread(self):
         while not self.kill_event.is_set():
-            logger.info("Worker: tp_thread: stepping!")
+            # logger.info("Worker: tp_thread: stepping!")
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.teleoperator.step()
             )
@@ -391,8 +232,8 @@ class RobotDataWorker:
             "arm_state": armstate.tolist(),
             "leg_state": legstate.tolist(),
             "hand_state": handstate.tolist(),
-            "image": f"color/frame_{self.frame_idx:06d}.jpg",
-            "depth": f"depth/frame_{self.frame_idx:06d}.jpg",
+            "image": f"color/frame_{self.frame_idx:06d}.npy",
+            "depth": f"depth/frame_{self.frame_idx:06d}.npy",
             "imu_omega": imustate[0:3].tolist(),
             "imu_rpy": imustate[3:6].tolist(),
             "ik_data": None,
@@ -417,25 +258,49 @@ class RobotDataWorker:
             self.context.term()
             self.teleoperator.shutdown()
 
+    # def _write_image_data(self, color_frame, depth_frame):
+    #     logger.debug("Worker: writing robot data")
+    #
+    #     color_filename = os.path.join(
+    #         self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
+    #     )
+    #     depth_filename = os.path.join(
+    #         self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.jpg"
+    #     )
+    #
+    #     if color_frame is not None and depth_frame is not None:
+    #         self.async_image_writer.write_image(color_filename, color_frame)
+    #         self.async_image_writer.write_image(depth_filename, depth_frame)
+    #         logger.debug(
+    #             f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
+    #         )
+    #     else:
+    #         logger.error(f"failed to save image {self.frame_idx}")
+    #
+
     def _write_image_data(self, color_frame, depth_frame):
         logger.debug("Worker: writing robot data")
 
         color_filename = os.path.join(
-            self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
+            self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.npy"
         )
         depth_filename = os.path.join(
-            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.jpg"
+            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.npy"
         )
 
         if color_frame is not None and depth_frame is not None:
-            self.async_image_writer.write_image(color_filename, color_frame)
-            self.async_image_writer.write_image(depth_filename, depth_frame)
+            # Pickle and compress each frame.
+            compressed_color = zlib.compress(pickle.dumps(color_frame))
+            compressed_depth = zlib.compress(pickle.dumps(depth_frame))
+
+            # Save the compressed data to file.
+            self.async_image_writer.write_image(color_filename, compressed_color)
+            self.async_image_writer.write_image(depth_filename, compressed_depth)
             logger.debug(
                 f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
             )
         else:
             logger.error(f"failed to save image {self.frame_idx}")
-
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
         self._write_image_data(color_frame,depth_frame)
 
@@ -758,8 +623,6 @@ class TeleopManager:
 
         self.shared_data["kill_event"] = self.manager.Event()
         self.shared_data["session_start_event"] = self.manager.Event()
-        self.shared_data["h1_shm_array"] = self.manager.Event()
-        self.shared_data["teleop_shm_array"] = self.manager.Event()
         self.shared_data["failure_event"] = self.manager.Event()
         self.shared_data["end_event"] = self.manager.Event()# TODO: redundent
         self.kill_event = self.shared_data["kill_event"]
@@ -774,6 +637,9 @@ class TeleopManager:
 
         self.teleop_shm = shared_memory.SharedMemory(create=True, size=65 * np.dtype(np.float64).itemsize)
         self.teleop_shm_array = np.ndarray((65,), dtype=np.float64, buffer=self.teleop_shm.buf)
+
+        self.shared_data["h1_shm_array"] = self.h1_shm_array
+        self.shared_data["teleop_shm_array"] = self.teleop_shm_array
 
         def run_taskmaster():
             taskmaster = RobotTaskmaster(self.task_name, self.shared_data)
