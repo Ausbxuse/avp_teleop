@@ -346,24 +346,38 @@ class RobotDataWorker:
         time.sleep(next_capture_time - time_curr)
 
     def _recv_zmq_frame(self) -> Tuple[Any, Any, Any, Any]:
-
         self.socket.send(b"get_frame")
-        frame_bytes = self.socket.recv()
         
-        np_arr = np.frombuffer(frame_bytes, np.uint8)
-        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        if frame is None:
-            logger.error("Failed to decode frame!")
+        # Receive multipart message
+        message_parts = self.socket.recv_multipart()
+        
+        if len(message_parts) != 2 or not message_parts[0] or not message_parts[1]:
+            logger.error("Failed to receive complete frame data!")
             return None, None, None, None
         
-        width_each = frame.shape[1] // 4
-
-        color_frame = frame[:, 0:width_each]
-        depth_frame = frame[:, width_each:2*width_each]
-        ir_left_frame = frame[:, 2*width_each:3*width_each]
-        ir_right_frame = frame[:, 3*width_each:]
-        return color_frame, depth_frame, ir_left_frame, ir_right_frame
+        # Process the RGB+IR combined JPEG image
+        rgb_ir_bytes = message_parts[0]
+        np_arr = np.frombuffer(rgb_ir_bytes, np.uint8)
+        combined_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        
+        if combined_frame is None:
+            logger.error("Failed to decode RGB+IR frame!")
+            return None, None, None, None
+        
+        # Extract individual frames from the combined image
+        width_each = combined_frame.shape[1] // 3
+        color_frame = combined_frame[:, 0:width_each]
+        ir_left_frame = combined_frame[:, width_each:2*width_each]
+        ir_right_frame = combined_frame[:, 2*width_each:]
+        
+        # Process the raw depth data (float32)
+        depth_bytes = message_parts[1]
+        height = color_frame.shape[0]  # Assuming same height as color frame
+        width = color_frame.shape[1]   # Assuming same width as color frame
+        
+        depth_array = np.frombuffer(depth_bytes, dtype=np.uint16).reshape(height, width)
+        
+        return color_frame, depth_array, ir_left_frame, ir_right_frame
 
     def teleop_update_thread(self):
         while not self.kill_event.is_set():
@@ -425,12 +439,13 @@ class RobotDataWorker:
             self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
         )
         depth_filename = os.path.join(
-            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.jpg"
+            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.npy"
         )
 
         if color_frame is not None and depth_frame is not None:
             self.async_image_writer.write_image(color_filename, color_frame)
-            self.async_image_writer.write_image(depth_filename, depth_frame)
+            # self.async_image_writer.write_image(depth_filename, depth_frame)
+            np.save(depth_filename, depth_frame)
             logger.debug(
                 f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
             )
