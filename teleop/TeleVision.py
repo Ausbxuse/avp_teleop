@@ -2,28 +2,14 @@ import asyncio
 import atexit
 import signal
 import time
-from multiprocessing import (
-    Array,
-    Event,
-    Manager,
-    Process,
-    Queue,
-    Semaphore,
-    shared_memory,
-)
+from multiprocessing import (Array, Event, Manager, Process, Queue, Semaphore,
+                             shared_memory)
 
 import numpy as np
 from vuer import Vuer
 from vuer.events import ClientEvent
-from vuer.schemas import (
-    DefaultScene,
-    Hands,
-    ImageBackground,
-    WebRTCStereoVideoPlane,
-    WebRTCVideoPlane,
-    group,
-)
-
+from vuer.schemas import (DefaultScene, Hands, ImageBackground,
+                          WebRTCStereoVideoPlane, WebRTCVideoPlane, group)
 from webrtc.zed_server import *
 
 # logger = logging.getLogger("robot_teleop")
