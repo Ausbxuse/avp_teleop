@@ -20,7 +20,6 @@ import msgpack
 import numpy as np
 import psutil
 import zmq
-
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
@@ -427,10 +426,10 @@ class RobotDataWorker:
                 self.async_image_writer.close()
                 self.async_image_writer = AsyncImageWriter()
         finally:
-            logger.info("worker: ending")
             self.socket.close()
             self.context.term()
             self.teleoperator.shutdown()
+            logger.info("Worker: exited")
 
     def _write_image_data(self, color_frame, depth_frame):
         logger.debug("Worker: writing robot data")
@@ -515,7 +514,7 @@ class RobotDataWorker:
             time.sleep(next_capture_time - time_curr)
             self._write_robot_data(color_frame, depth_frame)
         else:
-            logger.error(
+            logger.warning(
                 "worker process: runner did not finish within 33ms, reusing previous data"
             )
             if self.last_robot_data is not None:
@@ -543,7 +542,7 @@ class RobotDataWorker:
             logger.error(f"robot_data_worker encountered an error: {e}")
 
         finally:
-            logger.info("Worker process has exited.")
+            logger.info("Worker begin exiting.")
             # TODO: flush the buffer?
             self.teleop_thread.join(1)
             logger.info("Worker: teleop thread joined.")
@@ -582,6 +581,8 @@ class RobotTaskmaster:
             self.h1arm = H1ArmController()
         except Exception as e:
             logger.error(f"Master: failed initalizing h1 controllers: {e}")
+            logger.error(f"Master: exiting")
+            exit(-1)
         
         self.arm_ik = Arm_IK()
         self.first = True
@@ -651,7 +652,8 @@ class RobotTaskmaster:
                 self.reset()
                 logger.info("Master: reset finished")
         finally:
-            logger.info("Master: finished")
+            self.stop()
+            logger.info("Master: exited")
 
     def get_h1_data(self):
         armstate, armv = self.h1arm.GetMotorState()
@@ -826,25 +828,20 @@ class TeleopManager:
         self.shared_dict["end_event"].set()
         self.shared_dict["kill_event"].set()
         self.shared_dict["session_start_event"].set()
-        self.manager.shutdown()
-        self.taskmaster_proc.terminate()
-        self.dataworker_proc.terminate()
-
-        # self.taskmaster_proc.kill()
-        # self.dataworker_proc.kill()
-
-        self.taskmaster_proc.join(timeout=5)
-        self.dataworker_proc.join(timeout=5)
+        self.taskmaster_proc.join(timeout=2)
+        self.dataworker_proc.join(timeout=10)
 
         if self.taskmaster_proc.is_alive():
             logger.warning("Forcing termination of taskmaster process.")
-            self.taskmaster_proc.kill()
+            self.taskmaster_proc.terminate()
             self.taskmaster_proc.join(timeout=2)
 
         if self.dataworker_proc.is_alive():
             logger.warning("Forcing termination of dataworker process.")
-            self.dataworker_proc.kill()
+            self.dataworker_proc.terminate()
             self.dataworker_proc.join(timeout=2)
+
+        self.manager.shutdown()
 
         self.h1_shm.close()
         self.h1_shm.unlink()

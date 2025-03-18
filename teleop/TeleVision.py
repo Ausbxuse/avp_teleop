@@ -12,12 +12,12 @@ from vuer.schemas import (DefaultScene, Hands, ImageBackground,
                           WebRTCStereoVideoPlane, WebRTCVideoPlane, group)
 from webrtc.zed_server import *
 
-# logger = logging.getLogger("robot_teleop")
-# logger.setLevel(logging.INFO)
-# ch = logging.StreamHandler()
-# formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-# ch.setFormatter(formatter)
-# logger.addHandler(ch)
+logger = logging.getLogger("robot_tv")
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
 class OpenTeleVision:
@@ -119,7 +119,7 @@ class OpenTeleVision:
         self.app.run()
 
     def shutdown(self):
-        # logger.info("OpenTeleVision: Shutting down process...")
+        logger.info("OpenTeleVision: Shutting down process...")
 
         if hasattr(self, "process") and self.process is not None:
             self.process.terminate()
