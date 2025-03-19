@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 import queue
+import re
 import shutil
 import signal
 import subprocess
@@ -13,6 +14,7 @@ import time
 import zlib
 from calendar import c
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import cv2
@@ -20,6 +22,7 @@ import msgpack
 import numpy as np
 import psutil
 import zmq
+
 from robot_control.robot_arm import H1ArmController
 from robot_control.robot_arm_ik import Arm_IK
 from robot_control.robot_hand import H1HandController
@@ -88,7 +91,6 @@ logger.addHandler(ch)
 
 FREQ = 30
 DELAY = 1 / FREQ
-CHUNK_SIZE = 100
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -145,7 +147,6 @@ class AsyncWriter:
 class IKDataWriter:
     def __init__(self, dirname):
         self.buffer = []
-        self.filepath = os.path.join(dirname, "ik_data.jsonl")
         self.async_writer = AsyncWriter(os.path.join(dirname, "ik_data.jsonl"))
 
     def write_data(
@@ -257,6 +258,7 @@ class DataMerger:
         logger.info(f"Mergefile saved to {self.output_path}")
 
 
+# TODO: make it client server
 class LidarProcess:
     def __init__(self, dirname) -> None:
         self.program_cmd = [
@@ -482,6 +484,7 @@ class RobotDataWorker:
         self.robot_data_writer = AsyncWriter(
             os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
         )
+        logger.debug("Worker: initing robot_data_writer")
 
         self.teleop_thread = threading.Thread(target=self.teleop_update_thread, daemon=True)
         self.teleop_thread.start()
@@ -532,10 +535,11 @@ class RobotDataWorker:
             while not self.kill_event.is_set():
                 logger.debug("Worker: entering main loop")
                 self.process_data()
-                self.robot_data_writer.close()
-                self.robot_data_writer = AsyncWriter(
-                    os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
-                )
+                # self.robot_data_writer.close()
+                # self.robot_data_writer = AsyncWriter(
+                #     os.path.join(self.shared_data["dirname"], "robot_data.jsonl")
+                # )
+                logger.debug("Worker: initing robot_data_writer")
 
 
         except Exception as e:
@@ -647,8 +651,8 @@ class RobotTaskmaster:
                     self.merge_data() # TODO: maybe a separate thread?
                     logger.info("Master: merge finished. Preparing for a new run...")
                 else:
-                    self.delete_last_data()
-                    logger.info("Master: delete finished. Preparing for a new run...")
+                    # self.delete_last_data()
+                    logger.info("Master: not merging. Preparing for a new run to override...")
                 self.reset()
                 logger.info("Master: reset finished")
         finally:
@@ -797,6 +801,36 @@ class TeleopManager:
 
         self.taskmaster_proc = Process(target=run_taskmaster)
         self.dataworker_proc = Process(target=run_dataworker)
+        self.failed = 0
+        self.last_failed = False
+
+    def _get_finished(self):
+        directory = Path(f"demos/{self.task_name}")
+        os.makedirs(directory, exist_ok=True)
+
+        if not directory.is_dir():
+            raise ValueError(f"Directory does not exist: ./demos/{self.task_name}")
+
+        episode_pattern = re.compile(r"episode_(\d+)$")
+        episode_numbers = []
+
+        for item in directory.iterdir():
+            if item.is_dir():
+                match = episode_pattern.match(item.name)
+                if match:
+                    episode_numbers.append(int(match.group(1)))
+
+        episode_numbers.sort()
+        expected = 0
+        for num in episode_numbers:
+            if num != expected:
+                # If the current number isn't what we expected,
+                # then expected is the missing index.
+                break
+            expected += 1
+
+        logger.debug(f"Next consecutive episode index is {expected}")
+        return expected
 
     def start_processes(self):
         logger.info("Starting taskmaster and dataworker processes.")
@@ -804,7 +838,10 @@ class TeleopManager:
         self.dataworker_proc.start()
 
     def update_directory(self):
-        dirname = time.strftime(f"demos/{self.task_name}/%Y%m%d_%H%M%S")
+        if self.last_failed and self.shared_dict["dirname"]:
+            shutil.rmtree(self.shared_dict["dirname"])
+        self.finished = self._get_finished()
+        dirname = f"demos/{self.task_name}/episode_{self.finished}"
         self.shared_dict["dirname"] = dirname
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(os.path.join(dirname, "color"), exist_ok=True)
@@ -851,24 +888,23 @@ class TeleopManager:
 
     def run_command_loop(self):
         last_cmd = None
-        finished = 0
-        failed = 0
         logger.info("Press 's' to start, 'q' to stop/merge, 'd' for a failure case, 'exit' to quit.")
         try:
             while True:
                 user_input = input("> ").lower()
                 if user_input == "s" and last_cmd != "s":
-                    logger.info(f"Session count - Finished: {finished}, Failed: {failed}")
                     self.start_session()
+                    logger.info(f"Session count - Finished: {self.finished}, Failed: {self.failed}")
                     last_cmd = "s"
                 elif user_input == "q":
                     self.stop_session()
-                    finished += 1
+                    self.finished += 1
                     last_cmd = "q"
                 elif user_input == "d":
                     self.shared_dict["failure_event"].set()
                     self.stop_session()
-                    failed += 1
+                    self.last_failed = True
+                    self.failed += 1
                     last_cmd = "d"
                 elif user_input == "exit":
                     self.cleanup()
