@@ -1,6 +1,9 @@
 import argparse
+import asyncio
+import io
 import json
 import logging
+import lzma
 import os
 import pickle
 import queue
@@ -117,6 +120,19 @@ class AsyncImageWriter:
     def close(self):
         self.kill_event.set()
         self.thread.join()
+
+def depth_writer_process(depth_queue, kill_event):
+    while not kill_event.is_set():
+        try:
+            filename, depth_array = depth_queue.get(timeout=0.5)
+            # buffer = io.BytesIO()
+            # np.save(buffer, depth_array)
+            # depth_bytes = buffer.getvalue()
+            compressed_data = lzma.compress(depth_array.tobytes(), preset=0)
+            with open(filename, "wb") as f:
+                f.write(compressed_data)
+        except queue.Empty:
+            continue
 
 class AsyncWriter:
     def __init__(self, filepath):
@@ -304,10 +320,15 @@ class RobotDataWorker:
 
         self.h1_shm_array = h1_shm_array
         self.teleop_shm_array = teleop_shm_array
-        # self.socket.setsockopt(zmq.RCVTIMEO, 200)
-        # self.socket.setsockopt(zmq.RCVHWM, 1)
-        # self.socket.setsockopt(zmq.CONFLATE, 1)
+        self.depth_kill_event = Event()
+
+        self.depth_queue = Queue()
         self.async_image_writer = AsyncImageWriter()
+
+        self.depth_proc = Process(
+            target=depth_writer_process,
+            args=(self.depth_queue, self.depth_kill_event),
+        )
 
         # resetable vars
         self.frame_idx = 0
@@ -408,7 +429,7 @@ class RobotDataWorker:
             "leg_state": legstate.tolist(),
             "hand_state": handstate.tolist(),
             "image": f"color/frame_{self.frame_idx:06d}.jpg",
-            "depth": f"depth/frame_{self.frame_idx:06d}.jpg",
+            "depth": f"depth/frame_{self.frame_idx:06d}.npy.lzma",
             "imu_omega": imustate[0:3].tolist(),
             "imu_rpy": imustate[3:6].tolist(),
             "ik_data": None,
@@ -419,6 +440,7 @@ class RobotDataWorker:
 
     def start(self):
         # logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
+        self.depth_proc.start() 
         try:
             while not self.end_event.is_set():
                 logger.info("Worker: waiting for new session start (session_start_event).")
@@ -431,6 +453,8 @@ class RobotDataWorker:
             self.socket.close()
             self.context.term()
             self.teleoperator.shutdown()
+            self.depth_kill_event.set()
+            self.depth_proc.join()
             logger.info("Worker: exited")
 
     def _write_image_data(self, color_frame, depth_frame):
@@ -440,16 +464,19 @@ class RobotDataWorker:
             self.shared_data["dirname"], f"color/frame_{self.frame_idx:06d}.jpg"
         )
         depth_filename = os.path.join(
-            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.npy"
+            self.shared_data["dirname"], f"depth/frame_{self.frame_idx:06d}.npy.lzma"
         )
 
         if color_frame is not None and depth_frame is not None:
             self.async_image_writer.write_image(color_filename, color_frame)
-            # self.async_image_writer.write_image(depth_filename, depth_frame)
-            np.save(depth_filename, depth_frame)
+            # compressed_data = lzma.compress(depth_frame.tobytes(), preset=0)
+            #
+            self.depth_queue.put((depth_filename, depth_frame))
+            # np.save(depth_filename, depth_frame)
             logger.debug(
                 f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
             )
+            
         else:
             logger.error(f"failed to save image {self.frame_idx}")
 
@@ -557,6 +584,7 @@ class RobotDataWorker:
             if hasattr(self, 'async_image_writer'):
                 self.async_image_writer.close()
                 logger.info("Worker: async image writer closed.")
+
             logger.info("Worker process has exited.")
 
     def reset(self):
