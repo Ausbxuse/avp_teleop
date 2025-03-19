@@ -420,7 +420,7 @@ class RobotDataWorker:
     def start(self):
         # logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
         try:
-            while True:
+            while not self.end_event.is_set():
                 logger.info("Worker: waiting for new session start (session_start_event).")
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
