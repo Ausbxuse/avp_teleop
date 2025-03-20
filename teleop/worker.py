@@ -24,12 +24,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+
 class RobotDataWorker:
     def __init__(self, shared_data, h1_shm_array, teleop_shm_array):
         self.shared_data = shared_data
         self.kill_event = shared_data["kill_event"]
         self.session_start_event = shared_data["session_start_event"]
-        self.end_event = shared_data["end_event"] # TODO: redundent
+        self.end_event = shared_data["end_event"]  # TODO: redundent
         self.h1_lock = Lock()
         self.teleoperator = VuerTeleop("inspire_hand.yml")
         self.context = zmq.Context()
@@ -66,22 +67,21 @@ class RobotDataWorker:
             except queue.Empty:
                 continue
 
-
     def dump_state(self, filename=None):
-       """Dump current system state for debugging"""
-       if filename is None:
-           filename = f"debug_dump_{time.strftime('%Y%m%d_%H%M%S')}.pkl"
-       
-       state = {
-           "h1_data": self.h1_shm_array.copy(),
-           "teleop_data": self.teleop_shm_array.copy(),
-           "frame_idx": self.frame_idx if hasattr(self, 'frame_idx') else None,
-           "timestamp": time.time()
-       }
-       
-       with open(filename, 'wb') as f:
-           pickle.dump(state, f)
-       logger.info(f"State dumped to {filename}")
+        """Dump current system state for debugging"""
+        if filename is None:
+            filename = f"debug_dump_{time.strftime('%Y%m%d_%H%M%S')}.pkl"
+
+        state = {
+            "h1_data": self.h1_shm_array.copy(),
+            "teleop_data": self.teleop_shm_array.copy(),
+            "frame_idx": self.frame_idx if hasattr(self, "frame_idx") else None,
+            "timestamp": time.time(),
+        }
+
+        with open(filename, "wb") as f:
+            pickle.dump(state, f)
+        logger.info(f"State dumped to {filename}")
 
     def _sleep_until_mod33(self, time_curr):
         integer_part = int(time_curr)
@@ -100,36 +100,34 @@ class RobotDataWorker:
 
     def _recv_zmq_frame(self) -> Tuple[Any, Any, Any, Any]:
         self.socket.send(b"get_frame")
-        
-        # Receive multipart message
-        message_parts = self.socket.recv_multipart()
-        
+
+        message_parts = (
+            self.socket.recv_multipart()
+        )  # FIXME: BLOCKING might lead to resource leak
+
         if len(message_parts) != 2 or not message_parts[0] or not message_parts[1]:
             logger.error("Failed to receive complete frame data!")
             return None, None, None, None
-        
-        # Process the RGB+IR combined JPEG image
+
         rgb_ir_bytes = message_parts[0]
         np_arr = np.frombuffer(rgb_ir_bytes, np.uint8)
         combined_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        
+
         if combined_frame is None:
             logger.error("Failed to decode RGB+IR frame!")
             return None, None, None, None
-        
-        # Extract individual frames from the combined image
+
         width_each = combined_frame.shape[1] // 3
         color_frame = combined_frame[:, 0:width_each]
-        ir_left_frame = combined_frame[:, width_each:2*width_each]
-        ir_right_frame = combined_frame[:, 2*width_each:]
-        
-        # Process the raw depth data (float32)
+        ir_left_frame = combined_frame[:, width_each : 2 * width_each]
+        ir_right_frame = combined_frame[:, 2 * width_each :]
+
         depth_bytes = message_parts[1]
-        height = color_frame.shape[0]  # Assuming same height as color frame
-        width = color_frame.shape[1]   # Assuming same width as color frame
-        
+        height = color_frame.shape[0]
+        width = color_frame.shape[1]
+
         depth_array = np.frombuffer(depth_bytes, dtype=np.uint16).reshape(height, width)
-        
+
         return color_frame, depth_array, ir_left_frame, ir_right_frame
 
     def teleop_update_thread(self):
@@ -171,10 +169,12 @@ class RobotDataWorker:
 
     def start(self):
         # logger.debug(f"Worker: Process ID (PID) {os.getpid()}")
-        self.depth_proc.start() 
+        self.depth_proc.start()
         try:
             while not self.end_event.is_set():
-                logger.info("Worker: waiting for new session start (session_start_event).")
+                logger.info(
+                    "Worker: waiting for new session start (session_start_event)."
+                )
                 self.session_start_event.wait()
                 logger.info("Worker: starting new session.")
                 self.run_session()
@@ -207,13 +207,13 @@ class RobotDataWorker:
             logger.debug(
                 f"Saved color frame to {color_filename} and depth frame to {depth_filename}"
             )
-            
+
         else:
             logger.error(f"failed to save image {self.frame_idx}")
 
     def _write_robot_data(self, color_frame, depth_frame, reuse=False):
         logger.debug(f"Worker: writing robot data")
-        self._write_image_data(color_frame,depth_frame)
+        self._write_image_data(color_frame, depth_frame)
 
         robot_data = self.get_robot_data(time.time())
 
@@ -244,7 +244,9 @@ class RobotDataWorker:
         )
         logger.debug("Worker: initing robot_data_writer")
 
-        self.teleop_thread = threading.Thread(target=self.teleop_update_thread, daemon=True)
+        self.teleop_thread = threading.Thread(
+            target=self.teleop_update_thread, daemon=True
+        )
         self.teleop_thread.start()
         logger.info("RobotDataworker: teleop step started")
 
@@ -271,7 +273,7 @@ class RobotDataWorker:
             f"[worker process] next_capture_time - time_curr: {next_capture_time - time_curr}"
         )
 
-        if  next_capture_time - time_curr >= 0:
+        if next_capture_time - time_curr >= 0:
             time.sleep(next_capture_time - time_curr)
             self._write_robot_data(color_frame, depth_frame)
         else:
@@ -299,7 +301,6 @@ class RobotDataWorker:
                 # )
                 logger.debug("Worker: initing robot_data_writer")
 
-
         except Exception as e:
             logger.error(f"robot_data_worker encountered an error: {e}")
 
@@ -312,7 +313,7 @@ class RobotDataWorker:
             logger.info("Worker: writer closed.")
             self.reset()
             logger.info("Worker: closing async image writer.")
-            if hasattr(self, 'async_image_writer'):
+            if hasattr(self, "async_image_writer"):
                 self.async_image_writer.close()
                 logger.info("Worker: async image writer closed.")
 
@@ -321,4 +322,3 @@ class RobotDataWorker:
     def reset(self):
         self.frame_idx = 0
         self.initial_capture_time = None
-

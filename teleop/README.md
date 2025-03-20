@@ -20,3 +20,5 @@ front+ and behind x
   - [ ] data visualizer
 - [ ] data validater (check if collected data is correct/complete)
 - [ ] unitests for single files
+
+- [ ] FIXME: first ik and second ik has missing data in between for 1.5s (possibly due to visionpro+motor safety code in arm_controller)

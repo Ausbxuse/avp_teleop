@@ -18,7 +18,7 @@ class DataMerger:
         self.robot_data_path = os.path.join(dirname, "robot_data.jsonl")
         self.ik_data_path = os.path.join(dirname, "ik_data.jsonl")
         self.lidar_data_path = os.path.join(dirname, "lidar")
-        self.output_path = os.path.join(dirname, "merged_data.jsonl")
+        self.output_path = os.path.join(dirname, "data.json")
 
     def _ik_is_ready(self, ik_data_list, time_key):
         closest_ik_entry = min(ik_data_list, key=lambda x: abs(x["armtime"] - time_key))

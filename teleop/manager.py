@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from master import RobotTaskmaster
+from progress import ProgressTracker
 from utils.logger import logger
 from worker import RobotDataWorker
 
@@ -36,6 +37,7 @@ class TeleopManager:
         self.shared_dict["session_start_event"] = self.manager.Event()
         self.shared_dict["failure_event"] = self.manager.Event()
         self.shared_dict["end_event"] = self.manager.Event()  # TODO: redundent
+        self.progress_tracker = ProgressTracker()
 
         self.h1_shm = shared_memory.SharedMemory(
             create=True, size=45 * np.dtype(np.float64).itemsize
@@ -66,36 +68,6 @@ class TeleopManager:
 
         self.taskmaster_proc = Process(target=run_taskmaster)
         self.dataworker_proc = Process(target=run_dataworker)
-        self.failed = 0
-        self.last_failed = False
-
-    def _get_finished(self):
-        directory = Path(f"demos/{self.task_name}")
-        os.makedirs(directory, exist_ok=True)
-
-        if not directory.is_dir():
-            raise ValueError(f"Directory does not exist: ./demos/{self.task_name}")
-
-        episode_pattern = re.compile(r"episode_(\d+)$")
-        episode_numbers = []
-
-        for item in directory.iterdir():
-            if item.is_dir():
-                match = episode_pattern.match(item.name)
-                if match:
-                    episode_numbers.append(int(match.group(1)))
-
-        episode_numbers.sort()
-        expected = 0
-        for num in episode_numbers:
-            if num != expected:
-                # If the current number isn't what we expected,
-                # then expected is the missing index.
-                break
-            expected += 1
-
-        logger.debug(f"Next consecutive episode index is {expected}")
-        return expected
 
     def start_processes(self):
         logger.info("Starting taskmaster and dataworker processes.")
@@ -103,15 +75,13 @@ class TeleopManager:
         self.dataworker_proc.start()
 
     def update_directory(self):
-        if self.last_failed and self.shared_dict["dirname"]:
-            shutil.rmtree(self.shared_dict["dirname"])
-        self.finished = self._get_finished()
-        dirname = f"demos/{self.task_name}/episode_{self.finished}"
-        self.shared_dict["dirname"] = dirname
-        os.makedirs(dirname, exist_ok=True)
-        os.makedirs(os.path.join(dirname, "color"), exist_ok=True)
-        os.makedirs(os.path.join(dirname, "depth"), exist_ok=True)
-        logger.info(f"Data directory set to: {dirname}")
+        self.shared_dict["dirname"] = self.progress_tracker.get_next()
+        os.makedirs(self.shared_dict["dirname"], exist_ok=True)
+        os.makedirs(os.path.join(self.shared_dict["dirname"], "color"), exist_ok=True)
+        os.makedirs(os.path.join(self.shared_dict["dirname"], "depth"), exist_ok=True)
+        # dirname = self.shared_dict["dirname"]
+
+        # logger.info(f"Data directory set to: {dirname}")
 
     def start_session(self):
         self.update_directory()
@@ -161,19 +131,15 @@ class TeleopManager:
                 user_input = input("> ").lower()
                 if user_input == "s" and last_cmd != "s":
                     self.start_session()
-                    logger.info(
-                        f"Session count - Finished: {self.finished}, Failed: {self.failed}"
-                    )
+                    dirname = self.shared_dict["dirname"]
+                    logger.info(f"Current task: {dirname}")
                     last_cmd = "s"
                 elif user_input == "q":
                     self.stop_session()
-                    self.finished += 1
                     last_cmd = "q"
                 elif user_input == "d":
                     self.shared_dict["failure_event"].set()
                     self.stop_session()
-                    self.last_failed = True
-                    self.failed += 1
                     last_cmd = "d"
                 elif user_input == "exit":
                     self.cleanup()

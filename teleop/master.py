@@ -2,6 +2,8 @@ import os
 import sys
 import time
 from multiprocessing import Event, Lock, Manager, Process, Queue, shared_memory
+from operator import le
+from turtle import left
 
 import numpy as np
 
@@ -47,9 +49,7 @@ class RobotTaskmaster:
         self.running = False
         self.h1_lock = Lock()
 
-    def safelySetMotor(
-        self, ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
-    ):
+    def safelySetMotor(self, ik_flag, sol_q, last_sol_q, tau_ff, armstate):
         q_poseList = np.zeros(35)
         q_tau_ff = np.zeros(35)
         q_poseList[13:27] = sol_q
@@ -78,7 +78,9 @@ class RobotTaskmaster:
         logger.debug("Master: preparing to set motor")
         self.h1arm.SetMotorPose(q_poseList, q_tau_ff)
         logger.debug("Master: motor set")
+        return True
 
+    def setHandMotors(self, right_qpos, left_qpos):
         if right_qpos is not None and left_qpos is not None:
             right_hand_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
             right_hand_angles.append(1.2 - right_qpos[8])
@@ -88,7 +90,7 @@ class RobotTaskmaster:
             left_hand_angles.append(1.2 - left_qpos[8])
             left_hand_angles.append(0.5 - left_qpos[9])
             self.h1hand.ctrl(right_hand_angles, left_hand_angles)
-        return True
+        return right_hand_angles, left_hand_angles
 
     def start(self):
         # logger.debug(f"Master: Process ID (PID) {os.getpid()}")
@@ -169,6 +171,7 @@ class RobotTaskmaster:
             get_tv_success, head_rmat, left_pose, right_pose, left_qpos, right_qpos = (
                 self.get_teleoperator_data()
             )
+            logger.debug("Master: got teleop ddata")
 
             if not get_tv_success:
                 continue
@@ -180,16 +183,25 @@ class RobotTaskmaster:
             ik_time = time.time()
 
             logger.debug(f"Master: moving motor {sol_q}")
-            if self.safelySetMotor(
-                ik_flag, sol_q, last_sol_q, tau_ff, armstate, right_qpos, left_qpos
-            ):
-                last_sol_q = sol_q
-            else:
-                continue
+            # if self.safelySetMotor(ik_flag, sol_q, last_sol_q, tau_ff, armstate):
+            #     last_sol_q = sol_q
+            # else:
+            #     continue
+            #
+            # self.setHandMotors(right_qpos, left_qpos)
 
             logger.debug("Master: writing data")
+            logger.debug(f"Master: head_rmat: {head_rmat}")
             self.ik_writer.write_data(
-                motor_time, ik_time, sol_q, tau_ff, head_rmat, left_pose, right_pose
+                right_qpos,
+                left_qpos,
+                motor_time,
+                ik_time,
+                sol_q,
+                tau_ff,
+                head_rmat,
+                left_pose,
+                right_pose,
             )
 
     def stop(self):

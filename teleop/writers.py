@@ -71,8 +71,8 @@ class IKDataWriter:
 
     def write_data(
         self,
-        # right_angles,
-        # left_angles,
+        right_angles,
+        left_angles,
         arm_time,
         ik_time,
         sol_q,
@@ -82,8 +82,8 @@ class IKDataWriter:
         right_pose,
     ):
         entry = {
-            # "right_angles": right_angles,
-            # "left_angles": left_angles,
+            "right_angles": right_angles.tolist(),
+            "left_angles": left_angles.tolist(),
             "armtime": arm_time,
             "iktime": ik_time,
             "sol_q": sol_q.tolist(),
